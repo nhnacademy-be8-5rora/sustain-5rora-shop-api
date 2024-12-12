@@ -1,4 +1,4 @@
-package store.aurora.entity.point;
+package store.aurora.point.entity;
 
 public enum PointEarnStatus {
     PENDING,

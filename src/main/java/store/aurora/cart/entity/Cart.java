@@ -1,4 +1,4 @@
-package store.aurora.entity.cart;
+package store.aurora.cart.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;

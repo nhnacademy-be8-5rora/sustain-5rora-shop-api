@@ -32,8 +32,8 @@ logging:
     org.hibernate.orm.jdbc.bind: trace
     org.springframework.transaction.interceptor: trace
 
-    sun.rmi: ERROR
-    javax.management: ERROR
+    sun.rmi: WARN
+    javax.management: WARN
 
 
 eureka:

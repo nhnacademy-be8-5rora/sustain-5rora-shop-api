@@ -1,4 +1,4 @@
-package store.aurora.entity.review;
+package store.aurora.review.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;

@@ -1,0 +1,71 @@
+server:
+  port: 8083
+  shutdown: graceful
+
+spring:
+  application:
+    name: shop-api
+  profiles:
+    active: dev
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  #  datasource:
+  #    url: jdbc:mysql://localhost:3306/taskapi?useSSL=false&serverTimezone=UTC
+  #    username: root
+  #    password: P@ssw0rd
+  #    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        highlight_sql: true
+        auto_quote_keyword: true
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true # ??? ?? ???? ??????. ?? JPA ???? ?????? ??? ?? ?? ?????? ?, ?????? ??? ???? ??? ?????.
+logging:
+  level:
+    root: debug
+    org.hibernate.orm.jdbc.bind: trace
+    org.springframework.transaction.interceptor: trace
+
+
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+
+
+    service-url:
+      defaultZone: http://admin:1234@localhost:8761/eureka
+
+  instance:
+    prefer-ip-address: true
+
+management:
+  health:
+    status:
+      order: DOWN, UP
+  endpoint:
+    jolokia:
+      enabled: true
+    metrics:
+      enabled: true
+    pause:
+      enabled: true
+    resume:
+      enabled: true
+    restart:
+      enabled: true
+    shutdown:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  info:
+    env:
+      enabled: true

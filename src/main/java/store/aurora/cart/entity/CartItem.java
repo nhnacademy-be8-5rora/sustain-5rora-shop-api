@@ -27,12 +27,12 @@ public class CartItem {
     @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
 
-//    @Setter
+    @Setter
 //    @NotNull
 //    @OneToOne//(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "book_id", nullable = false)
 //    private Book book;
-    private Long BookId;
+    private Long bookId;
 
 //    public CartItem(Cart cart, Book book) {
 //        this.cart = cart;

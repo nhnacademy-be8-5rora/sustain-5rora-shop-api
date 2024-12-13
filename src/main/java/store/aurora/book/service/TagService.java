@@ -6,5 +6,5 @@ import org.springframework.stereotype.Service;
 import store.aurora.book.repository.TagRepository;
 
 
-public class TagService {
+public interface TagService {
 }

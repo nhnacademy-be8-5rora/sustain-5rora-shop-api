@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import store.aurora.order.entity.enums.OrderState;
+import store.aurora.user.entity.User;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -74,9 +75,9 @@ public class Order {
     @Column(name = "password")
     private String password;
 
-//    @ManyToOne
-//    @JoinColumn(name = "user_id")
-//    private User user;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @OneToMany(mappedBy = "orders")
     private List<OrderDetail> orderDetails;

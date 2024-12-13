@@ -1,14 +1,15 @@
 package store.aurora.book.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.BookRequestDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.BookCategory;
 import store.aurora.book.entity.Category;
 import store.aurora.book.entity.Publisher;
 import store.aurora.book.entity.Series;
+import store.aurora.book.exception.BookNotFoundException;
 import store.aurora.book.mapper.BookMapper;
 import store.aurora.book.repository.BookCategoryRepository;
 import store.aurora.book.repository.BookRepository;
@@ -94,4 +95,10 @@ public class BookService {
 //    public void removeTagsFromBook(Long bookId, List<Long> tagIds) {
 //        tagService.removeBookTag(bookId, tagIds);
 //    }
+
+    @Transactional(readOnly = true)
+    public Book getBookById(Long bookId) {
+        return bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException(bookId));
+    }
 }

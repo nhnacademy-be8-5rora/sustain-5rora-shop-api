@@ -111,6 +111,12 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public User getUser(String userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    }
+
     // 휴면 해제 처리
     @Override
     public void reactivateUser(String userId) {

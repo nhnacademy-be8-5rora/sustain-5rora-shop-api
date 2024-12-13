@@ -1,0 +1,10 @@
+### 회원 장바구니 조회
+GET http://localhost:8083/api/cart/logged-in
+X-USER-ID: user123
+
+### 회원 장바구니 조회 (w/o X-USER-ID 헤더)
+GET http://localhost:8083/api/cart/logged-in
+
+### 회원 장바구니 추가
+POST http://localhost:8083/api/cart/logged-in?bookId=1&quantity=2
+X-USER-ID: user123

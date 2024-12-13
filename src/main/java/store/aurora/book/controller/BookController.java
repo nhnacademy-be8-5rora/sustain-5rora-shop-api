@@ -7,10 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import store.aurora.book.dto.BookRequestDTO;
 import store.aurora.book.dto.BookResponseDTO;
+import store.aurora.book.dto.tag.BookTagRequestDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.Category;
+import store.aurora.book.entity.tag.Tag;
 import store.aurora.book.mapper.BookMapper;
 import store.aurora.book.service.BookService;
+import store.aurora.book.service.tag.TagService;
 
 import java.util.List;
 
@@ -19,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BookController {
     private final BookService bookService;
+    private final TagService tagService;
 
     @PostMapping
     public ResponseEntity<BookResponseDTO> createBook(@RequestBody @Valid BookRequestDTO requestDTO) {
@@ -51,5 +55,23 @@ public class BookController {
         List<Category> categories = bookService.getCategoriesByBookId(bookId);
         return ResponseEntity.ok(categories);
     }
+//    // Tag Management
+//    @PostMapping("/{bookId}/tags")
+//    public ResponseEntity<Void> addTagsToBook(@PathVariable Long bookId, @RequestBody List<Long> tagIds) {
+//        tagIds.forEach(tagId -> tagService.addBookTag(new BookTagRequestDto(bookId, tagId)));
+//        return ResponseEntity.ok().build();
+//    }
+//
+//    @DeleteMapping("/{bookId}/tags")
+//    public ResponseEntity<Void> removeTagsFromBook(@PathVariable Long bookId, @RequestBody List<Long> tagIds) {
+//        tagIds.forEach(tagId -> tagService.removeBookTag(tagId));
+//        return ResponseEntity.ok().build();
+//    }
+//
+//    @GetMapping("/{bookId}/tags")
+//    public ResponseEntity<List<Tag>> getTagsByBookId(@PathVariable Long bookId) {
+//        List<Tag> tags = bookService.getTagsByBookId(bookId);
+//        return ResponseEntity.ok(tags);
+//    }
 
 }

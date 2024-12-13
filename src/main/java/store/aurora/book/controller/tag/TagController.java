@@ -15,7 +15,6 @@ import store.aurora.book.service.tag.TagService;
 @RequiredArgsConstructor
 public class TagController {
 
-    //test
     private final TagService tagService;
 
     @PostMapping("/api/tags")

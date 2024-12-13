@@ -31,6 +31,7 @@ public class Review {
     @NotNull
     @Setter
     @Column(nullable = false)
+    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime reviewCreateAt = LocalDateTime.now();
 
 //    @NotNull

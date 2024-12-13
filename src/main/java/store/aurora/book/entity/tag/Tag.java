@@ -1,4 +1,4 @@
-package store.aurora.book.entity;
+package store.aurora.book.entity.tag;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -19,6 +19,4 @@ public class Tag {
 
     @Column(nullable = false, length = 15)
     private String name;
-
-    private String field;
 }

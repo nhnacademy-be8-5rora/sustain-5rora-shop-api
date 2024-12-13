@@ -36,6 +36,10 @@ public class Cart {
 //        this.user = user;
 //    }
 
+    public Cart(String userId) {
+        this.userId = userId;
+    }
+
     public void addCartItem(CartItem cartItem) {
         cartItems.add(cartItem);
         cartItem.setCart(this);

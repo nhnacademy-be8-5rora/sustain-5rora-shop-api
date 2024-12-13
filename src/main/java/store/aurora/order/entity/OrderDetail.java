@@ -28,18 +28,15 @@ public class OrderDetail {
     private Order order;
 
     // 주문 상태
-    @NotNull
-    @Column(name = "state")
+    @Column(name = "state", nullable = false)
     private OrderState state;
 
     // 결제 금액 (쿠폰 적용가)
-    @NotNull
-    @Column(name = "amount_detail")
+    @Column(name = "amount_detail", nullable = false)
     private int amountDetail;
 
     // 수량
-    @NotNull
-    @Column(name = "quantity")
+    @Column(name = "quantity", nullable = false)
     private int quantity;
 
     // 포장지

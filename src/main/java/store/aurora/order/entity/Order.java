@@ -22,7 +22,6 @@ import java.util.List;
 @Table(name = "orders")
 public class Order {
     @Id
-    @NotNull
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -79,12 +78,12 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy = "orders")
+    @OneToMany(mappedBy = "order")
     private List<OrderDetail> orderDetails;
 
-    @OneToOne(mappedBy = "orders")
+    @OneToOne(mappedBy = "order")
     private ShipmentInformation shipmentInformation;
 
-    @OneToMany(mappedBy = "orders")
+    @OneToMany(mappedBy = "order")
     private List<Payment> payments;
 }

@@ -22,8 +22,7 @@ public class Payment {
     private Long id;
 
     // 결제 금액
-    @NotNull
-    @Column(name = "amount")
+    @Column(name = "amount", nullable = false)
     private int amount;
 
     // 결제 시간
@@ -32,7 +31,7 @@ public class Payment {
 
     // 결제 상태
     @NotNull
-    @Column(name = "status")
+    @Column(name = "status", nullable = false)
     private PaymentState status;
 
     // 주문

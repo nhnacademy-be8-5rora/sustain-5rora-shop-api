@@ -20,7 +20,7 @@ import java.util.List;
 @Entity
 @Table(name = "shipments")
 public class Shipment {
-    @Id @NotNull
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -42,6 +42,6 @@ public class Shipment {
     @Column(name = "state")
     private ShipmentState state;
 
-    @OneToMany(mappedBy = "shipments")
+    @OneToMany(mappedBy = "shipment")
     private List<OrderDetail> orderDetails;
 }

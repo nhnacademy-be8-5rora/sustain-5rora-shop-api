@@ -122,6 +122,19 @@
             <classifier>jakarta</classifier>
         </dependency>
 
+        <!-- BCryptPasswordEncoder -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+            <version>5.8.6</version>
+        </dependency>
+
+        <!-- Redis; 인증코드 저장 및 만료 처리 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

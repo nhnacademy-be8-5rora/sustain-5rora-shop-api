@@ -1,6 +1,8 @@
 package store.aurora.user.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import store.aurora.user.dto.SignUpRequest;
@@ -11,6 +13,7 @@ import store.aurora.user.entity.UserStatus;
 import store.aurora.user.repository.UserRankHistoryRepository;
 import store.aurora.user.repository.UserRankRepository;
 import store.aurora.user.repository.UserRepository;
+import store.aurora.user.service.DoorayMessengerService;
 import store.aurora.user.service.UserService;
 
 import java.time.LocalDate;
@@ -24,13 +27,21 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserRankRepository userRankRepository;
     private final UserRankHistoryRepository userRankHistoryRepository;
-//    private final PasswordEncoder passwordEncoder;
+    private final DoorayMessengerService doorayMessengerService;
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private static final int INACTIVE_PERIOD_MONTHS = 3;    // 휴면 3개월 기준
+    private final RedisTemplate redisTemplate;
 
     // 회원가입
     @Override
     public void registerUser(SignUpRequest request) {
+        // 인증 상태 확인
+        String verificationStatus = (String) redisTemplate.opsForValue().get(request.getPhoneNumber() + "_verified");
+        if (verificationStatus == null || !verificationStatus.equals("true")) {
+            throw new IllegalArgumentException("인증 코드가 확인되지 않았습니다. 인증을 완료한 후 회원가입을 진행해주세요.");
+        }
+
         // 유효성 검사
         if (userRepository.existsById(request.getId())) {
             throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
@@ -42,21 +53,14 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
 
-
-//        // 두레이 인증코드 확인
-//        String storedCode = redisService.getVerificationCode(request.getPhoneNumber());
-//        if (storedCode == null || !storedCode.equals(request.getVerificationCode())) {
-//            throw new IllegalArgumentException("전화번호 인증이 실패했습니다.");
-//        }
-
         // 비밀번호 암호화
-//        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
 
 
         // User에 저장
         User user = new User();
         user.setId(request.getId());
-        user.setPassword(request.getPassword());  // 암호화된 비밀번호 저장
+        user.setPassword(encodedPassword);  // 암호화된 비밀번호 저장
         user.setName(request.getName());
         user.setBirth(LocalDate.parse(request.getBirth(), DateTimeFormatter.ofPattern("yyyyMMdd")));
         user.setPhoneNumber(request.getPhoneNumber());
@@ -77,6 +81,9 @@ public class UserServiceImpl implements UserService {
         userRankHistory.setUser(user);
 
         userRankHistoryRepository.save(userRankHistory);
+
+        // 인증 상태 삭제
+        redisTemplate.delete(request.getPhoneNumber() + "_verified");
     }
 
     // 회원탈퇴

@@ -16,25 +16,18 @@ import java.util.List;
 @Entity
 @Table(name = "wraps")
 public class Wrap {
-    @Id @NotNull
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     // 가격(원) default 0
-    @NotNull
-    @Column(name="amount")
+    @Column(name="amount", nullable = false)
     private int amount;
 
     // 포장 종류 이름
-    @NotNull
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "wraps")
+    @OneToMany(mappedBy = "wrap", cascade = CascadeType.ALL)
     private List<OrderDetail> orderDetails;
-
-    public Wrap(int amount, String name) {
-        this.amount = amount;
-        this.name = name;
-    }
 }

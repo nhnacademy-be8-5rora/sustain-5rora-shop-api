@@ -23,18 +23,15 @@ public class ShipmentInformation {
     private Order order;
 
     // 수취인 이름
-    @NotNull
-    @Column(name = "receiver_name")
+    @Column(name = "receiver_name", nullable = false)
     private String receiverName;
 
     // 수취인 주소
-    @NotNull
-    @Column(name = "receiver_address")
+    @Column(name = "receiver_address", nullable = false)
     private String receiverAddress;
 
     // 수취인 전화번호
-    @NotNull
-    @Column(name = "receiver_phone")
+    @Column(name = "receiver_phone", nullable = false)
     private String receiverPhone;
 
     // 배송 요청사항

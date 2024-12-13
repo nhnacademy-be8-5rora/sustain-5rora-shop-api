@@ -22,7 +22,6 @@ import java.util.List;
 @Table(name = "orders")
 public class Order {
     @Id
-    @NotNull
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

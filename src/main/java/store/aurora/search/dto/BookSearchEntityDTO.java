@@ -93,4 +93,18 @@ public class BookSearchEntityDTO {
         return imgPath;
     }
 
+    @Override
+    public String toString() {
+        return "BookSearchEntityDTO{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", regularPrice=" + regularPrice +
+                ", salePrice=" + salePrice +
+                ", publishDate=" + publishDate +
+                ", publisherName='" + publisherName + '\'' +
+                ", authors=" + authors +
+                ", imgPath='" + imgPath + '\'' +
+                '}';
+    }
+
 }

@@ -1,37 +1,71 @@
-#### 책 등록
-#POST localhost:8083/api/books
-#Content-Type: application/json
-#
-#{
-#  "title": "Clean Cod",
-#  "regularPrice": 35000,
-#  "salePrice": 30000,
-#  "packaging": true,
-#  "stock": 50,
-#  "explanation": "해피",
-#  "contents": "크리스마스",
-#  "isbn": "9780132350884",
-#  "publishDate": "2008-08-11",
-#  "isSale": true,
-#  "publisherName": "ksc",
-#  "seriesName": null
-#}
-#
-#### 카테고리 생성
-#POST localhost:8083/api/categories
-#Content-Type: application/json
-#
-#{
-#"name": "IT 모바일"
-#}
-#
-#### 카테고리 이름 수정
-#PATCH localhost:8083/api/categories/1
-#Content-Type: application/json
-#
-#{
-#"newName": "IT/모바일"
-#}
-#
-#### 카테고리 삭제
-#DELETE localhost:8083/api/categories/1
+### 책 등록
+POST localhost:8083/api/books
+Content-Type: application/json
+
+{
+  "title": "Clean Cod2",
+  "regularPrice": 35000,
+  "salePrice": 30000,
+  "packaging": true,
+  "stock": 50,
+  "explanation": "해피",
+  "contents": "크리스마스",
+  "isbn": "9780132350884",
+  "publishDate": "2008-08-11",
+  "isSale": true,
+  "publisherName": "ksc",
+  "seriesName": null,
+  "categoryIds": [1,2]
+}
+
+### 카테고리 생성
+POST localhost:8083/api/categories
+Content-Type: application/json
+
+{
+"name": "IT",
+  "parentId": null
+}
+### 카테고리 생성
+POST localhost:8083/api/categories
+Content-Type: application/json
+
+{
+  "name": "모바일",
+  "parentId": 1
+}
+### 카테고리 생성
+POST localhost:8083/api/categories
+Content-Type: application/json
+
+{
+  "name": "PC",
+  "parentId": 1
+}
+### 카테고리 생성
+POST localhost:8083/api/categories
+Content-Type: application/json
+
+{
+  "name": "아이폰",
+  "parentId": 2
+}
+### 카테고리 생성
+POST localhost:8083/api/categories
+Content-Type: application/json
+
+{
+  "name": "CPU",
+  "parentId": 3
+}
+
+### 카테고리 이름 수정
+PATCH localhost:8083/api/categories/1
+Content-Type: application/json
+
+{
+"name": "IT/모바일"
+}
+
+### 카테고리 삭제
+DELETE localhost:8083/api/categories/1

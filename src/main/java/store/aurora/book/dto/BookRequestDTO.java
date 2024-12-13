@@ -44,6 +44,7 @@ public class BookRequestDTO {
     private boolean isSale;
 
     private List<Long> categoryIds;
+    private List<Long> tagIds;
 
     @NotBlank
     private String publisherName;

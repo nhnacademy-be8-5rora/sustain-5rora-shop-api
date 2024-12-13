@@ -27,8 +27,7 @@ public class Category {
     @JoinColumn(name = "parent_id")
     private Category parent;
 
-    // 부모 삭제시 자식 자동 삭제
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "parent")
     private List<Category> children = new ArrayList<>();
 
     @Column(nullable = false)

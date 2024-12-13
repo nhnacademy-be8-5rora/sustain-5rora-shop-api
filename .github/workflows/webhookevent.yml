@@ -1,0 +1,24 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: WebHookEvent
+
+on:
+  push:
+    branches: [ "develop" ]
+
+jobs:
+  webhookevent:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: webhookevent
+      run: |
+        curl -H "Content-Type: application/json" -X POST -d '{"botName": "MyBot", "botIconImage": "https://static.dooray.com/static_images/dooray-bot.png", "text":"shop api develop branch pushed"}' https://nhnacademy.dooray.com/services/3204376758577275363/3957499258579580748/mMmqF9faSVeBjhRdMu9fSA
+

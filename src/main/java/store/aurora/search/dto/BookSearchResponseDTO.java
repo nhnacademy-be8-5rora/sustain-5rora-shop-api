@@ -42,5 +42,12 @@ public class BookSearchResponseDTO {
         this.authors = book.getAuthors();
     }
 
+    @Override
+    public String toString() {
+        return "BookSearchResponseDTO [id=" + id + ", title=" + title + ", regularPrice=" + regularPrice +
+                ", salePrice=" + salePrice + ", publishDate=" + publishDate + ", publisherName=" + publisherName +
+                ", imgPath=" + imgPath + ", authors=" + authors + "]";
+    }
+
 
 }

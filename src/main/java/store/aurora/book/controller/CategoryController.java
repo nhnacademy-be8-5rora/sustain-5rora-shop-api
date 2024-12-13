@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import store.aurora.book.dto.CategoryRequestDTO;
+import store.aurora.book.dto.CategoryResponseDTO;
 import store.aurora.book.entity.Category;
+import store.aurora.book.mapper.CategoryMapper;
 import store.aurora.book.service.CategoryService;
 
 @RestController
@@ -16,16 +18,16 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @PostMapping
-    public ResponseEntity<Category> createCategory(@RequestBody @Valid CategoryRequestDTO requestDTO) {
-        Category category = categoryService.createCategory(requestDTO.getName(), requestDTO.getParentId());
-        return ResponseEntity.ok(category);
+    public ResponseEntity<CategoryResponseDTO> createCategory(@RequestBody @Valid CategoryRequestDTO requestDTO) {
+        Category createCategory = categoryService.createCategory(requestDTO.getName(), requestDTO.getParentId());
+        return ResponseEntity.ok(CategoryMapper.toResponseDTO(createCategory));
     }
 
     @PatchMapping("/{categoryId}")
-    public ResponseEntity<Category> updateCategoryName(@PathVariable Long categoryId,
-                                                       @RequestParam String newName) {
-        Category updatedCategory = categoryService.updateCategoryName(categoryId, newName);
-        return ResponseEntity.ok(updatedCategory);
+    public ResponseEntity<CategoryResponseDTO> updateCategoryName(@PathVariable Long categoryId,
+                                                                  @RequestBody @Valid CategoryRequestDTO requestDTO) {
+        Category updatedCategory = categoryService.updateCategoryName(categoryId, requestDTO.getName());
+        return ResponseEntity.ok(CategoryMapper.toResponseDTO(updatedCategory));
     }
 
     @DeleteMapping("/{categoryId}")

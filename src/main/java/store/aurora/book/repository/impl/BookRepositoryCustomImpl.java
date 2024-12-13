@@ -76,12 +76,6 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
 
     @Override
     public Page<BookSearchEntityDTO> findBooksByAuthorNameWithDetails(String name, Pageable pageable) {
-        // 서브쿼리: 첫 번째 이미지만 가져오기
-        var bookImagePathSubquery = JPAExpressions.select(bookImage.filePath)
-                .from(bookImage)
-                .where(bookImage.book.id.eq(book.id))
-                .orderBy(bookImage.id.asc())
-                .limit(1);
 
         // 도서 ID 가져오기
         List<Long> bookIds = from(bookAuthor)
@@ -94,6 +88,13 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         if (bookIds.isEmpty()) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
+
+        // 서브쿼리: 첫 번째 이미지만 가져오기
+        var bookImagePathSubquery = JPAExpressions.select(bookImage.filePath)
+                .from(bookImage)
+                .where(bookImage.book.id.eq(book.id))
+                .orderBy(bookImage.id.asc())
+                .limit(1);
 
         // 도서 목록 가져오기
         List<BookSearchEntityDTO> content = from(book)

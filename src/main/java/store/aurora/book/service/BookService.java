@@ -1,14 +1,15 @@
 package store.aurora.book.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.BookRequestDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.BookCategory;
 import store.aurora.book.entity.Category;
 import store.aurora.book.entity.Publisher;
 import store.aurora.book.entity.Series;
+import store.aurora.book.exception.BookNotFoundException;
 import store.aurora.book.mapper.BookMapper;
 import store.aurora.book.repository.BookCategoryRepository;
 import store.aurora.book.repository.BookRepository;
@@ -59,8 +60,7 @@ public class BookService {
 
     @Transactional
     public void addCategoriesToBook(Long bookId, List<Long> categoryIds) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 책 ID입니다: " + bookId));
+        Book book = getBookById(bookId);
 
         for (Long categoryId : categoryIds) {
             Category category = categoryRepository.findById(categoryId)
@@ -81,8 +81,7 @@ public class BookService {
 
     @Transactional
     public void removeCategoriesFromBook(Long bookId, List<Long> categoryIds) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 책 ID입니다: " + bookId));
+        Book book = getBookById(bookId);
 
         // 삭제할 카테고리 제거
         book.getBookCategories().removeIf(bookCategory ->
@@ -90,12 +89,17 @@ public class BookService {
     }
 
     public List<Category> getCategoriesByBookId(Long bookId) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 책 ID입니다: " + bookId));
+        Book book = getBookById(bookId);
 
         return book.getBookCategories()
                 .stream()
                 .map(BookCategory::getCategory)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Book getBookById(Long bookId) {
+        return bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException(bookId));
     }
 }

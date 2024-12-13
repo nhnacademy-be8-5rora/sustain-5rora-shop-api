@@ -2,11 +2,15 @@ package store.aurora.cart.service.impl;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store.aurora.book.entity.Book;
+import store.aurora.book.service.BookService;
+import store.aurora.cart.dto.CartItemResponseDTO;
 import store.aurora.cart.entity.Cart;
 import store.aurora.cart.entity.CartItem;
 import store.aurora.cart.repository.CartItemRepository;
 import store.aurora.cart.repository.CartRepository;
 import store.aurora.cart.service.CartService;
+import store.aurora.user.service.UserService;
 
 import java.util.List;
 import java.util.Objects;
@@ -18,18 +22,27 @@ public class CartServiceImpl implements CartService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
 
-    public CartServiceImpl(CartRepository cartRepository, CartItemRepository cartItemRepository) {
+    private final UserService userService;
+    private final BookService bookService;
+
+    public CartServiceImpl(CartRepository cartRepository, CartItemRepository cartItemRepository, UserService userService, BookService bookService) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
+        this.userService = userService;
+        this.bookService = bookService;
     }
 
     @Override
     @Transactional
-    public List<CartItem> getCartItemsForLoggedInUser(String userId) {
+    public List<CartItemResponseDTO> getCartItemsForLoggedInUser(String userId) {
         Cart cart = cartRepository.findByUserId(userId)
                 .orElseGet(() -> createCartForUser(userId));
 
-        return cartItemRepository.findByCartId(cart.getId());
+        return cartItemRepository.findByCartId(cart.getId()).stream()
+                .map(cartItem -> new CartItemResponseDTO(
+                        cartItem.getBook().getId(),
+                        cartItem.getQuantity()
+                )).toList();
     }
 
     // 로그인하지 않은 사용자의 장바구니 조회 (세션 또는 쿠키 사용)
@@ -52,7 +65,7 @@ public class CartServiceImpl implements CartService {
 
         Optional<CartItem> cartItemOptional = cartItemRepository.findByCartAndBookId(cart, bookId);
         if(cartItemOptional.isEmpty()) {
-            createCartItem(cart, bookId, quantity); // todo 북 조회
+            createCartItem(cart, bookId, quantity);
         }else {
             CartItem cartItem = cartItemOptional.get();
             cartItem.setQuantity(quantity);
@@ -60,16 +73,14 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    @Transactional
     public Cart createCartForUser(String userId) {
-        Cart cart = new Cart(userId);
+        Cart cart = new Cart(userService.getUser(userId));
         return cartRepository.save(cart);
     }
 
     private void createCartItem(Cart cart, Long bookId, int quantity) {
-        CartItem cartItem = new CartItem();
-        cartItem.setCart(cart);
-        cartItem.setBookId(bookId);
+        Book book = bookService.getBookById(bookId);
+        CartItem cartItem = new CartItem(cart, book);
         cartItem.setQuantity(quantity);
         cartItemRepository.save(cartItem);
     }

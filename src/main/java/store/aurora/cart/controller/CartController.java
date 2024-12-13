@@ -3,6 +3,7 @@ package store.aurora.cart.controller;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import store.aurora.cart.dto.CartItemResponseDTO;
 import store.aurora.cart.entity.CartItem;
 import store.aurora.cart.service.CartService;
 
@@ -19,13 +20,14 @@ public class CartController {
         this.cartService = cartService;
     }
 
+    //GET /api/cart/1/items
     @GetMapping("/logged-in")
-    public ResponseEntity<List<CartItem>> getCartForLoggedInUser(@RequestHeader(value = "X-USER-ID", required = false) String userId) {
+    public ResponseEntity<List<CartItemResponseDTO>> getCartForLoggedInUser(@RequestHeader(value = "X-USER-ID", required = false) String userId) {
         if (Objects.isNull(userId)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // 로그인되지 않은 경우 401 반환
         }
 
-        List<CartItem> cartItems = cartService.getCartItemsForLoggedInUser(userId);
+        List<CartItemResponseDTO> cartItems = cartService.getCartItemsForLoggedInUser(userId);
 //        if (cartItems.isEmpty()) {
 //            return ResponseEntity.noContent().build(); // 장바구니가 비어있으면 204 반환
 //        }

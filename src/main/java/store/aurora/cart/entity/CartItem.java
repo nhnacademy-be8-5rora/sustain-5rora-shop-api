@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import store.aurora.book.entity.Book;
 
 @Entity
 @Table(name = "cart_items")
@@ -21,23 +22,20 @@ public class CartItem {
     @Min(value = 1, message = "Quantity must be at least 1")
     private Integer quantity = 1;
 
-    @Setter
     @NotNull
     @ManyToOne//(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
 
-    @Setter
-//    @NotNull
-//    @OneToOne//(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "book_id", nullable = false)
-//    private Book book;
-    private Long bookId;
+    @NotNull
+    @OneToOne(optional = false)//(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id", nullable = false)
+    private Book book;
 
-//    public CartItem(Cart cart, Book book) {
-//        this.cart = cart;
-//        this.book = book;
-//    }
+    public CartItem(Cart cart, Book book) {
+        this.cart = cart;
+        this.book = book;
+    }
 
     public void setQuantity(Integer quantity) {
         if (quantity < 1) {

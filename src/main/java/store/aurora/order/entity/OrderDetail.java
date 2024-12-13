@@ -6,9 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import store.aurora.book.entity.Book;
 import store.aurora.order.entity.enums.OrderState;
 
-import java.awt.print.Book;
 import java.time.LocalDate;
 
 @Getter
@@ -45,9 +45,9 @@ public class OrderDetail {
     @Column(name = "coupon_id")
     private Long couponId;
 
-//    @ManyToOne
-//    @JoinColumn(name = "book_id")
-//    private Book book;
+    @ManyToOne
+    @JoinColumn(name = "book_id")
+    private Book book;
 
     @ManyToOne
     @JoinColumn(name = "shipment_id")

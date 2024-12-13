@@ -7,10 +7,6 @@ import store.aurora.book.repository.ReviewRepository;
 
 import java.util.List;
 
-@Service
-@Transactional
-@RequiredArgsConstructor
-public class ReviewService {
-    private final ReviewRepository reviewRepository;
 
+public interface ReviewService {
 }

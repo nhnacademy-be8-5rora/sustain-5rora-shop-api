@@ -32,5 +32,4 @@ public class Category {
 
     @Column(nullable = false)
     private int depth;
-
 }

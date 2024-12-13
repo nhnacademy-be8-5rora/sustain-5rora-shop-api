@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import store.aurora.storage.entity.StorageInfo;
 
 @Getter
 @Setter
@@ -21,9 +22,9 @@ public class BookImage {
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
-//    @ManyToOne
-//    @JoinColumn(name = "file_id", nullable = false)
-//    private StorageInfo storageInfo;
+    @ManyToOne
+    @JoinColumn(name = "file_id", nullable = false)
+    private StorageInfo storageInfo;
 
     @Column(name = "file_path", nullable = false)
     private String filePath;

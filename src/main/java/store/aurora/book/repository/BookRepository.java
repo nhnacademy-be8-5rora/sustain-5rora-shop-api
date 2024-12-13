@@ -7,7 +7,7 @@ import store.aurora.book.entity.Publisher;
 import java.time.LocalDate;
 import java.util.Optional;
 
-public interface BookRepository extends JpaRepository<Book, Long> {
+public interface BookRepository extends JpaRepository<Book, Long> ,BookRepositoryCustom {
     Optional<Book> findByTitleAndPublisherAndPublishDate(String title, Publisher publisher, LocalDate publishDate);
 
 }

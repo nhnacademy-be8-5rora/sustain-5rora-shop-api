@@ -1,6 +1,7 @@
-package store.aurora.impl;
+package store.aurora.book.repository.impl;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,13 +23,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 //데이터 아직 없어서 확인 못함
 
 @DataJpaTest
+@Slf4j
 public class BookRepositoryCustomTest {
 
     @Autowired
     private BookRepository bookRepository;
 
     @Autowired
-    TestEntityManager entityManager;
+    private TestEntityManager entityManager;
 
     @BeforeEach
     public void setup() {
@@ -71,7 +73,7 @@ public class BookRepositoryCustomTest {
 
         // Then
         assertThat(result).isNotNull();
-        System.out.println("testFindBooksByTitleWithDetails 메서드 결과 값 확인 "+result.getContent());
+        log.debug("testFindBooksByTitleWithDetails 메서드 결과 값 확인 {}", result.getContent());
 
         assertThat(result.getContent()).isNotEmpty();  // 결과가 비어 있지 않아야 함
         assertThat(result.getTotalElements()).isGreaterThan(0);  // 결과가 하나 이상이어야 함
@@ -83,7 +85,9 @@ public class BookRepositoryCustomTest {
         });
     }
 
-    @DisplayName("작가 이름을 통해 책의 세부사항을 가져오는지 확인.")
+
+
+    @DisplayName("작가 이름을 통해 책의 세부사항을 가져오는지 확인. (책이 존재하는경우)")
     @Test
     public void testFindBooksByAuthorNameWithDetails() {
         // Given
@@ -92,7 +96,7 @@ public class BookRepositoryCustomTest {
 
         // When
         Page<BookSearchEntityDTO> result = bookRepository.findBooksByAuthorNameWithDetails(authorName, pageable);
-        System.out.println("testFindBooksByAuthorNameWithDetails 메서드 결과 값 확인 "+result.getContent());
+        log.debug("testFindBooksByAuthorNameWithDetails (책 존재하는 경우 )메서드 결과 값 확인 {}",result.getContent());
 
         // Then
         assertThat(result).isNotNull();
@@ -108,5 +112,21 @@ public class BookRepositoryCustomTest {
     }
 
 
+    @DisplayName("작가 이름을 통해 책의 세부사항을 가져오는지 확인. (책이 존재하지 않는경우)")
+    @Test
+    public void testFindBooksByAuthorNameWithDetailsNotExists() {
+        // Given
+        String authorName = "Example Author1";
+        PageRequest pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
+
+        // When
+        Page<BookSearchEntityDTO> result = bookRepository.findBooksByAuthorNameWithDetails(authorName, pageable);
+        log.debug("testFindBooksByAuthorNameWithDetails (책 존재하지 않는 경우) 메서드 결과 값 확인 {}",result.getContent());
+
+        // Then
+        assertThat(result).isNotNull(); //존재하지않아도 빈 페이지를 보여주기에 결과는 null이면 안된다
+        assertThat(result.getContent()).isEmpty(); // 결과가 비어있어여함
+
+    }
 
 }

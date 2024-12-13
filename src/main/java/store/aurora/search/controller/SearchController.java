@@ -3,6 +3,7 @@ package store.aurora.search.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import store.aurora.book.service.BookService;
 import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.search.service.SearchService;
+
+import java.util.List;
 
 
 @RestController
@@ -53,8 +56,13 @@ public class SearchController {
             return ResponseEntity.noContent().build();  // 결과가 없으면 204 No Content 반환
         }
 
-        return ResponseEntity.ok(bookSearchResponseDTOPage);  // 결과가 있으면 200 OK 반환
-    }
+        // PageImpl을 사용하여 반환
+        List<BookSearchResponseDTO> content = bookSearchResponseDTOPage.getContent();
+        long totalElements = bookSearchResponseDTOPage.getTotalElements();
+        Page<BookSearchResponseDTO> pageResult = new PageImpl<>(content, pageRequest, totalElements);
+
+        return ResponseEntity.ok().body(pageResult);  // 결과가 있으면 200 OK 반환
+        }
 
 
 

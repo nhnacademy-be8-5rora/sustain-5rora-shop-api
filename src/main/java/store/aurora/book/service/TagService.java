@@ -5,9 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import store.aurora.book.repository.TagRepository;
 
-@Service
-@Transactional
-@RequiredArgsConstructor
+
 public class TagService {
-    private final TagRepository tagRepository;
 }

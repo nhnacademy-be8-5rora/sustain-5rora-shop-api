@@ -140,12 +140,12 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto getUserByUserId(String userId) {
         User user = getUser(userId);
 
-        String role = user.getAdminRoles().stream()
+        String role = user.getUserRoles().stream()
                 .findFirst()
                 .map(userRole -> userRole.getRole().getRoleName())
 //                .orElse("ROLE_USER"); // 기본값 설정
                 .orElseThrow(() -> new RoleNotFoundException(userId));
 
-        return new UserResponseDto(user.getName(), user.getPassword(), role);
+        return new UserResponseDto(user.getId(), user.getPassword(), role);
     }
 }

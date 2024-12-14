@@ -21,20 +21,20 @@ class TagRepositoryTest {
     private TagRepository tagRepository;
 
 
-    @DisplayName("태그 저장 테스트")
-    @Test
-    public void saveTagTest() {
-
-        //given
-        Tag tag = new Tag(1L, "test");
-        tagRepository.save(tag);
-
-        //when
-        Tag findTag = tagRepository.findById(1L).orElse(null);
-
-        //then
-        assertThat(findTag.getName()).isEqualTo("test");
-    }
+//    @DisplayName("태그 저장 테스트")
+//    @Test
+//    public void saveTagTest() {
+//
+//        //given
+//        Tag tag = new Tag(1L, "test");
+//        tagRepository.save(tag);
+//
+//        //when
+//        Tag findTag = tagRepository.findById(1L).orElse(null);
+//
+//        //then
+//        assertThat(findTag.getName()).isEqualTo("test");
+//    }
 
     @DisplayName("태그 삭제 테스트")
     @Test

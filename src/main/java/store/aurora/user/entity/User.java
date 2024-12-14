@@ -59,6 +59,9 @@ public class User {
     private Boolean isOauth;
 
 
+
+
+
     // 사용자에서 주소목록을 조회할 경우
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserAddress> userAddresses;
@@ -68,7 +71,16 @@ public class User {
     private List<UserRankHistory> userRankHistories;
 
     @OneToMany(mappedBy = "user")
-    private List<UserRole> adminRoles;
+    private List<UserRole> userRoles;
+
+    public User(String id, String name, LocalDate birth, String phoneNumber, String email, Boolean isOauth) {
+        this.id = id;
+        this.name = name;
+        this.birth = birth;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
+        this.isOauth = isOauth;
+    }
 
     @PrePersist
     public void setDefaultValues() {

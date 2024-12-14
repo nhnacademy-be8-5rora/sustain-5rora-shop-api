@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "user_roles")
@@ -16,7 +15,6 @@ public class UserRole {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-
     // 사용자 엔터티와 다대일 연결
     @ManyToOne
     private User user;
@@ -24,4 +22,9 @@ public class UserRole {
     // 권한 엔터티와 다대일 연결
     @ManyToOne
     private Role role;
+
+    public UserRole(User user, Role role) {
+        this.user = user;
+        this.role = role;
+    }
 }

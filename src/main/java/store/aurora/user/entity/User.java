@@ -67,6 +67,9 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserRankHistory> userRankHistories;
 
+    @OneToMany(mappedBy = "user")
+    private List<UserRole> adminRoles;
+
     @PrePersist
     public void setDefaultValues() {
         if (status == null) {

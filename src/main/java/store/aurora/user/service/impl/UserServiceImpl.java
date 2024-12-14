@@ -5,11 +5,14 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import store.aurora.user.dto.SignUpRequest;
+import store.aurora.user.dto.UserResponseDto;
 import store.aurora.user.entity.User;
 import store.aurora.user.entity.UserRank;
 import store.aurora.user.entity.UserRankHistory;
 import store.aurora.user.entity.UserStatus;
+import store.aurora.user.exception.RoleNotFoundException;
 import store.aurora.user.repository.UserRankHistoryRepository;
 import store.aurora.user.repository.UserRankRepository;
 import store.aurora.user.repository.UserRepository;
@@ -133,5 +136,16 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public UserResponseDto getUserByUserId(String userId) {
+        User user = getUser(userId);
 
+        String role = user.getAdminRoles().stream()
+                .findFirst()
+                .map(userRole -> userRole.getRole().getRoleName())
+//                .orElse("ROLE_USER"); // 기본값 설정
+                .orElseThrow(() -> new RoleNotFoundException(userId));
+
+        return new UserResponseDto(user.getName(), user.getPassword(), role);
+    }
 }

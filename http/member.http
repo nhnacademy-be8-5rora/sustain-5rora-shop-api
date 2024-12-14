@@ -1,0 +1,7 @@
+### 멤버 조회
+GET http://localhost:8083/api/users
+UserId: user123
+
+### 멤버 조회 (no role)
+GET http://localhost:8083/api/users
+UserId: user1234

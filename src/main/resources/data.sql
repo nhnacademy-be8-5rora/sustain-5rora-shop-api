@@ -21,7 +21,26 @@ VALUES (
            '2024-12-12 14:30:00',
            '2024-12-12',
            TRUE
-       );
+       ),
+       (
+       'user1234',
+       'password123',
+       'John Doe',
+       '1990-01-01',
+       '010-1234-5678',
+       'john.doe@example.com',
+       'ACTIVE',
+       '2024-12-12 14:30:00',
+       '2024-12-12',
+       TRUE
+   );
+
+INSERT INTO roles (role_name) VALUES ('ROLE_ADMIN');
+INSERT INTO roles (role_name) VALUES ('ROLE_USER');
+
+INSERT INTO user_roles (user_id, role_id) VALUES ('user123', 1);
+
+-- ///////////////////////// book ////////////////////////////
 
 INSERT INTO publishers (name)
 VALUES ('Penguin Books');

@@ -38,12 +38,37 @@ public class CartController {
     public ResponseEntity<String> addItemToCart(@RequestHeader(value = "X-USER-ID", required = false) String userId,
                                                 @RequestParam(value = "bookId") Long bookId,
                                                 @RequestParam(value = "quantity") int quantity) {
+
+        if (bookId <= 0 || quantity <= 0) {
+            return ResponseEntity.badRequest().body("Invalid bookId or quantity.");
+        }
+
         if (Objects.isNull(userId)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         try {
             cartService.addItemToCart(userId, bookId, quantity);
+            return ResponseEntity.ok("Item added to cart successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to add item to cart");
+        }
+    }
+
+    @DeleteMapping("/{bookId}")
+    public ResponseEntity<String> deleteItemToCart(@RequestHeader(value = "X-USER-ID", required = false) String userId,
+                                                   @PathVariable("bookId") Long bookId) {
+
+        if (bookId <= 0) {
+            return ResponseEntity.badRequest().body("Invalid bookId.");
+        }
+
+        if (Objects.isNull(userId)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            cartService.deleteCartItem(userId, bookId);
             return ResponseEntity.ok("Item added to cart successfully");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Failed to add item to cart");

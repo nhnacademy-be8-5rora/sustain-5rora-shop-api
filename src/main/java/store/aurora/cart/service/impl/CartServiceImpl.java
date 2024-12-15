@@ -99,6 +99,13 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    @Transactional
+    public void deleteCartItem(String userId, Long bookId) {
+        Cart cart = getUserCart(userId);
+        cart.getCartItems().removeIf(cartItem -> Objects.equals(cartItem.getId(), bookId));
+    }
+
+    @Override
     public Cart createUserCart(String userId) {
         Cart cart = new Cart(userService.getUser(userId));
         return cartRepository.save(cart);

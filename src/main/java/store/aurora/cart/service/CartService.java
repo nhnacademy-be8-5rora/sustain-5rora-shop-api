@@ -12,5 +12,6 @@ public interface CartService {
     Map<String, Object> getUserCartWithTotalPrice(String userId);
     Cart createUserCart(String userId);
 
-    void addItemToCart(String userId, Long productId, int quantity);
+    void addItemToCart(String userId, Long bookId, int quantity);
+    void deleteCartItem(String userId, Long bookId);
 }

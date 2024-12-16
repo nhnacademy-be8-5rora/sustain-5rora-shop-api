@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
@@ -12,10 +13,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import store.aurora.book.entity.*;
 import store.aurora.book.repository.BookRepository;
+import store.aurora.search.dto.BookCategorySearchEntityDTO;
 import store.aurora.search.dto.BookSearchEntityDTO;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -54,7 +57,24 @@ public class BookRepositoryCustomTest {
 
         // BookAuthor 엔티티 삽입
         BookAuthor bookAuthor = new BookAuthor(null, author, authorRole, book);  // BookAuthor 생성, ID는 null로 설정
-        entityManager.merge(bookAuthor);
+        bookAuthor =entityManager.merge(bookAuthor);
+
+        // category 엔티티 삽입
+        Category category = new Category(1L, "Example Category", null, new ArrayList<>(), 1);
+        category = entityManager.merge(category);
+        Category category2 = new Category(2L, "Example Category2", null, new ArrayList<>(), 1);
+        category2 = entityManager.merge(category2);
+        // BookCategory 엔티티 삽입
+        BookCategory bookCategory = new BookCategory(1L, category, book); // ID는 null로 설정하여 새로 저장
+        entityManager.merge(bookCategory); // 저장 후 영속화
+        BookCategory bookCategory2 = new BookCategory(2L, category2, book); // ID는 null로 설정하여 새로 저장
+        entityManager.merge(bookCategory2); // 저장 후 영속화
+
+        log.debug("setup 카테고리 확인 : {}",category.getName());
+        log.debug("setup 카테고리 확인2 : {}",category2.getName());
+        log.debug("setup 카테고리 확인 : {}",bookCategory.getCategory().getName());
+        log.debug("setup 카테고리 확인2 : {}",bookCategory2.getCategory().getName());
+
     }
 
 
@@ -187,5 +207,73 @@ public class BookRepositoryCustomTest {
         assertThat(result.getContent()).isEmpty();
 
     }
+
+    @DisplayName("카테고리 이름으로 책의 세부사항을 가져오는지 확인 (카테고리가 존재하는 경우)")
+    @Test
+    public void testFindBooksByCategoryNameWithDetails() {
+        // Given
+        String categoryName = "Example Category";
+        PageRequest pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
+
+        // When
+        Page<BookCategorySearchEntityDTO> result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
+
+        // Then
+        assertThat(result).isNotNull();
+        log.debug("testFindBooksByCategoryNameWithDetails 메서드 결과 값 확인: {}", result.getContent());
+
+        assertThat(result.getContent()).isNotNull(); // 결과가 비어 있지 않아야 함
+        assertThat(result.getTotalElements()).isGreaterThan(0); // 결과가 하나 이상이어야 함
+
+        // 책의 카테고리 이름이 주어진 categoryName과 일치하는지 확인
+        result.getContent().forEach(book -> {
+            assertThat(book.getCategoryNameList()).isNotEmpty(); // 카테고리가 비어 있지 않아야 함
+            // categoryNameList가 쉼표로 구분된 문자열일 경우 분리하여 확인
+            assertThat(book.getCategoryNameList())
+                    .anyMatch(category -> category.split(",") // 쉼표를 기준으로 분리
+                            .length > 0 && Arrays.asList(category.split(",")).contains(categoryName)); // categoryName이 목록에 포함되어야 함
+        });
+
+    }
+
+    @DisplayName("카테고리 이름으로 책의 세부사항을 가져오는지 확인 (카테고리가 존재하지 않는 경우)")
+    @Test
+    public void testFindBooksByCategoryNameWithDetailsNotExists() {
+        // Given
+        String categoryName = "Nonexistent Category";
+        PageRequest pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
+
+        // When
+        Page<BookCategorySearchEntityDTO> result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
+
+        // Then
+        assertThat(result).isNotNull(); // 페이지는 null이면 안 됨
+        log.debug("testFindBooksByCategoryNameWithDetailsNotExists 결과 값 확인: {}", result.getContent());
+        assertThat(result.getContent()).isEmpty(); // 결과가 비어 있어야 함
+    }
+
+    @DisplayName("카테고리 이름으로 책의 세부사항을 가져오는지 확인 (카테고리 이름이 null 또는 blank)")
+    @Test
+    public void testFindBooksByCategoryNameWithDetailsByNullOrBlankCategoryName() {
+        // Given
+        String categoryName = null;
+        PageRequest pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
+
+        // When
+        Page<BookCategorySearchEntityDTO> result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
+
+        // Then
+        assertThat(result).isNotNull(); // 페이지는 null이면 안 됨
+        log.debug("testFindBooksByCategoryNameWithDetailsByNullOrBlankCategoryName 결과 값 확인: {}", result.getContent());
+        assertThat(result.getContent()).isEmpty(); // 결과가 비어 있어야 함
+
+        // Blank 테스트
+        categoryName = "";
+        result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).isEmpty(); // 결과가 비어 있어야 함
+    }
+
+
 
 }

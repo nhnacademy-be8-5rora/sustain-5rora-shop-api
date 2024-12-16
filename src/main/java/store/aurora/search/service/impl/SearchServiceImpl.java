@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.repository.BookRepository;
+import store.aurora.search.dto.BookCategorySearchEntityDTO;
+import store.aurora.search.dto.BookCategorySearchResponseDTO;
 import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.search.service.SearchService;
@@ -26,7 +28,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public Page<BookSearchResponseDTO> findBooksByTitleWithDetails(String title, Pageable pageable) {
-        if (Objects.isNull(title) || title.isEmpty()) {
+        if (Objects.isNull(title) || title.isBlank()) {
             return emptyPage(pageable);
         }
 
@@ -41,7 +43,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public Page<BookSearchResponseDTO> findBooksByAuthorNameWithDetails(String name, Pageable pageable) {
-        if (Objects.isNull(name) || name.isEmpty()) {
+        if (Objects.isNull(name) || name.isBlank()) {
             return emptyPage(pageable);
         }
 
@@ -53,12 +55,12 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public Page<BookSearchResponseDTO> findBooksByCategoryNameWithDetails(String name, Pageable pageable) {
-        if(Objects.isNull(name) || name.isEmpty()) {
+    public Page<BookCategorySearchResponseDTO> findBooksByCategoryNameWithDetails(String name, Pageable pageable) {
+        if(Objects.isNull(name) || name.isBlank()) {
             return emptyPage(pageable);
         }
 
-        Page<BookSearchEntityDTO> bookSearchEntityDTOPage = bookRepository.findBooksByCategoryNameWithDetails(name, pageable);
-        return bookSearchEntityDTOPage.map(BookSearchResponseDTO::new);
+        Page<BookCategorySearchEntityDTO> bookSearchEntityDTOPage = bookRepository.findBooksByCategoryNameWithDetails(name, pageable);
+        return bookSearchEntityDTOPage.map(BookCategorySearchResponseDTO::new);
     }
 }

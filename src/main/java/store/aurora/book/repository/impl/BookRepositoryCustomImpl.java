@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import store.aurora.book.entity.Book;
 import store.aurora.book.repository.BookRepositoryCustom;
+import store.aurora.search.dto.BookCategorySearchEntityDTO;
 import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.utils.ValidationUtils;
 
@@ -34,7 +35,6 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
     public BookRepositoryCustomImpl() {
         super(Book.class);
     }
-
     //특정 String을 포함하는 제목을 가진 책들을 조인해서 값들을 반환.
     @Override
     public Page<BookSearchEntityDTO> findBooksByTitleWithDetails(String title, Pageable pageable) {
@@ -144,7 +144,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
 
     // 특정 카테고리이름을 가진 책들을 반환.
     @Override
-    public Page<BookSearchEntityDTO> findBooksByCategoryNameWithDetails(String categoryName, Pageable pageable) {
+    public Page<BookCategorySearchEntityDTO> findBooksByCategoryNameWithDetails(String categoryName, Pageable pageable) {
         if (categoryName == null || categoryName.isBlank()) {
             return emptyPage(pageable);
         }
@@ -163,7 +163,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .limit(1);
 
         // 메인 쿼리: 카테고리 ID로 책들을 검색
-        List<BookSearchEntityDTO> content = from(book)
+        List<BookCategorySearchEntityDTO> content = from(book)
                 .leftJoin(book.publisher, publisher)
                 .leftJoin(bookCategory).on(bookCategory.book.id.eq(book.id))
                 .leftJoin(bookCategory.category, category)
@@ -173,7 +173,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .select(Projections.constructor(
-                        BookSearchEntityDTO.class,
+                        BookCategorySearchEntityDTO.class,
                         book.id,
                         book.title,
                         book.regularPrice,
@@ -189,7 +189,15 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                                 .leftJoin(bookAuthor.author, author)
                                 .leftJoin(bookAuthor.authorRole, authorRole)
                                 .where(bookAuthor.book.id.eq(book.id)),
-                        bookImagePathSubquery
+                        bookImagePathSubquery,
+                        // 카테고리 이름을 List로 변환
+                        JPAExpressions.select(Expressions.stringTemplate(
+                                        "GROUP_CONCAT({0})",
+                                        category.name
+                                ))
+                                .from(bookCategory)
+                                .leftJoin(bookCategory.category, category)
+                                .where(bookCategory.book.id.eq(book.id))
                 ))
                 .fetch();
 

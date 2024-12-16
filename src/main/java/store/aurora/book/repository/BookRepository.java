@@ -10,6 +10,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BookRepository extends JpaRepository<Book, Long> ,BookRepositoryCustom {
-    boolean existsByTitleAndPublisherAndPublishDate(String title, Publisher publisher, LocalDate publishDate);
-
+    boolean existsByIsbn(String isbn);
+    Optional<Book> findByIsbn(String isbn);
 }

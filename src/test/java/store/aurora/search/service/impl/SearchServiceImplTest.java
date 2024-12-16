@@ -16,10 +16,8 @@ import store.aurora.search.dto.BookSearchResponseDTO;
 
 import java.time.LocalDate;
 import java.util.Collections;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class SearchServiceImplTest {
@@ -38,7 +36,7 @@ class SearchServiceImplTest {
     @DisplayName("제목을 기준으로 검색할 때 데이터베이스에서 값을 가져오는 DTO(EntityDTO)를 반환해주는 DTO(ResponseDTO)로 잘 변환해주는지 확인")
     @Test
     void findBooksByTitleWithDetails_ValidTitle_MapsToResponseDTO() {
-        //반환받을 entityDTO 초기화 해주기
+        // 반환받을 entityDTO 초기화
         String title = "Example Title";
         Pageable pageable = PageRequest.of(0, 8);
 
@@ -49,7 +47,7 @@ class SearchServiceImplTest {
 
         when(bookRepository.findBooksByTitleWithDetails(title, pageable)).thenReturn(entityDTOPage);
 
-        //정해둔 entityDTO 받기
+        // 정해둔 entityDTO 받기
         Page<BookSearchResponseDTO> result = searchService.findBooksByTitleWithDetails(title, pageable);
 
         // 결과
@@ -70,22 +68,30 @@ class SearchServiceImplTest {
         verify(bookRepository, times(1)).findBooksByTitleWithDetails(title, pageable);
     }
 
-    @DisplayName("제목이 null일경우 와 empty일 경우 IllegalArgumentException 예외던지는지 확인")
+    @DisplayName("제목이 null 또는 blank 경우 빈페이지를 반환하는지 확인")
     @Test
-    void findBooksByTitleWithDetails_NullTitle_ThrowsException() {
+    void findBooksByTitleWithDetails_NullOrEmptyTitle_ReturnsEmptyPage() {
         // 값 초기화
         String title = null;
         Pageable pageable = PageRequest.of(0, 8);
 
-        String emptyTitle= "";
+        String emptyTitle = "";
 
-        // When & Then
-        assertThrows(IllegalArgumentException.class, () -> searchService.findBooksByTitleWithDetails(title, pageable));
-        assertThrows(IllegalArgumentException.class, () -> searchService.findBooksByTitleWithDetails(emptyTitle, pageable));
+        // When
+        Page<BookSearchResponseDTO> resultForNull = searchService.findBooksByTitleWithDetails(title, pageable);
+        Page<BookSearchResponseDTO> resultForEmpty = searchService.findBooksByTitleWithDetails(emptyTitle, pageable);
 
+        // Then
+        assertThat(resultForNull).isNotNull();
+        assertThat(resultForNull.getContent()).isEmpty();
+
+        assertThat(resultForEmpty).isNotNull();
+        assertThat(resultForEmpty.getContent()).isEmpty();
+
+        verify(bookRepository, times(0)).findBooksByTitleWithDetails(title, pageable);
     }
 
-    @DisplayName("작기를 기준으로 검색할 때 데이터베이스에서 값을 가져오는 DTO(EntityDTO)를 반환해주는 DTO(ResponseDTO)로 잘 변환해주는지 확인")
+    @DisplayName("작가 이름을 기준으로 검색할 때 데이터베이스에서 값을 가져오는 DTO(EntityDTO)를 반환해주는 DTO(ResponseDTO)로 잘 변환해주는지 확인")
     @Test
     void findBooksByAuthorNameWithDetails_ValidName_ReturnsPageOfBooks() {
         // 반환받을 값 초기화
@@ -113,14 +119,51 @@ class SearchServiceImplTest {
         verify(bookRepository, times(1)).findBooksByAuthorNameWithDetails(authorName, pageable);
     }
 
-    @DisplayName("작가 이름이 null이거나 empty일때 IllegalArgsException 예외를 던지는지 확인")
+    @DisplayName("작가 이름이 null 또는 blank 일 경우 빈 페이지를 반환하는지 확인")
     @Test
-    void findBooksByAuthorNameWithDetails_EmptyName_ThrowsException() {
+    void findBooksByAuthorNameWithDetails_NullOrEmptyName_ReturnsEmptyPage() {
         String authorName = null;
         Pageable pageable = PageRequest.of(0, 8);
 
         String emptyAuthorName = "";
-        assertThrows(IllegalArgumentException.class, () -> searchService.findBooksByAuthorNameWithDetails(authorName, pageable));
-        assertThrows(IllegalArgumentException.class, () -> searchService.findBooksByAuthorNameWithDetails(emptyAuthorName, pageable));
+
+        // When
+        Page<BookSearchResponseDTO> resultForNull = searchService.findBooksByAuthorNameWithDetails(authorName, pageable);
+        Page<BookSearchResponseDTO> resultForEmpty = searchService.findBooksByAuthorNameWithDetails(emptyAuthorName, pageable);
+
+        // Then
+        assertThat(resultForNull).isNotNull();
+        assertThat(resultForNull.getContent()).isEmpty();
+
+        assertThat(resultForEmpty).isNotNull();
+        assertThat(resultForEmpty.getContent()).isEmpty();
+
+        verify(bookRepository, times(0)).findBooksByAuthorNameWithDetails(authorName, pageable);
+    }
+
+//    @DisplayName("카테고리를 기준으로 검색할 때 데이터베이스에서 값을 가져오는 DTO(EntityDTO)를 반환해주는 DTO(ResponseDTO)로 잘 변환해주는지 확인")
+//    @Test
+//    void findBooksBy
+
+    @DisplayName("카테고리 이름이 null 또는 blank 일 경우 빈 페이지를 반환하는지 확인")
+    @Test
+    void findBooksByCategoryNameWithDetails_NullOrEmptyName_ReturnsEmptyPage() {
+        String categoryName = null;
+        Pageable pageable = PageRequest.of(0, 8);
+
+        String emptyCategoryName = "";
+
+        // When
+        Page<BookSearchResponseDTO> resultForNull = searchService.findBooksByAuthorNameWithDetails(categoryName, pageable);
+        Page<BookSearchResponseDTO> resultForEmpty = searchService.findBooksByAuthorNameWithDetails(emptyCategoryName, pageable);
+
+        // Then
+        assertThat(resultForNull).isNotNull();
+        assertThat(resultForNull.getContent()).isEmpty();
+
+        assertThat(resultForEmpty).isNotNull();
+        assertThat(resultForEmpty.getContent()).isEmpty();
+
+        verify(bookRepository, times(0)).findBooksByAuthorNameWithDetails(categoryName, pageable);
     }
 }

@@ -61,7 +61,7 @@ public class BookRepositoryCustomTest {
 
 
 
-    @DisplayName("책 제목을 통해 책의 세부사항을 가져오는지 확인.")
+    @DisplayName("책 제목을 통해 책의 세부사항을 가져오는지 확인.(책이 존재하는 경우)")
     @Test
     public void testFindBooksByTitleWithDetails() {
         // Given
@@ -85,7 +85,44 @@ public class BookRepositoryCustomTest {
         });
     }
 
+    @DisplayName("책 제목을 통해 책의 세부사항을 가져오는지 확인.(책이 존재하는 경우)")
+    @Test
+    public void testFindBooksByTitleWithDetailsNotExists() {
+        // Given
+        String title = "Example Title1";
+        PageRequest pageable = PageRequest.of(0, 10);  // 첫 번째 페이지, 10개의 결과
 
+        // When
+        Page<BookSearchEntityDTO> result = bookRepository.findBooksByTitleWithDetails(title, pageable);
+
+        // Then
+        assertThat(result).isNotNull();
+        log.debug("testFindBooksByTitleWithDetails 메서드 결과 값 확인 {}", result.getContent());
+
+        assertThat(result.getContent()).isEmpty();//결과가 비어있어야함.
+    }
+
+    @DisplayName("책 제목을 통해 책의 세부사항을 가져오는지 확인. (책 제목이 null 또는 blank)")
+    @Test
+    public void testFindBooksByTitleWithDetailsByNullOrBlankTitle() {
+        // Given
+        String title = null;
+        PageRequest pageable = PageRequest.of(0, 10);  // 첫 번째 페이지, 10개의 결과
+
+        // When
+        Page<BookSearchEntityDTO> result = bookRepository.findBooksByTitleWithDetails(title, pageable);
+
+        // Then
+        assertThat(result).isNotNull();
+        log.debug("testFindBooksByTitleWithDetailsByNullOrBlankTitle 메서드 결과 값 확인 {}", result.getContent());
+        assertThat(result.getContent()).isEmpty();//결과가 비어있어야함.
+
+        title="";
+        result=bookRepository.findBooksByTitleWithDetails(title, pageable);
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).isEmpty();
+
+    }
 
     @DisplayName("작가 이름을 통해 책의 세부사항을 가져오는지 확인. (책이 존재하는경우)")
     @Test
@@ -126,6 +163,28 @@ public class BookRepositoryCustomTest {
         // Then
         assertThat(result).isNotNull(); //존재하지않아도 빈 페이지를 보여주기에 결과는 null이면 안된다
         assertThat(result.getContent()).isEmpty(); // 결과가 비어있어여함
+
+    }
+
+    @DisplayName("작가 이름을 통해 책의 세부사항을 가져오는지 확인. (작가 이름이 null or blank )")
+    @Test
+    public void testFindBooksByAuthorNameWithDetailsByNullOrBlankName() {
+        // Given
+        String authorName = null;
+        PageRequest pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
+
+        // When
+        Page<BookSearchEntityDTO> result = bookRepository.findBooksByAuthorNameWithDetails(authorName, pageable);
+        log.debug("testFindBooksByAuthorNameWithDetails (책 존재하지 않는 경우) 메서드 결과 값 확인 {}",result.getContent());
+
+        // Then
+        assertThat(result).isNotNull(); //존재하지않아도 빈 페이지를 보여주기에 결과는 null이면 안된다
+        assertThat(result.getContent()).isEmpty(); // 결과가 비어있어여함
+
+        authorName ="";
+        result = bookRepository.findBooksByAuthorNameWithDetails(authorName, pageable);
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).isEmpty();
 
     }
 

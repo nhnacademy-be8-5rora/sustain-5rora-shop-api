@@ -9,4 +9,6 @@ public interface SearchService {
     Page<BookSearchResponseDTO> findBooksByTitleWithDetails(String title, Pageable pageable);
 
     Page<BookSearchResponseDTO> findBooksByAuthorNameWithDetails(String name, Pageable pageable);
+
+    Page<BookSearchResponseDTO> findBooksByCategoryNameWithDetails(String name, Pageable pageable);
 }

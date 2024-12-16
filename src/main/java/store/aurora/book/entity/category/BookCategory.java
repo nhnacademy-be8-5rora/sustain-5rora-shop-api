@@ -23,7 +23,6 @@ public class BookCategory {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @ManyToOne
-    @JoinColumn(name = "book_id", nullable = false)
-    private Book book;
+    @Column(name = "book_id", nullable = false)
+    private Long bookId;
 }

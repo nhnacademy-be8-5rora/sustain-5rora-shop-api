@@ -1,21 +1,18 @@
 package store.aurora.book.service;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import store.aurora.book.dto.BookInfoDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.BookImage;
 import store.aurora.book.repository.BookImageRepository;
 import store.aurora.book.repository.BookRepository;
-import store.aurora.book.repository.CategoryRepository;
-import store.aurora.book.service.tag.TagService;
+
 
 import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.*;
@@ -32,20 +29,6 @@ class BookServiceTest {
     @Mock
     private BookImageRepository bookImageRepository;
 
-    @Mock
-    private PublisherService publisherService;
-
-    @Mock
-    private SeriesService seriesService;
-
-    @Mock
-    private CategoryRepository categoryRepository;
-
-    @Mock
-    private BookCategoryService bookCategoryService;
-
-    @Mock
-    private TagService tagService;
 
     @InjectMocks
     private BookService bookService;

@@ -12,8 +12,6 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
 
-    Optional<User> findById(String id);
-
     List<User> findByLastLoginBeforeAndStatusNot(LocalDateTime lastLogin, UserStatus status);
 
     boolean existsById(String id);

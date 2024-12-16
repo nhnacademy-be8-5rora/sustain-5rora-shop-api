@@ -35,5 +35,5 @@ public class SignUpRequest {
     @Email(message = "올바른 이메일 형식을 입력하세요.")
     private String email;
 
-//    private String verificationCode;    // 인증번호 입력
+    private String verificationCode;    // 인증번호 입력
 }

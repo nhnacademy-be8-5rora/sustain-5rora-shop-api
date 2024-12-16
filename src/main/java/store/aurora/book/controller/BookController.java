@@ -7,10 +7,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import store.aurora.book.dto.BookRequestDTO;
 import store.aurora.book.dto.BookResponseDTO;
+import store.aurora.book.dto.tag.BookTagRequestDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.Category;
+import store.aurora.book.entity.tag.Tag;
 import store.aurora.book.mapper.BookMapper;
 import store.aurora.book.service.BookService;
+import store.aurora.book.service.tag.TagService;
 
 import java.util.List;
 
@@ -33,23 +36,5 @@ public class BookController {
 //        BookResponseDTO response = BookMapper.toDTO(updatedBook);
 //        return ResponseEntity.ok(response);
 //    }
-
-    @PostMapping("/{bookId}/categories")
-    public ResponseEntity<Void> addCategoriesToBook(@PathVariable Long bookId, @RequestBody List<Long> categoryIds) {
-        bookService.addCategoriesToBook(bookId, categoryIds);
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping("/{bookId}/categories")
-    public ResponseEntity<Void> removeCategoriesFromBook(@PathVariable Long bookId, @RequestBody List<Long> categoryIds) {
-        bookService.removeCategoriesFromBook(bookId, categoryIds);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/{bookId}/categories")
-    public ResponseEntity<List<Category>> getBookCategories(@PathVariable Long bookId) {
-        List<Category> categories = bookService.getCategoriesByBookId(bookId);
-        return ResponseEntity.ok(categories);
-    }
 
 }

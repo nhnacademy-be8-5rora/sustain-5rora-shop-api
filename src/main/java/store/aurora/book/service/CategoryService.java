@@ -21,19 +21,14 @@ public class CategoryService {
 
         Category parent = null;
         if (parentId != null) {
-            // 부모 존재 여부 확인 및 조회
             parent = categoryRepository.findById(parentId)
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부모 카테고리 ID입니다: " + parentId));
 
-            // 같은 부모 아래 이름 중복 검증
             if (categoryRepository.existsByNameAndParent(name, parent)) {
-                throw new IllegalArgumentException("같은 부모 아래에 동일한 이름의 카테고리가 존재할 수 없습니다.");
+                throw new IllegalArgumentException("같은 부모 아래에 동일한 이름의 카테고리가 존재합니다.");
             }
-        } else {
-            // 최상위 부모 간 이름 중복 검증
-            if (categoryRepository.existsByNameAndParentIsNull(name)) {
-                throw new IllegalArgumentException("최상위 부모 간에는 동일한 이름을 사용할 수 없습니다.");
-            }
+        } else if (categoryRepository.existsByNameAndParentIsNull(name)) {
+            throw new IllegalArgumentException("최상위 부모 간 이름은 고유해야 합니다.");
         }
 
         // 카테고리 생성

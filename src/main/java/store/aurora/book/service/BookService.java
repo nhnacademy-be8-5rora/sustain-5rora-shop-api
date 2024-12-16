@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import store.aurora.book.dto.BookRequestDTO;
+import store.aurora.book.dto.tag.BookTagRequestDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.BookCategory;
 import store.aurora.book.entity.Category;
@@ -25,7 +26,6 @@ public class BookService {
     private final BookRepository bookRepository;
     private final PublisherService publisherService;
     private final SeriesService seriesService;
-    private final CategoryRepository categoryRepository;
     private final BookCategoryService bookCategoryService;
     private final TagService tagService;
     // 책 등록 (출판사와, 시리즈 연결)
@@ -38,36 +38,32 @@ public class BookService {
         // 기존 책 중복 확인
         validateDuplicateBook(requestDTO, publisher);
 
-        // 카테고리 처리
-        List<Category> categories = fetchValidCategories(requestDTO.getCategoryIds());
-
         // 책 엔티티 생성
-        Book book = BookMapper.toEntity(requestDTO, publisher, series, categories);
+        Book book = BookMapper.toEntity(requestDTO, publisher, series);
+        Book savedBook = bookRepository.save(book);
 
-        return bookRepository.save(book);
+        // 카테고리 추가
+        if (requestDTO.getCategoryIds() != null && !requestDTO.getCategoryIds().isEmpty()) {
+            bookCategoryService.addCategoriesToBook(savedBook.getId(), requestDTO.getCategoryIds());
+        }
+
+        // 태그 추가
+        if (requestDTO.getTagIds() != null && !requestDTO.getTagIds().isEmpty()) {
+            for (Long tagId : requestDTO.getTagIds()) {
+                BookTagRequestDto bookTagRequestDto = new BookTagRequestDto(savedBook.getId(), tagId);
+                tagService.addBookTag(bookTagRequestDto);
+            }
+        }
+
+        return savedBook;
     }
 
     private void validateDuplicateBook(BookRequestDTO requestDTO, Publisher publisher) {
-        Optional<Book> existingBook = bookRepository.findByTitleAndPublisherAndPublishDate(
-                requestDTO.getTitle(), publisher, requestDTO.getPublishDate()
-        );
-        if (existingBook.isPresent()) {
+        if (bookRepository.existsByTitleAndPublisherAndPublishDate(
+                requestDTO.getTitle(), publisher, requestDTO.getPublishDate())) {
             throw new IllegalArgumentException("이미 등록된 책입니다.");
         }
     }
-
-    private List<Category> fetchValidCategories(List<Long> categoryIds) {
-        if (categoryIds == null || categoryIds.isEmpty()) {
-            throw new IllegalArgumentException("카테고리는 최소 하나 이상 선택해야 합니다.");
-        }
-
-        List<Category> categories = categoryRepository.findAllById(categoryIds);
-        if (categories.size() != categoryIds.size()) {
-            throw new IllegalArgumentException("유효하지 않은 카테고리 ID가 포함되어 있습니다.");
-        }
-        return categories;
-    }
-
     // 카테고리
     @Transactional
     public void addCategoriesToBook(Long bookId, List<Long> categoryIds) {

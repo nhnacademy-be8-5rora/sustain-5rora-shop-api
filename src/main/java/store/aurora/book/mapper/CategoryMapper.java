@@ -1,6 +1,6 @@
 package store.aurora.book.mapper;
 
-import store.aurora.book.dto.CategoryResponseDTO;
+import store.aurora.book.dto.category.CategoryResponseDTO;
 import store.aurora.book.entity.Category;
 
 public class CategoryMapper {

@@ -25,14 +25,13 @@ public class BookCategoryService {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 책 ID입니다: " + bookId));
 
-        for (Long categoryId : categoryIds) {
-            Category category = categoryRepository.findById(categoryId)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 카테고리 ID입니다: " + categoryId));
+        List<Category> categories = categoryRepository.findAllById(categoryIds);
+        if (categories.size() != categoryIds.size()) {
+            throw new IllegalArgumentException("유효하지 않은 카테고리 ID가 포함되어 있습니다.");
+        }
 
-            boolean alreadyExists = book.getBookCategories()
-                    .stream()
-                    .anyMatch(bookCategory -> bookCategory.getCategory().getId().equals(categoryId));
-            if (!alreadyExists) {
+        for (Category category : categories) {
+            if (book.getBookCategories().stream().noneMatch(bookCategory -> bookCategory.getCategory().equals(category))) {
                 BookCategory bookCategory = new BookCategory();
                 bookCategory.setBook(book);
                 bookCategory.setCategory(category);
@@ -46,15 +45,19 @@ public class BookCategoryService {
     @Transactional
     public void removeCategoriesFromBook(Long bookId, List<Long> categoryIds) {
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 책 ID입니다: " + bookId));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 책 ID 입니다: " + bookId));
 
+        int currentCategoryCount = book.getBookCategories().size();
+        if (currentCategoryCount - categoryIds.size() <= 0) {
+            throw new IllegalArgumentException("책에는 최소한 하나 이상의 카테고리가 연결되어 있어야 합니다.");
+        }
         book.getBookCategories().removeIf(bookCategory ->
                 categoryIds.contains(bookCategory.getCategory().getId()));
     }
 
     public List<Category> getCategoriesByBookId(Long bookId) {
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 책 ID입니다: " + bookId));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 책 ID 입니다: " + bookId));
 
         return book.getBookCategories()
                 .stream()

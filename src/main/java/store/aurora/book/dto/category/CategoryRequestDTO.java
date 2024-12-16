@@ -1,4 +1,4 @@
-package store.aurora.book.dto;
+package store.aurora.book.dto.category;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

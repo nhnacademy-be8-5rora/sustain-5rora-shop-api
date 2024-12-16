@@ -1,4 +1,4 @@
-package store.aurora.book.dto;
+package store.aurora.book.dto.category;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

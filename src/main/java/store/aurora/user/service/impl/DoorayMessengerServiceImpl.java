@@ -1,7 +1,7 @@
 package store.aurora.user.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import store.aurora.user.client.MessageSendClient;
 import store.aurora.user.dto.MessagePayload;
@@ -13,7 +13,7 @@ import java.time.Duration;
 @Service
 public class DoorayMessengerServiceImpl implements DoorayMessengerService {
     private final MessageSendClient messageSendClient;
-    private final StringRedisTemplate redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     private long verificationCodeExpiration = 300;  // 인증 코드 만료 시간 (초 단위)
 
@@ -37,7 +37,7 @@ public class DoorayMessengerServiceImpl implements DoorayMessengerService {
     // 인증 코드 검증
     @Override
     public boolean verifyCode(String phoneNumber, String inputCode) {
-        String storedCode = redisTemplate.opsForValue().get(phoneNumber);
+        String storedCode = (String) redisTemplate.opsForValue().get(phoneNumber);
 
         if (storedCode == null) {
             return false;

@@ -17,7 +17,6 @@ import store.aurora.user.exception.RoleNotFoundException;
 import store.aurora.user.repository.UserRankHistoryRepository;
 import store.aurora.user.repository.UserRankRepository;
 import store.aurora.user.repository.UserRepository;
-import store.aurora.user.service.DoorayMessengerService;
 import store.aurora.user.service.UserService;
 
 import java.time.LocalDate;
@@ -31,16 +30,18 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserRankRepository userRankRepository;
     private final UserRankHistoryRepository userRankHistoryRepository;
-    private final DoorayMessengerService doorayMessengerService;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private static final int INACTIVE_PERIOD_MONTHS = 3;    // 휴면 3개월 기준
-    private final RedisTemplate redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     // 회원가입
     @Override
     public void registerUser(SignUpRequest request) {
         // 인증 상태 확인
+
+        String redisKey = request.getPhoneNumber() + "_verified";
+        System.out.println("Redis Key: " + redisKey);
         String verificationStatus = (String) redisTemplate.opsForValue().get(request.getPhoneNumber() + "_verified");
         if (verificationStatus == null || !verificationStatus.equals("true")) {
             throw new IllegalArgumentException("인증 코드가 확인되지 않았습니다. 인증을 완료한 후 회원가입을 진행해주세요.");
@@ -127,9 +128,13 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
 
-        // 인증 api에서 비밀번호 확인 인증 처리
-
         if (user.getStatus() == UserStatus.INACTIVE) {
+            // 두레이 메신저 인증 상태 확인
+            String verificationStatus = (String) redisTemplate.opsForValue().get(user.getPhoneNumber() + "_verified");
+            if (verificationStatus == null || !verificationStatus.equals("true")) {
+                throw new IllegalArgumentException("인증 코드가 확인되지 않았습니다. 인증이 완료되어야 휴면 해제됩니다.");
+            }
+
             user.setStatus(UserStatus.ACTIVE);
             userRepository.save(user);
         } else {

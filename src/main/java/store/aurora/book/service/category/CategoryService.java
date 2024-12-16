@@ -1,8 +1,8 @@
 package store.aurora.book.service.category;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.exception.category.CategoryLinkedToBooksException;
 import store.aurora.book.exception.category.CategoryNotFoundException;

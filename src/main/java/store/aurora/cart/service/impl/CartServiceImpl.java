@@ -6,7 +6,6 @@ import store.aurora.book.dto.BookInfoDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.service.BookService;
 import store.aurora.cart.dto.CartDTO;
-import store.aurora.cart.dto.CartItemResponseDTO;
 import store.aurora.cart.entity.Cart;
 import store.aurora.cart.entity.CartItem;
 import store.aurora.cart.repository.CartItemRepository;
@@ -105,7 +104,7 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public void deleteCartItem(String userId, Long bookId) {
         Cart cart = getUserCart(userId);
-        cart.getCartItems().removeIf(cartItem -> Objects.equals(cartItem.getId(), bookId));
+        cart.getCartItems().removeIf(cartItem -> Objects.equals(cartItem.getId(), bookId)); // todo 현재는 존재하지 않는 북 삭제시 그냥 넘어감
     }
 
     @Override

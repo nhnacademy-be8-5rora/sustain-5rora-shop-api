@@ -3,15 +3,13 @@ package store.aurora.book.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store.aurora.book.dto.BookInfoDTO;
 import store.aurora.book.dto.BookRequestDTO;
-import store.aurora.book.entity.Book;
-import store.aurora.book.entity.BookCategory;
-import store.aurora.book.entity.Category;
-import store.aurora.book.entity.Publisher;
-import store.aurora.book.entity.Series;
+import store.aurora.book.entity.*;
 import store.aurora.book.exception.BookNotFoundException;
 import store.aurora.book.mapper.BookMapper;
 import store.aurora.book.repository.BookCategoryRepository;
+import store.aurora.book.repository.BookImageRepository;
 import store.aurora.book.repository.BookRepository;
 import store.aurora.book.repository.CategoryRepository;
 import store.aurora.book.service.tag.TagService;
@@ -29,6 +27,8 @@ public class BookService {
     private final CategoryRepository categoryRepository;
     private final BookCategoryService bookCategoryService;
     private final TagService tagService;
+    private final BookImageRepository bookImageRepository;
+
     // 책 등록 (출판사와, 시리즈 연결)
     @Transactional
     public Book saveBookWithPublisherAndSeries(BookRequestDTO requestDTO) {
@@ -100,5 +100,27 @@ public class BookService {
     public Book getBookById(Long bookId) {
         return bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException(bookId));
+    }
+
+    public List<BookInfoDTO> getBookInfo(List<Long> bookIds) {
+        List<Book> books = bookRepository.findAllById(bookIds);
+
+        return books.stream()
+                .map(book -> {
+                    BookInfoDTO bookInfoDTO = new BookInfoDTO();
+                    bookInfoDTO.setTitle(book.getTitle());
+                    bookInfoDTO.setRegularPrice(book.getRegularPrice());
+                    bookInfoDTO.setSalePrice(book.getSalePrice());
+                    bookInfoDTO.setStock(book.getStock());
+                    bookInfoDTO.setSale(book.isSale());
+
+                    List<BookImage> bookImages = bookImageRepository.findByBook(book);
+                    if (!bookImages.isEmpty()) {
+                        bookInfoDTO.setFilePath(bookImages.get(0).getFilePath());
+                    }
+
+                    return bookInfoDTO;
+                })
+                .toList();
     }
 }

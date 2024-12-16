@@ -2,6 +2,7 @@ package store.aurora.cart.service.impl;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store.aurora.book.dto.BookInfoDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.service.BookService;
 import store.aurora.cart.dto.CartDTO;
@@ -47,28 +48,30 @@ public class CartServiceImpl implements CartService {
                         cartItem.getQuantity()
                 )).toList();
 
-        /* todo
         List<Long> bookIds = cartItems.stream()
                 .map(CartDTO::getBookId)
                 .toList();
 
         List<BookInfoDTO> bookInfoList = bookService.getBookInfo(bookIds);
-
         for (int i = 0; i < cartItems.size(); i++) {
             CartDTO cartItem = cartItems.get(i);
             BookInfoDTO bookInfo = bookInfoList.get(i);
             cartItem.setTitle(bookInfo.getTitle());
-            cartItem.setPrice(bookInfo.getPrice());
+            cartItem.setRegularPrice(bookInfo.getRegularPrice());
+            cartItem.setSalePrice(bookInfo.getSalePrice());
+            cartItem.setStock(bookInfo.getStock());
+            cartItem.setSale(bookInfo.isSale());
+            cartItem.setFilePath(bookInfo.getFilePath());
         }
 
-        double totalPrice = cartItems.stream()
-                .mapToDouble(cartItem -> cartItem.getPrice() * cartItem.getQuantity())
+        int totalPrice = cartItems.stream()
+                .mapToInt(cartItem -> cartItem.getSalePrice() * cartItem.getQuantity())
                 .sum();
-         */
 
         Map<String, Object> result = new HashMap<>();
         result.put("cartItems", cartItems);
-//        result.put("totalPrice", totalPrice);
+        result.put("totalPrice", totalPrice);
+        // todo : result.put("point", )
         return result;
     }
 

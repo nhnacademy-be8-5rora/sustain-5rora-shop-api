@@ -1,5 +1,6 @@
 package store.aurora.user.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import store.aurora.user.dto.SignUpRequest;
 import store.aurora.user.service.DoorayMessengerService;
 import store.aurora.user.service.UserService;
 
+import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.Random;
 
@@ -51,8 +53,12 @@ public class UserController {
 
     // 회원탈퇴
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable String userId) {
+    public ResponseEntity<Map<String, String>> deleteUser(@PathVariable String userId, HttpServletResponse response) {
         userService.deleteUser(userId);
+
+        // 로그아웃 처리(JWT 토큰 삭제)
+        response.setHeader("Authorization", "");
+
         return ResponseEntity.ok(Map.of("message", "회원탈퇴가 완료되었습니다."));
     }
 
@@ -62,12 +68,5 @@ public class UserController {
         userService.reactivateUser(userId);
         return ResponseEntity.ok(Map.of("message", "휴면 계정이 활성화되었습니다."));
     }
-
-
-    // 로그아웃
-//    @PostMapping("/logout")
-//    public ResponseEntity<String> logout(@RequestHeader(value = "") String token) {
-//
-//    }
 
 }

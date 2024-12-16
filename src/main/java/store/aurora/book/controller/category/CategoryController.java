@@ -6,9 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import store.aurora.book.dto.category.CategoryRequestDTO;
 import store.aurora.book.dto.category.CategoryResponseDTO;
-import store.aurora.book.entity.Category;
+import store.aurora.book.entity.category.Category;
 import store.aurora.book.mapper.CategoryMapper;
-import store.aurora.book.service.CategoryService;
+import store.aurora.book.service.category.CategoryService;
 
 @RestController
 @RequestMapping("/api/categories")

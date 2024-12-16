@@ -11,6 +11,7 @@ import store.aurora.order.entity.enums.ShipmentState;
 import store.aurora.order.entity.enums.ShippingCompaniesCode;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -42,6 +43,15 @@ public class Shipment {
     @Column(name = "state")
     private ShipmentState state;
 
-    @OneToMany(mappedBy = "shipment")
-    private List<OrderDetail> orderDetails;
+    @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderDetail> orderDetails = new ArrayList<>();
+
+    // Shipment 클래스에 편의 메서드 추가
+    public void addOrderDetail(OrderDetail orderDetail) {
+        if (orderDetails == null) {
+            orderDetails = new ArrayList<>();
+        }
+        orderDetails.add(orderDetail);
+        orderDetail.setShipment(this); // 양방향 관계 동기화
+    }
 }

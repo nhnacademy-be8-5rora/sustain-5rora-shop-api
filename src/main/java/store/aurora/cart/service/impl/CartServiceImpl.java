@@ -2,9 +2,10 @@ package store.aurora.cart.service.impl;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store.aurora.book.dto.BookInfoDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.service.BookService;
-import store.aurora.cart.dto.CartItemResponseDTO;
+import store.aurora.cart.dto.CartDTO;
 import store.aurora.cart.entity.Cart;
 import store.aurora.cart.entity.CartItem;
 import store.aurora.cart.repository.CartItemRepository;
@@ -12,9 +13,7 @@ import store.aurora.cart.repository.CartRepository;
 import store.aurora.cart.service.CartService;
 import store.aurora.user.service.UserService;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class CartServiceImpl implements CartService {
@@ -32,17 +31,47 @@ public class CartServiceImpl implements CartService {
         this.bookService = bookService;
     }
 
+    private Cart getUserCart(String userId) {
+        return cartRepository.findByUserId(userId)
+                .orElseGet(() -> createUserCart(userId));
+    }
+
     @Override
     @Transactional
-    public List<CartItemResponseDTO> getCartItemsForLoggedInUser(String userId) {
-        Cart cart = cartRepository.findByUserId(userId)
-                .orElseGet(() -> createCartForUser(userId));
+    public Map<String, Object> getUserCartWithTotalPrice(String userId) {
+        Cart cart = getUserCart(userId);
 
-        return cartItemRepository.findByCartId(cart.getId()).stream()
-                .map(cartItem -> new CartItemResponseDTO(
+        List<CartDTO> cartItems = cartItemRepository.findByCartId(cart.getId()).stream()
+                .map(cartItem -> new CartDTO(
                         cartItem.getBook().getId(),
                         cartItem.getQuantity()
                 )).toList();
+
+        List<Long> bookIds = cartItems.stream()
+                .map(CartDTO::getBookId)
+                .toList();
+
+        List<BookInfoDTO> bookInfoList = bookService.getBookInfo(bookIds);
+        for (int i = 0; i < cartItems.size(); i++) {
+            CartDTO cartItem = cartItems.get(i);
+            BookInfoDTO bookInfo = bookInfoList.get(i);
+            cartItem.setTitle(bookInfo.getTitle());
+            cartItem.setRegularPrice(bookInfo.getRegularPrice());
+            cartItem.setSalePrice(bookInfo.getSalePrice());
+            cartItem.setStock(bookInfo.getStock());
+            cartItem.setSale(bookInfo.isSale());
+            cartItem.setFilePath(bookInfo.getFilePath());
+        }
+
+        int totalPrice = cartItems.stream()
+                .mapToInt(cartItem -> cartItem.getSalePrice() * cartItem.getQuantity())
+                .sum();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("cartItems", cartItems);
+        result.put("totalPrice", totalPrice);
+        // todo : result.put("point", )
+        return result;
     }
 
     // 로그인하지 않은 사용자의 장바구니 조회 (세션 또는 쿠키 사용)
@@ -60,8 +89,7 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional
     public void addItemToCart(String userId, Long bookId, int quantity) {
-        Cart cart = cartRepository.findByUserId(userId)
-                .orElseGet(() -> createCartForUser(userId));
+        Cart cart = getUserCart(userId);
 
         Optional<CartItem> cartItemOptional = cartItemRepository.findByCartAndBookId(cart, bookId);
         if(cartItemOptional.isEmpty()) {
@@ -73,7 +101,14 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public Cart createCartForUser(String userId) {
+    @Transactional
+    public void deleteCartItem(String userId, Long bookId) {
+        Cart cart = getUserCart(userId);
+        cart.getCartItems().removeIf(cartItem -> Objects.equals(cartItem.getId(), bookId)); // todo 현재는 존재하지 않는 북 삭제시 그냥 넘어감
+    }
+
+    @Override
+    public Cart createUserCart(String userId) {
         Cart cart = new Cart(userService.getUser(userId));
         return cartRepository.save(cart);
     }

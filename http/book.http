@@ -69,23 +69,21 @@ Content-Type: application/json
 }
 
 ### 카테고리 삭제
-DELETE localhost:8083/api/categories/3
+DELETE localhost:8083/api/categories/5
 
 ### 기존 도서에 카테고리 추가
-POST localhost:8083/api/book-category
+POST localhost:8083/api/book-category/1
 Content-Type: application/json
 
 {
-  "bookId": 1,
   "categoryIds": [2,3]
 }
 
 ### 기존 도서에 카테고리 삭제
-DELETE localhost:8083/api/book-category
+DELETE localhost:8083/api/book-category/1
 Content-Type: application/json
 
 {
-  "bookId": 1,
   "categoryIds": [1]
 }
 
@@ -94,7 +92,7 @@ POST http://localhost:8083/api/tags
 Content-Type: application/json
 
 {
-  "name": "Programming2"
+  "name": "Programming"
 }
 
 ### 기존 책에 태그 추가
@@ -102,7 +100,7 @@ POST http://localhost:8083/api/book-tag/
 Content-Type: application/json
 
 {
-"bookId": 2,
+"bookId": 1,
 "tagId": 2
 }
 

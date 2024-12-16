@@ -1,4 +1,4 @@
-package store.aurora.book.entity;
+package store.aurora.book.entity.category;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

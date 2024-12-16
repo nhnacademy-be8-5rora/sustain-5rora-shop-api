@@ -10,6 +10,5 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class BookCategoryRequestDTO {
-    private Long bookId;
     private List<Long> categoryIds;
 }

@@ -8,6 +8,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 public interface BookRepository extends JpaRepository<Book, Long> ,BookRepositoryCustom {
-    Optional<Book> findByTitleAndPublisherAndPublishDate(String title, Publisher publisher, LocalDate publishDate);
+    boolean existsByTitleAndPublisherAndPublishDate(String title, Publisher publisher, LocalDate publishDate);
 
 }

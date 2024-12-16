@@ -45,7 +45,7 @@ public class BookRepositoryCustomTest {
         // Book 엔티티 삽입
         Book book = new Book(1L, "Example Title", 10000, 8000, 100, true, "1234567890123",
                 "Example content", "Example explanation", true, LocalDate.of(2020, 1, 1), publisher,
-                null, new ArrayList<>());
+                null, new ArrayList<>(),new ArrayList<>());
         book = entityManager.merge(book);
 
         // AuthorRole 엔티티 삽입

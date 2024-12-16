@@ -41,6 +41,9 @@ logging:
     org.hibernate.orm.jdbc.bind: trace
     org.springframework.transaction.interceptor: trace
 
+    sun.rmi: WARN
+    javax.management: WARN
+
 
 eureka:
   client:

@@ -8,7 +8,7 @@ import java.util.List;
 
 public class BookMapper {
 
-    public static Book toEntity(BookRequestDTO dto, Publisher publisher, Series series, List<Category> categories) {
+    public static Book toEntity(BookRequestDTO dto, Publisher publisher, Series series) {
         Book book = new Book();
         book.setTitle(dto.getTitle());
         book.setRegularPrice(dto.getRegularPrice());
@@ -22,12 +22,6 @@ public class BookMapper {
         book.setSale(dto.isSale());
         book.setPublisher(publisher);
         book.setSeries(series);
-        for (Category category : categories) {
-            BookCategory bookCategory = new BookCategory();
-            bookCategory.setBook(book);
-            bookCategory.setCategory(category);
-            book.getBookCategories().add(bookCategory);
-        }
         return book;
     }
 

@@ -1,11 +1,11 @@
-package store.aurora.book.controller;
+package store.aurora.book.controller.category;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import store.aurora.book.dto.CategoryRequestDTO;
-import store.aurora.book.dto.CategoryResponseDTO;
+import store.aurora.book.dto.category.CategoryRequestDTO;
+import store.aurora.book.dto.category.CategoryResponseDTO;
 import store.aurora.book.entity.Category;
 import store.aurora.book.mapper.CategoryMapper;
 import store.aurora.book.service.CategoryService;

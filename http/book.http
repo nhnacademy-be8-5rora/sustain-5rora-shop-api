@@ -3,7 +3,7 @@ POST localhost:8083/api/books
 Content-Type: application/json
 
 {
-  "title": "Clean Cod2",
+  "title": "Clean Code",
   "regularPrice": 35000,
   "salePrice": 30000,
   "packaging": true,
@@ -15,7 +15,8 @@ Content-Type: application/json
   "isSale": true,
   "publisherName": "ksc",
   "seriesName": null,
-  "categoryIds": [1,2]
+  "categoryIds": [1],
+  "tagIds": [1]
 }
 
 ### 카테고리 생성
@@ -68,4 +69,42 @@ Content-Type: application/json
 }
 
 ### 카테고리 삭제
-DELETE localhost:8083/api/categories/1
+DELETE localhost:8083/api/categories/3
+
+### 기존 도서에 카테고리 추가
+POST localhost:8083/api/book-category
+Content-Type: application/json
+
+{
+  "bookId": 1,
+  "categoryIds": [2,3]
+}
+
+### 기존 도서에 카테고리 삭제
+DELETE localhost:8083/api/book-category
+Content-Type: application/json
+
+{
+  "bookId": 1,
+  "categoryIds": [1]
+}
+
+### 태그 등록
+POST http://localhost:8083/api/tags
+Content-Type: application/json
+
+{
+  "name": "Programming2"
+}
+
+### 기존 책에 태그 추가
+POST http://localhost:8083/api/book-tag/
+Content-Type: application/json
+
+{
+"bookId": 2,
+"tagId": 2
+}
+
+### 책-태그 연결 삭제
+DELETE http://localhost:8083/api/book-tag/1

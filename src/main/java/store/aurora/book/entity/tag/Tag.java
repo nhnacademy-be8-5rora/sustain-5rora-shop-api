@@ -5,6 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import store.aurora.book.entity.Book;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -19,4 +23,5 @@ public class Tag {
 
     @Column(nullable = false, length = 15)
     private String name;
+
 }

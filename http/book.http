@@ -19,7 +19,7 @@ Content-Type: application/json
   "tagIds": [1]
 }
 
-### 카테고리 생성
+### 카테고리 생성1
 POST localhost:8083/api/categories
 Content-Type: application/json
 
@@ -27,7 +27,7 @@ Content-Type: application/json
 "name": "IT",
   "parentId": null
 }
-### 카테고리 생성
+### 카테고리 생성2
 POST localhost:8083/api/categories
 Content-Type: application/json
 
@@ -35,7 +35,7 @@ Content-Type: application/json
   "name": "모바일",
   "parentId": 1
 }
-### 카테고리 생성
+### 카테고리 생성3
 POST localhost:8083/api/categories
 Content-Type: application/json
 
@@ -43,7 +43,7 @@ Content-Type: application/json
   "name": "PC",
   "parentId": 1
 }
-### 카테고리 생성
+### 카테고리 생성4
 POST localhost:8083/api/categories
 Content-Type: application/json
 
@@ -51,7 +51,7 @@ Content-Type: application/json
   "name": "아이폰",
   "parentId": 2
 }
-### 카테고리 생성
+### 카테고리 생성5
 POST localhost:8083/api/categories
 Content-Type: application/json
 
@@ -87,12 +87,20 @@ Content-Type: application/json
   "categoryIds": [1]
 }
 
-### 태그 등록
+### 태그 등록1
 POST http://localhost:8083/api/tags
 Content-Type: application/json
 
 {
   "name": "Programming"
+}
+
+### 태그 등록2
+POST http://localhost:8083/api/tags
+Content-Type: application/json
+
+{
+  "name": "Programming1"
 }
 
 ### 기존 책에 태그 추가

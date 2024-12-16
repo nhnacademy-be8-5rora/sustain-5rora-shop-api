@@ -31,17 +31,16 @@ class UserControllerTest {
     public void getUser_ShouldReturnUser_WhenUserIdExists() throws Exception {
         // given
         String userId = "hyewon";
-        UserResponseDto userResponseDto = new UserResponseDto("hyewon", "password", "ROLE_USER");
+        UserResponseDto userResponseDto = new UserResponseDto("hyewon", "ROLE_USER");
 
         // Mocking UserService
         when(userService.getUserByUserId(userId)).thenReturn(userResponseDto);
 
         // when & then
-        mockMvc.perform(get("/api/users")
-                        .header("UserId", userId))
+        mockMvc.perform(get("/api/users/auth/me")
+                        .header("X-USER-ID", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("hyewon"))
-                .andExpect(jsonPath("$.password").value("password"))
                 .andExpect(jsonPath("$.role").value("ROLE_USER"));
     }
 }

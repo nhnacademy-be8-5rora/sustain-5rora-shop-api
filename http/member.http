@@ -1,7 +1,11 @@
-### 멤버 조회
-GET http://localhost:8083/api/users
+### 멤버 조회 (password, role)
+GET http://localhost:8083/api/users/auth/details
 UserId: user123
 
-### 멤버 조회 (no role)
-GET http://localhost:8083/api/users
+### 멤버 조회 (username, role)
+GET http://localhost:8083/api/users/auth/me
+X-USER-ID: user123
+
+### 멤버 조회 (no role member)
+GET http://localhost:8083/api/users/auth/details
 UserId: user1234

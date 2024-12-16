@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.user.dto.SignUpRequest;
+import store.aurora.user.dto.UserDetailResponseDto;
 import store.aurora.user.dto.UserResponseDto;
 import store.aurora.user.entity.User;
 import store.aurora.user.entity.UserRank;
@@ -136,16 +137,25 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    @Transactional(readOnly = true)
-    public UserResponseDto getUserByUserId(String userId) {
-        User user = getUser(userId);
-
-        String role = user.getUserRoles().stream()
+    private String getRole(User user, String userId) {
+        return user.getUserRoles().stream()
                 .findFirst()
                 .map(userRole -> userRole.getRole().getRoleName())
 //                .orElse("ROLE_USER"); // 기본값 설정
                 .orElseThrow(() -> new RoleNotFoundException(userId));
+    }
 
-        return new UserResponseDto(user.getId(), user.getPassword(), role);
+    @Transactional(readOnly = true)
+    public UserResponseDto getUserByUserId(String userId) {
+        User user = getUser(userId);
+        String role = getRole(user, userId);
+        return new UserResponseDto(user.getId(), role);
+    }
+
+    @Transactional(readOnly = true)
+    public UserDetailResponseDto getPasswordAndRole(String userId) {
+        User user = getUser(userId);
+        String role = getRole(user, userId);
+        return new UserDetailResponseDto(user.getPassword(), role);
     }
 }

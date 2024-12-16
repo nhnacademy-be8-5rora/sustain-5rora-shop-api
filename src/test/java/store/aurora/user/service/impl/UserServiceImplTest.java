@@ -68,7 +68,6 @@ class UserServiceImplTest {
         // Then
         assertNotNull(result);
         assertEquals("testId", result.getUsername());
-        assertEquals("password", result.getPassword());
         assertEquals("USER", result.getRole());
     }
 

@@ -1,6 +1,7 @@
 package store.aurora.order.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,6 +37,7 @@ public class OrderDetail {
     private int amountDetail;
 
     // 수량
+    @Min(0)
     @Column(name = "quantity", nullable = false)
     private int quantity;
 

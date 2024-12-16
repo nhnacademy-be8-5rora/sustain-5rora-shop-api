@@ -30,7 +30,6 @@ public class Payment {
     private LocalDateTime paymentDatetime;
 
     // 결제 상태
-    @NotNull
     @Column(name = "status", nullable = false)
     private PaymentState status;
 

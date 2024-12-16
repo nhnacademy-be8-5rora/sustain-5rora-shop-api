@@ -20,7 +20,6 @@ public class SearchServiceImpl implements SearchService {
     private BookRepository bookRepository;
 
 
-
     @Override
     public Page<BookSearchResponseDTO> findBooksByTitleWithDetails(String title, Pageable pageable) {
         if (Objects.isNull(title) || title.isEmpty()) {

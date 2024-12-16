@@ -8,5 +8,6 @@ import store.aurora.search.dto.BookSearchEntityDTO;
 public interface BookRepositoryCustom {
     Page<BookSearchEntityDTO> findBooksByTitleWithDetails(String title, Pageable pageable);
     Page<BookSearchEntityDTO> findBooksByAuthorNameWithDetails(String name, Pageable pageable);
+
 }
 

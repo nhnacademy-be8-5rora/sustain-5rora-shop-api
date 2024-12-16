@@ -1,13 +1,15 @@
 package store.aurora.cart.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import store.aurora.cart.dto.CartDTO;
-import store.aurora.cart.dto.CartItemResponseDTO;
-import store.aurora.cart.entity.CartItem;
 import store.aurora.cart.service.CartService;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 @RestController
@@ -21,12 +23,15 @@ public class CartController {
     }
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getCart(@RequestHeader(value = "X-USER-ID", required = false) String userId) {
-        if (Objects.isNull(userId)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+    public ResponseEntity<Map<String, Object>> getCart(@RequestHeader(value = "X-USER-ID", required = false) String userId,
+                                                       HttpServletRequest request) {
+        Map<String, Object> result;
 
-        Map<String, Object> result = cartService.getUserCartWithTotalPrice(userId);
+        if (Objects.isNull(userId)) {
+            result = cartService.getGuestCartWithTotalPrice(request);
+        } else {
+            result = cartService.getUserCartWithTotalPrice(userId);
+        }
 
         if (((Collection<?>) result.get("cartItems")).isEmpty())
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
@@ -37,57 +42,43 @@ public class CartController {
     @PostMapping
     public ResponseEntity<String> addItemToCart(@RequestHeader(value = "X-USER-ID", required = false) String userId,
                                                 @RequestParam(value = "bookId") Long bookId,
-                                                @RequestParam(value = "quantity") int quantity) {
+                                                @RequestParam(value = "quantity") int quantity,
+                                                HttpServletRequest request,
+                                                HttpServletResponse response) {
 
         if (bookId <= 0 || quantity <= 0) {
             return ResponseEntity.badRequest().body("Invalid bookId or quantity.");
         }
 
         if (Objects.isNull(userId)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            try {
+                cartService.addItemToGuestCart(bookId, quantity, request, response);
+            } catch (IOException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to add item to cart.");
+            }
+        } else {
+            cartService.addItemToCart(userId, bookId, quantity);
         }
 
-        try {
-            cartService.addItemToCart(userId, bookId, quantity);
-            return ResponseEntity.ok("Item added to cart successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Failed to add item to cart");
-        }
+        return ResponseEntity.ok("Item added to cart successfully");
     }
 
     @DeleteMapping("/{bookId}")
     public ResponseEntity<String> deleteItemToCart(@RequestHeader(value = "X-USER-ID", required = false) String userId,
-                                                   @PathVariable("bookId") Long bookId) {
+                                                   @PathVariable("bookId") Long bookId,
+                                                   HttpServletRequest request,
+                                                   HttpServletResponse response) throws UnsupportedEncodingException, JsonProcessingException {
 
         if (bookId <= 0) {
             return ResponseEntity.badRequest().body("Invalid bookId.");
         }
 
         if (Objects.isNull(userId)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        try {
+            cartService.deleteGuestCartItem(bookId, request, response);
+        }else {
             cartService.deleteCartItem(userId, bookId);
-            return ResponseEntity.ok("Item added to cart successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Failed to add item to cart");
         }
+
+        return ResponseEntity.ok("Item added to cart successfully");
     }
-
-    // 로그인하지 않은 사용자의 장바구니 조회 (세션 기반)
-    /*
-
-    @GetMapping
-    public ResponseEntity<List<CartItem>> getCartForAnonymousUser(HttpSession session) {
-        // 세션에서 임시 장바구니 ID를 가져옴
-        String sessionCartId = (String) session.getAttribute("cartId");
-        List<CartItem> cartItems = cartService.getCartItemsForAnonymousUser(sessionCartId);
-
-        if (cartItems.isEmpty()) {
-            return ResponseEntity.noContent().build(); // 장바구니가 비어있으면 204 반환
-        }
-        return ResponseEntity.ok(cartItems);
-    }
-     */
 }

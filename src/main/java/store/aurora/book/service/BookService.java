@@ -124,4 +124,10 @@ public class BookService {
                 })
                 .toList();
     }
+
+    @Transactional(readOnly = true)
+    public void notExistThrow(Long bookId) {
+        if (!bookRepository.existsById(bookId))
+            throw new BookNotFoundException(bookId);
+    }
 }

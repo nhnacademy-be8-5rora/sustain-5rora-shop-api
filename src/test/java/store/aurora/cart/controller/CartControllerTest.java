@@ -119,18 +119,4 @@ class CartControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Invalid bookId."));
     }
-
-    @Test
-    void testAddItemToCart_serviceFailure() throws Exception {
-        // given
-        doThrow(new RuntimeException("Service failure")).when(cartService).addItemToCart(anyString(), anyLong(), anyInt());
-
-        // when & then
-        mockMvc.perform(post("/api/cart")
-                        .header("X-USER-ID", USER_ID)
-                        .param("bookId", "1")
-                        .param("quantity", "3"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().string("Failed to add item to cart"));
-    }
 }

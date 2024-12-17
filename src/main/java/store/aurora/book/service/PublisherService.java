@@ -11,6 +11,7 @@ import java.util.List;
 @Service
 @Transactional
 @RequiredArgsConstructor
+//todo interface 분리하기
 public class PublisherService {
     private final PublisherRepository publisherRepository;
 

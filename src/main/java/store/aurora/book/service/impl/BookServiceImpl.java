@@ -117,7 +117,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Transactional(readOnly = true)
-    public void getBookDetails(Long bookId) {
+    public BookDetailsDto getBookDetails(Long bookId) {
 
         if (!bookRepository.existsById(bookId)) {
             throw new NotFoundBookException(bookId);
@@ -136,6 +136,7 @@ public class BookServiceImpl implements BookService {
 
         bookDetailsDto.setRating(avg);
 
+        return bookDetailsDto;
     }
 
     public List<BookInfoDTO> getBookInfo(List<Long> bookIds) {

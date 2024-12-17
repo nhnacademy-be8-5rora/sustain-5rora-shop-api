@@ -11,6 +11,6 @@ public interface BookService {
     void updateBookSalesInfo(Long bookId, BookSalesInfoUpdateDTO salesInfoDTO);
     void updateBookPackaging(Long bookId, boolean packaging);
     Book getBookById(Long bookId);
-    void getBookDetails(Long bookId);
+    BookDetailsDto getBookDetails(Long bookId);
     List<BookInfoDTO> getBookInfo(List<Long> bookIds);
 }

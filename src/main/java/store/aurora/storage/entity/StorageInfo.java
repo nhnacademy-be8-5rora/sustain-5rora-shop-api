@@ -17,12 +17,12 @@ public class StorageInfo {
 
     @Setter
     @NotBlank
-    @Column(nullable = false, length = 100)
+    @Column(name = "storage_name", nullable = false)
     private String storageName;
 
     @Setter
     @NotBlank
-    @Column(nullable = false, unique = true)
+    @Column(name = "storage_url", nullable = false, unique = true)
     private String storageUrl;
 
 //    @Setter

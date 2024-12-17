@@ -30,7 +30,7 @@ public class BookSearchResponseDTO {
 
     private List<AuthorDTO> authors;
 
-    private List<String> categoryNames;
+    private List<Long> categoryIdList;
     private Long viewCount;
     private int reviewCount;
     private double reviewRating; // 리뷰 평점
@@ -45,7 +45,7 @@ public class BookSearchResponseDTO {
         this.imgPath = book.getImgPath();
 
         this.authors = book.getAuthors();
-        this.categoryNames = book.getCategoryNameList();
+        this.categoryIdList = book.getCategoryIdList();
         this.viewCount = book.getViewCount();
         this.reviewCount = book.getReviewCount();
         this.reviewRating = book.getReviewRating();
@@ -61,7 +61,7 @@ public class BookSearchResponseDTO {
                 ", publisherName=" + publisherName +
                 ", imgPath=" + imgPath +
                 ", authors=" + authors +
-                ", categoryNames=" + categoryNames +  // categoryNames 추가
+                ", categoryIdList=" + categoryIdList +  // categoryNames 추가
                 ", viewCount=" + viewCount +  // viewCount 추가
                 ", reviewCount=" + reviewCount +
                 ", reviewRating=" + reviewRating + "]";

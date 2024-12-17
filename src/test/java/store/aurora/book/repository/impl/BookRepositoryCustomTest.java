@@ -171,41 +171,40 @@ public class BookRepositoryCustomTest {
 
     @DisplayName("카테고리 이름으로 책의 세부사항을 가져오는지 확인 (카테고리가 존재하는 경우)")
     @Test
-    public void testFindBooksByCategoryNameWithDetails() {
+    public void testFindBooksByCategoryIdWithDetails() {
         // Given
-        String categoryName = "Example Category";
+        Long categoryId = 1L;
         PageRequest pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
 
         // When
-        Page<BookSearchEntityDTO> result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
+        Page<BookSearchEntityDTO> result = bookRepository.findBooksByCategoryWithDetails(categoryId, pageable);
 
         // Then
         assertThat(result).isNotNull();
-        log.debug("testFindBooksByCategoryNameWithDetails 메서드 결과 값 확인: {}", result.getContent());
+        log.debug("testFindBooksByCategoryIdWithDetails 메서드 결과 값 확인: {}", result.getContent());
 
         assertThat(result.getContent()).isNotNull(); // 결과가 비어 있지 않아야 함
         assertThat(result.getTotalElements()).isGreaterThan(0); // 결과가 하나 이상이어야 함
 
-        // 책의 카테고리 이름이 주어진 categoryName과 일치하는지 확인
+        // 책의 카테고리 Id가 주어진 categoryId와 일치하는지 확인
         result.getContent().forEach(book -> {
-            assertThat(book.getCategoryNameList()).isNotEmpty(); // 카테고리가 비어 있지 않아야 함
-            // categoryNameList가 쉼표로 구분된 문자열일 경우 분리하여 확인
-            assertThat(book.getCategoryNameList())
-                    .anyMatch(category -> category.split(",") // 쉼표를 기준으로 분리
-                            .length > 0 && Arrays.asList(category.split(",")).contains(categoryName)); // categoryName이 목록에 포함되어야 함
-        });
+            assertThat(book.getCategoryIdList()).isNotEmpty(); // 카테고리가 비어 있지 않아야 함
 
+            // categoryIdList에서 categoryId가 포함되어 있는지 확인
+            assertThat(book.getCategoryIdList()).contains(categoryId);
+        });
     }
+
 
     @DisplayName("카테고리 이름으로 책의 세부사항을 가져오는지 확인 (카테고리가 존재하지 않는 경우)")
     @Test
     public void testFindBooksByCategoryNameWithDetailsNotExists() {
         // Given
-        String categoryName = "Nonexistent Category";
+        Long categoryId = 13L;
         PageRequest pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
 
         // When
-        Page<BookSearchEntityDTO> result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
+        Page<BookSearchEntityDTO> result = bookRepository.findBooksByCategoryWithDetails(categoryId, pageable);
 
         // Then
         assertThat(result).isNotNull(); // 페이지는 null이면 안 됨
@@ -217,20 +216,16 @@ public class BookRepositoryCustomTest {
     @Test
     public void testFindBooksByCategoryNameWithDetailsByNullOrBlankCategoryName() {
         // Given
-        String categoryName = null;
+        Long categoryId = null;
         PageRequest pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
 
         // When
-        Page<BookSearchEntityDTO> result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
+        Page<BookSearchEntityDTO> result = bookRepository.findBooksByCategoryWithDetails(categoryId, pageable);
 
         // Then
         assertThat(result).isNotNull(); // 페이지는 null이면 안 됨
         log.debug("testFindBooksByCategoryNameWithDetailsByNullOrBlankCategoryName 결과 값 확인: {}", result.getContent());
         assertThat(result.getContent()).isEmpty(); // 결과가 비어 있어야 함
 
-        categoryName = "";
-        result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
-        assertThat(result).isNotNull(); // 페이지는 null이면 안 됨
-        assertThat(result.getContent()).isEmpty(); // 결과가 비어 있어야 함
     }
 }

@@ -5,13 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import store.aurora.book.dto.BookDetailsDto;
 import store.aurora.book.dto.BookDetailsUpdateDTO;
 import store.aurora.book.dto.BookRequestDTO;
-import store.aurora.book.dto.BookResponseDTO;
-import store.aurora.book.dto.BookSalesInfoDTO;
-import store.aurora.book.entity.Book;
-import store.aurora.book.mapper.BookMapper;
+import store.aurora.book.dto.BookSalesInfoUpdateDTO;
 import store.aurora.book.service.BookService;
 
 @RestController
@@ -21,38 +17,38 @@ public class BookController {
     private final BookService bookService;
 
     @PostMapping
-    public ResponseEntity<BookResponseDTO> createBook(@RequestBody @Valid BookRequestDTO requestDTO) {
-        Book savedBook = bookService.saveBookWithPublisherAndSeries(requestDTO);
-        BookResponseDTO response = BookMapper.toDTO(savedBook);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    public ResponseEntity<Void> createBook(@RequestBody @Valid BookRequestDTO requestDTO) {
+        bookService.saveBookWithPublisherAndSeries(requestDTO);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PutMapping("/{bookId}/details")
-    public ResponseEntity<Book> updateBookDetails(
+    public ResponseEntity<Void> updateBookDetails(
             @PathVariable Long bookId,
             @RequestBody BookDetailsUpdateDTO requestDTO) {
-        return ResponseEntity.ok(bookService.updateBookDetails(bookId, requestDTO));
+        bookService.updateBookDetails(bookId, requestDTO);
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{bookId}/sales-info")
-    public ResponseEntity<Book> updateBookSalesInfo(
+    public ResponseEntity<Void> updateBookSalesInfo(
             @PathVariable Long bookId,
-            @RequestBody BookSalesInfoDTO salesInfoDTO) {
-        return ResponseEntity.ok(bookService.updateBookSalesInfo(bookId, salesInfoDTO));
+            @RequestBody BookSalesInfoUpdateDTO salesInfoDTO) {
+        bookService.updateBookSalesInfo(bookId, salesInfoDTO);
+        return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/{bookId}/packaging")
-    public ResponseEntity<Book> updateBookPackaging(
+    public ResponseEntity<Void> updateBookPackaging(
             @PathVariable Long bookId,
             @RequestParam boolean packaging) {
-        return ResponseEntity.ok(bookService.updateBookPackaging(bookId, packaging));
+        bookService.updateBookPackaging(bookId, packaging);
+        return ResponseEntity.ok().build();
     }
-
 
     @GetMapping("/{bookId}")
-    public ResponseEntity<BookDetailsDto> getBookDetails(@PathVariable Long bookId) {
-        BookDetailsDto bookDetails = bookService.getBookDetails(bookId);
-        return ResponseEntity.ok(bookDetails);
+    public ResponseEntity<Void> getBookDetails(@PathVariable Long bookId) {
+        bookService.getBookDetails(bookId);
+        return ResponseEntity.ok().build();
     }
-
 }

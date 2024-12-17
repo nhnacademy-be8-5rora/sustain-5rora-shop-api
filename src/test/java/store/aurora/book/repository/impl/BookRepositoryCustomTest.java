@@ -8,14 +8,16 @@ import org.junit.jupiter.api.condition.DisabledIfSystemProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.annotation.DirtiesContext;
+import store.aurora.book.config.QuerydslConfiguration;
 import store.aurora.book.entity.*;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.repository.BookRepository;
-import store.aurora.search.dto.BookCategorySearchEntityDTO;
+
 import store.aurora.search.dto.BookSearchEntityDTO;
 
 import java.time.LocalDate;
@@ -25,6 +27,7 @@ import java.util.Arrays;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@Import(QuerydslConfiguration.class)
 @DataJpaTest
 @Slf4j
 public class BookRepositoryCustomTest {
@@ -174,7 +177,7 @@ public class BookRepositoryCustomTest {
         PageRequest pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
 
         // When
-        Page<BookCategorySearchEntityDTO> result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
+        Page<BookSearchEntityDTO> result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
 
         // Then
         assertThat(result).isNotNull();
@@ -202,7 +205,7 @@ public class BookRepositoryCustomTest {
         PageRequest pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
 
         // When
-        Page<BookCategorySearchEntityDTO> result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
+        Page<BookSearchEntityDTO> result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
 
         // Then
         assertThat(result).isNotNull(); // 페이지는 null이면 안 됨
@@ -218,7 +221,7 @@ public class BookRepositoryCustomTest {
         PageRequest pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
 
         // When
-        Page<BookCategorySearchEntityDTO> result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
+        Page<BookSearchEntityDTO> result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
 
         // Then
         assertThat(result).isNotNull(); // 페이지는 null이면 안 됨

@@ -1,6 +1,8 @@
 package store.aurora.book.repository.category;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import store.aurora.book.entity.category.Category;
 
 public interface CategoryRepository extends JpaRepository<Category, Long> {
@@ -9,5 +11,10 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     boolean existsByNameAndParent(String name, Category parent);
 
     boolean existsByParent(Category category);
+
+    //todo 나중에 Query 말고 다른걸로 수정해야함
+    @Query("SELECT MAX(c.displayOrder) FROM Category c WHERE c.parent = :parent")
+    Integer findMaxDisplayOrderByParent(@Param("parent") Category parent);
+
 }
 

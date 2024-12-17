@@ -30,7 +30,16 @@ public class BookSearchEntityDTO {
 
     private String imgPath;
 
-    public BookSearchEntityDTO(Long id, String title, int regularPrice, int salePrice, LocalDate publishDate, String publisherName, String authorsString, String imgPath) {
+    private List<String> categoryNameList; // 카테고리 이름 리스트 추가
+
+
+    private Long viewCount;
+    private int reviewCount;
+    private double reviewRating; // 리뷰 평점
+
+
+
+    public BookSearchEntityDTO(Long id, String title, int regularPrice, int salePrice, LocalDate publishDate, String publisherName, String authorsString, String imgPath,String categoryNames, Long viewCount, int reviewCount, double reviewRating) {
         this.id = id;
         this.title = title;
         this.regularPrice = regularPrice;
@@ -39,6 +48,10 @@ public class BookSearchEntityDTO {
         this.publisherName = publisherName;
         this.authors = convertAuthorsStringToList(authorsString); // 변환 로직
         this.imgPath = imgPath;
+        this.categoryNameList = (categoryNames != null && !categoryNames.isEmpty()) ? Arrays.asList(categoryNames.split(", ")) : List.of();
+        this.viewCount = viewCount;
+        this.reviewCount = reviewCount;
+        this.reviewRating = reviewRating;
     }
     // 쉼표로 구분된 문자열을 List<AuthorDTO>로 변환
     private List<AuthorDTO> convertAuthorsStringToList(String authorsString) {
@@ -108,6 +121,18 @@ public class BookSearchEntityDTO {
     public String getImgPath() {
         return imgPath;
     }
+    public Long getViewCount() {
+        return viewCount;
+    }
+    public List<String> getCategoryNameList() {
+        return categoryNameList;
+    }
+    public int getReviewCount() {
+        return reviewCount;
+    }
+    public double getReviewRating() {
+        return reviewRating;
+    }
 
     @Override
     public String toString() {
@@ -120,7 +145,13 @@ public class BookSearchEntityDTO {
                 ", publisherName='" + publisherName + '\'' +
                 ", authors=" + authors +
                 ", imgPath='" + imgPath + '\'' +
+                ", categoryNameList=" + categoryNameList + // 카테고리 이름 리스트 추가
+                ", viewCount=" + viewCount + // viewCount 추가
+                ", reviewCount=" + reviewCount+
+                ", reviewRating=" + reviewRating +
                 '}';
     }
+
+
 
 }

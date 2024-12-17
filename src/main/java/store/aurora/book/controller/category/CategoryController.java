@@ -18,16 +18,16 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @PostMapping
-    public ResponseEntity<CategoryResponseDTO> createCategory(@RequestBody @Valid CategoryRequestDTO requestDTO) {
-        Category createCategory = categoryService.createCategory(requestDTO.getName(), requestDTO.getParentId());
-        return ResponseEntity.ok(CategoryMapper.toResponseDTO(createCategory));
+    public ResponseEntity<Void> createCategory(@RequestBody @Valid CategoryRequestDTO requestDTO) {
+        categoryService.createCategory(requestDTO.getName(), requestDTO.getParentId());
+        return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/{categoryId}")
-    public ResponseEntity<CategoryResponseDTO> updateCategoryName(@PathVariable Long categoryId,
+    public ResponseEntity<Void> updateCategoryName(@PathVariable Long categoryId,
                                                                   @RequestBody @Valid CategoryRequestDTO requestDTO) {
-        Category updatedCategory = categoryService.updateCategoryName(categoryId, requestDTO.getName());
-        return ResponseEntity.ok(CategoryMapper.toResponseDTO(updatedCategory));
+        categoryService.updateCategoryName(categoryId, requestDTO.getName());
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{categoryId}")

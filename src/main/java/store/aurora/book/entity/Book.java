@@ -60,9 +60,4 @@ public class Book {
     @JoinColumn(name = "series_id")
     private Series series;
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BookCategory> bookCategories = new ArrayList<>();
-
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BookTag> bookTags = new ArrayList<>();
 }

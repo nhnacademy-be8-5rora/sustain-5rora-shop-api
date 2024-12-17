@@ -3,6 +3,7 @@ package store.aurora.book.mapper;
 import store.aurora.book.dto.BookRequestDTO;
 import store.aurora.book.dto.BookResponseDTO;
 import store.aurora.book.entity.*;
+import store.aurora.book.entity.category.Category;
 
 import java.util.List;
 
@@ -42,6 +43,7 @@ public class BookMapper {
         if (book.getSeries() != null) {
             dto.setSeriesName(book.getSeries().getName());
         }
+
         return dto;
     }
 }

@@ -3,7 +3,6 @@ package store.aurora.book.service.category;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store.aurora.book.entity.Book;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.exception.book.NotFoundBookException;
@@ -25,8 +24,9 @@ public class BookCategoryService {
 
     @Transactional
     public void addCategoriesToBook(Long bookId, List<Long> categoryIds) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new NotFoundBookException(bookId));
+        if (!bookRepository.existsById(bookId)) {
+            throw new NotFoundBookException(bookId);
+        }
 
         List<Category> categories = categoryRepository.findAllById(categoryIds);
         if (categories.size() != categoryIds.size()) {
@@ -34,36 +34,40 @@ public class BookCategoryService {
         }
 
         for (Category category : categories) {
-            if (book.getBookCategories().stream().noneMatch(bookCategory -> bookCategory.getCategory().equals(category))) {
+            boolean alreadyExists = bookCategoryRepository.existsByBookIdAndCategoryId(bookId, category.getId());
+            if (!alreadyExists) {
                 BookCategory bookCategory = new BookCategory();
-                bookCategory.setBook(book);
+                bookCategory.setBookId(bookId);
                 bookCategory.setCategory(category);
-                book.getBookCategories().add(bookCategory);
+                bookCategoryRepository.save(bookCategory);
             }
         }
-
-        bookCategoryRepository.saveAll(book.getBookCategories());
     }
 
     @Transactional
     public void removeCategoriesFromBook(Long bookId, List<Long> categoryIds) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new NotFoundBookException(bookId));
+        // 책 검증
+        if (!bookRepository.existsById(bookId)) {
+            throw new NotFoundBookException(bookId);
+        }
 
-        int currentCategoryCount = book.getBookCategories().size();
+        // 현재 연결된 카테고리 수 확인
+        long currentCategoryCount = bookCategoryRepository.countByBookId(bookId);
         if (currentCategoryCount - categoryIds.size() <= 0) {
             throw new CategoryLimitException();
         }
-        book.getBookCategories().removeIf(bookCategory ->
-                categoryIds.contains(bookCategory.getCategory().getId()));
+
+        // BookCategory 삭제
+        bookCategoryRepository.deleteByBookIdAndCategoryIdIn(bookId, categoryIds);
     }
 
+    @Transactional(readOnly = true)
     public List<Category> getCategoriesByBookId(Long bookId) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new NotFoundBookException(bookId));
+        if (!bookRepository.existsById(bookId)) {
+            throw new NotFoundBookException(bookId);
+        }
 
-        return book.getBookCategories()
-                .stream()
+        return bookCategoryRepository.findByBookId(bookId).stream()
                 .map(BookCategory::getCategory)
                 .collect(Collectors.toList());
     }

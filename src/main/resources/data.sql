@@ -48,8 +48,8 @@ VALUES ('Penguin Books');
 insert into serieses (name)
 values ('test name');
 
-insert into books (title, regular_price, sale_price, is_sale, explanation, publisher_id, series_id, PACKAGING, PUBLISH_DATE)
-values ('test title', 10000, 9000, TRUE, 'test desc', 1, 1, FALSE, '2024-12-12');
-
-insert into books (title, regular_price, sale_price, is_sale, explanation, publisher_id, series_id, PACKAGING, PUBLISH_DATE)
-values ('test title2', 10000, 9000, TRUE, 'test desc2', 1, 1, FALSE, '2024-12-12');
+-- insert into books (title, regular_price, sale_price, is_sale, explanation, publisher_id, series_id, PACKAGING, PUBLISH_DATE)
+-- values ('test title', 10000, 9000, TRUE, 'test desc', 1, 1, FALSE, '2024-12-12');
+-- isbn 추가해야 함
+-- insert into books (title, regular_price, sale_price, is_sale, explanation, publisher_id, series_id, PACKAGING, PUBLISH_DATE)
+-- values ('test title2', 10000, 9000, TRUE, 'test desc2', 1, 1, FALSE, '2024-12-12');

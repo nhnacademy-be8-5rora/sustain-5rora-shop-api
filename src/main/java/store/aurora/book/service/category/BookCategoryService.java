@@ -8,13 +8,14 @@ import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.exception.book.NotFoundBookException;
 import store.aurora.book.exception.category.CategoryLimitException;
+import store.aurora.book.exception.category.CategoryNotFoundException;
 import store.aurora.book.exception.category.InvalidCategoryException;
 import store.aurora.book.repository.category.BookCategoryRepository;
 import store.aurora.book.repository.BookRepository;
 import store.aurora.book.repository.category.CategoryRepository;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,38 +34,60 @@ public class BookCategoryService {
             throw new InvalidCategoryException("유효하지 않은 카테고리 ID가 포함되어 있습니다.");
         }
 
-        for (Category category : categories) {
-            if (book.getBookCategories().stream().noneMatch(bookCategory -> bookCategory.getCategory().equals(category))) {
-                BookCategory bookCategory = new BookCategory();
-                bookCategory.setBook(book);
-                bookCategory.setCategory(category);
-                book.getBookCategories().add(bookCategory);
-            }
+        List<BookCategory> existingBookCategories = bookCategoryRepository.findByBookIdAndCategoryIdIn(bookId, categoryIds);
+        List<Long> existingCategoryIds = new ArrayList<>();
+        for (BookCategory bookCategory : existingBookCategories) {
+            existingCategoryIds.add(bookCategory.getCategory().getId());
         }
 
-        bookCategoryRepository.saveAll(book.getBookCategories());
+        List<BookCategory> newBookCategories = new ArrayList<>();
+        for (Category category : categories) {
+            if (!existingCategoryIds.contains(category.getId())) {
+                newBookCategories.add(new BookCategory(null, book, category));
+            }
+        }
+        if (!newBookCategories.isEmpty()) {
+            bookCategoryRepository.saveAll(newBookCategories);
+        }
     }
 
     @Transactional
     public void removeCategoriesFromBook(Long bookId, List<Long> categoryIds) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new NotFoundBookException(bookId));
+        if (!bookRepository.existsById(bookId)) {
+            throw new NotFoundBookException(bookId);
+        }
 
-        int currentCategoryCount = book.getBookCategories().size();
-        if (currentCategoryCount - categoryIds.size() <= 0) {
+        List<Category> categories = categoryRepository.findAllById(categoryIds);
+        if (categories.size() != categoryIds.size()) {
+            throw new InvalidCategoryException("유효하지 않은 카테고리 ID가 포함되어 있습니다.");
+        }
+
+        List<BookCategory> bookCategoriesToDelete = bookCategoryRepository.findByBookIdAndCategoryIdIn(bookId, categoryIds);
+        if (bookCategoriesToDelete.isEmpty()) {
+            throw new CategoryNotFoundException("삭제할 카테고리가 존재하지 않습니다.");
+        }
+
+        long currentCategoryCount = bookCategoryRepository.countByBookId(bookId);
+        if (currentCategoryCount - bookCategoriesToDelete.size() <= 0) {
             throw new CategoryLimitException();
         }
-        book.getBookCategories().removeIf(bookCategory ->
-                categoryIds.contains(bookCategory.getCategory().getId()));
+
+        bookCategoryRepository.deleteAll(bookCategoriesToDelete);
     }
 
-    public List<Category> getCategoriesByBookId(Long bookId) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new NotFoundBookException(bookId));
 
-        return book.getBookCategories()
-                .stream()
-                .map(BookCategory::getCategory)
-                .collect(Collectors.toList());
+
+    @Transactional(readOnly = true)
+    public List<Category> getCategoriesByBookId(Long bookId) {
+        if (!bookRepository.existsById(bookId)) {
+            throw new NotFoundBookException(bookId);
+        }
+
+        List<BookCategory> bookCategories = bookCategoryRepository.findByBookId(bookId);
+        List<Category> categories = new ArrayList<>();
+        for (BookCategory bookCategory : bookCategories) {
+            categories.add(bookCategory.getCategory());
+        }
+        return categories;
     }
 }

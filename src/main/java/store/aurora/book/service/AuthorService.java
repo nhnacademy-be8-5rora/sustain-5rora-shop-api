@@ -5,9 +5,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.repository.AuthorRepository;
 
-@Service
-@Transactional
-@RequiredArgsConstructor
-public class AuthorService {
-    private final AuthorRepository authorRepository;
+
+public interface AuthorService {
 }

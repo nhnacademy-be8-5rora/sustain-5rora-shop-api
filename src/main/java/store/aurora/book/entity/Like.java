@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import store.aurora.user.entity.User;
 
 @Getter
 @Setter
@@ -20,8 +21,9 @@ public class Like {
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
-    @Column(nullable = false)
-    private String userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     private Boolean isDelete = true;
 }

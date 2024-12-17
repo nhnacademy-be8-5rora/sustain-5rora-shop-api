@@ -28,5 +28,8 @@ public class Category {
     private Category parent;
 
     @Column(nullable = false)
-    private int depth;
+    private Integer depth;
+
+    @Column(nullable = false)
+    private Integer displayOrder;
 }

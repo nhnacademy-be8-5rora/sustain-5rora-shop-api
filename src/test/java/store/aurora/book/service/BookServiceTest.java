@@ -1,13 +1,10 @@
 package store.aurora.book.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import store.aurora.book.dto.BookInfoDTO;
@@ -15,7 +12,6 @@ import store.aurora.book.entity.Book;
 import store.aurora.book.entity.BookImage;
 import store.aurora.book.repository.BookImageRepository;
 import store.aurora.book.repository.BookRepository;
-import store.aurora.book.service.category.BookCategoryService;
 import store.aurora.book.service.tag.TagService;
 
 import static org.mockito.Mockito.*;

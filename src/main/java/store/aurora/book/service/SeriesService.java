@@ -9,6 +9,7 @@ import store.aurora.book.repository.SeriesRepository;
 @Service
 @Transactional
 @RequiredArgsConstructor
+//todo interface 분리하기
 public class SeriesService {
     private final SeriesRepository seriesRepository;
 

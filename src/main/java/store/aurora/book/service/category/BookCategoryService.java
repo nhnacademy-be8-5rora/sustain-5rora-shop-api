@@ -3,6 +3,7 @@ package store.aurora.book.service.category;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store.aurora.book.entity.Book;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.exception.book.NotFoundBookException;
@@ -25,9 +26,8 @@ public class BookCategoryService {
 
     @Transactional
     public void addCategoriesToBook(Long bookId, List<Long> categoryIds) {
-        if (!bookRepository.existsById(bookId)) {
-            throw new NotFoundBookException(bookId);
-        }
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new NotFoundBookException(bookId));
 
         List<Category> categories = categoryRepository.findAllById(categoryIds);
         if (categories.size() != categoryIds.size()) {
@@ -43,12 +43,13 @@ public class BookCategoryService {
         List<BookCategory> newBookCategories = new ArrayList<>();
         for (Category category : categories) {
             if (!existingCategoryIds.contains(category.getId())) {
-                newBookCategories.add(new BookCategory(null, bookId, category));
+                newBookCategories.add(new BookCategory(null, book, category));
             }
         }
         if (!newBookCategories.isEmpty()) {
             bookCategoryRepository.saveAll(newBookCategories);
-        }    }
+        }
+    }
 
     @Transactional
     public void removeCategoriesFromBook(Long bookId, List<Long> categoryIds) {

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import store.aurora.book.dto.BookDetailsDto;
 import store.aurora.book.dto.BookRequestDTO;
 import store.aurora.book.dto.BookResponseDTO;
 import store.aurora.book.dto.tag.BookTagRequestDto;
@@ -36,5 +37,12 @@ public class BookController {
 //        BookResponseDTO response = BookMapper.toDTO(updatedBook);
 //        return ResponseEntity.ok(response);
 //    }
+
+
+    @GetMapping("/{bookId}")
+    public ResponseEntity<BookDetailsDto> getBookDetails(@PathVariable Long bookId) {
+        BookDetailsDto bookDetails = bookService.getBookDetails(bookId);
+        return ResponseEntity.ok(bookDetails);
+    }
 
 }

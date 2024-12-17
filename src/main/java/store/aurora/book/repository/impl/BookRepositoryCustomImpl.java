@@ -1,32 +1,64 @@
 package store.aurora.book.repository.impl;
 
 
+import com.netflix.discovery.converters.Auto;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
+import org.springframework.transaction.annotation.Transactional;
+import store.aurora.book.dto.*;
 import store.aurora.book.entity.Book;
+import store.aurora.book.entity.Category;
+import store.aurora.book.entity.QBook;
+import store.aurora.book.entity.QBookImage;
 import store.aurora.book.repository.BookRepositoryCustom;
+import store.aurora.review.entity.QReview;
 import store.aurora.search.dto.BookSearchEntityDTO;
+import store.aurora.storage.entity.QStorageInfo;
 
+import static com.querydsl.core.group.GroupBy.groupBy;
+import static java.util.Collections.list;
+import static store.aurora.book.entity.QBook.*;
 import static store.aurora.book.entity.QBook.book;
 import static store.aurora.book.entity.QBookAuthor.bookAuthor;
+import static store.aurora.book.entity.QBookCategory.bookCategory;
+import static store.aurora.book.entity.QCategory.category;
+import static store.aurora.book.entity.QLike.like;
 import static store.aurora.book.entity.QPublisher.publisher;
 import static store.aurora.book.entity.QAuthor.author;
 import static store.aurora.book.entity.QAuthorRole.authorRole;
 import static store.aurora.book.entity.QBookImage.bookImage;
+import static store.aurora.book.entity.QPublisher.publisher;
+import static store.aurora.book.entity.tag.QBookTag.bookTag;
+import static store.aurora.book.entity.tag.QTag.tag;
+import static store.aurora.review.entity.QReview.review;
+import static store.aurora.review.entity.QReviewImage.reviewImage;
+import static store.aurora.storage.entity.QStorageInfo.storageInfo;
+import static store.aurora.user.entity.QUser.user;
+
+import com.querydsl.core.types.dsl.Expressions;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
+
+@Slf4j
 public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implements BookRepositoryCustom {
 
+    private final JPAQueryFactory queryFactory;
 
-    public BookRepositoryCustomImpl() {
+    @Autowired
+    public BookRepositoryCustomImpl(JPAQueryFactory queryFactory) {
         super(Book.class);
+        this.queryFactory = queryFactory;
     }
 
 
@@ -132,6 +164,126 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
 
         // 페이지 처리된 결과 반환
         return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public BookDetailsDto findBookDetailsByBookId(Long bookId) {
+        // 책 기본 정보 조회
+        Book book = queryFactory
+                .from(QBook.book)
+                .leftJoin(QBook.book.publisher, publisher)
+                .where(QBook.book.id.eq(bookId))
+                .select(QBook.book)
+                .fetchOne();
+
+
+        // BookImage와 Review 데이터를 메서드를 통해 각각 가져오기
+        List<BookImageDto> bookImages = findBookImagesByBookId(bookId);
+        List<ReviewDto> reviews = findReviewsByBookId(bookId);
+
+        // 태그 이름 조회
+        List<String> tagNames = queryFactory
+                .from(bookTag)
+                .join(bookTag.tag, tag)
+                .where(bookTag.book.id.eq(bookId))
+                .select(tag.name)
+                .fetch();
+
+        // 좋아요 개수 조회
+        int likeCount = (int) queryFactory
+                .from(like)
+                .where(like.book.id.eq(bookId))
+                .fetchCount();
+
+        String categoryPath = findCategoryPathByBookId(bookId);
+
+        return new BookDetailsDto(
+                book.getId(),
+                book.getTitle(),
+                book.getIsbn(),
+                book.getRegularPrice(),
+                book.getSalePrice(),
+                book.getExplanation(),
+                book.getContents(),
+                book.getPublishDate(),
+                new PublisherDto(book.getPublisher().getId(), book.getPublisher().getName()),
+                bookImages,
+                reviews,
+                tagNames,  // 태그 이름들
+                likeCount,  // 좋아요 개수
+                categoryPath,
+                0L
+        );
+    }
+
+
+    @Override
+    public List<BookImageDto> findBookImagesByBookId(Long bookId) {
+        return queryFactory
+                .select(bookImage.filePath)
+                .from(bookImage)
+                .where(bookImage.book.id.eq(bookId))
+                .fetch()
+                .stream()
+                .map(BookImageDto::new)  // String을 BookImageDto로 변환
+                .collect(Collectors.toList());
+    }
+
+
+    @Override
+    public List<ReviewDto> findReviewsByBookId(Long bookId) {
+
+
+        List<String> reviewImageFilePaths = queryFactory
+                .select(reviewImage.imageFilePath)
+                .from(reviewImage)
+                .join(reviewImage.review, review)
+                .where(review.book.id.eq(bookId))
+                .fetch();
+
+        return queryFactory
+                .from(review)
+                .leftJoin(review.user, user)
+                .where(review.book.id.eq(bookId))
+                .select(Projections.constructor(
+                        ReviewDto.class,
+                        review.id,
+                        review.reviewContent,
+                        review.reviewRating,
+                        review.reviewCreateAt,
+                        user.name,
+                        Expressions.constant(reviewImageFilePaths)
+                ))
+                .fetch();
+    }
+
+    @Override
+    public String findCategoryPathByBookId(Long bookId) {
+        // 하위 카테고리 ID와 경로를 위한 이름 조회
+        Category leafCategory = queryFactory
+                .select(bookCategory.category)
+                .from(bookCategory)
+                .join(bookCategory.category, category)
+                .where(bookCategory.book.id.eq(bookId))
+                .fetchOne();
+
+        if (leafCategory == null) {
+            return null;
+        }
+
+        // 경로 생성
+        StringBuilder pathBuilder = new StringBuilder();
+        Category currentCategory = leafCategory;
+
+        while (currentCategory != null) {
+            pathBuilder.insert(0, currentCategory.getName());
+            currentCategory = currentCategory.getParent();
+            if (currentCategory != null) {
+                pathBuilder.insert(0, " > ");
+            }
+        }
+
+        return pathBuilder.toString();
     }
 
 }

@@ -27,9 +27,9 @@ public class Category {
     @JoinColumn(name = "parent_id")
     private Category parent;
 
-    @OneToMany(mappedBy = "parent")
-    private List<Category> children = new ArrayList<>();
+    @Column(nullable = false)
+    private Integer depth;
 
     @Column(nullable = false)
-    private int depth;
+    private Integer displayOrder;
 }

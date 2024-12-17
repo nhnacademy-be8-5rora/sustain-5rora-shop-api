@@ -3,7 +3,9 @@ package store.aurora.book.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store.aurora.book.dto.BookDetailsDto;
 import store.aurora.book.dto.BookRequestDTO;
+import store.aurora.book.dto.ReviewDto;
 import store.aurora.book.dto.tag.BookTagRequestDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.BookCategory;
@@ -11,6 +13,7 @@ import store.aurora.book.entity.Category;
 import store.aurora.book.entity.Publisher;
 import store.aurora.book.entity.Series;
 import store.aurora.book.exception.BookNotFoundException;
+import store.aurora.book.exception.book.NotFoundBookException;
 import store.aurora.book.mapper.BookMapper;
 import store.aurora.book.repository.BookCategoryRepository;
 import store.aurora.book.repository.BookRepository;
@@ -29,6 +32,7 @@ public class BookService {
     private final SeriesService seriesService;
     private final BookCategoryService bookCategoryService;
     private final TagService tagService;
+
     // 책 등록 (출판사와, 시리즈 연결)
     @Transactional
     public Book saveBookWithPublisherAndSeries(BookRequestDTO requestDTO) {
@@ -65,6 +69,7 @@ public class BookService {
             throw new IllegalArgumentException("이미 등록된 책입니다.");
         }
     }
+
     // 카테고리
     @Transactional
     public void addCategoriesToBook(Long bookId, List<Long> categoryIds) {
@@ -96,5 +101,28 @@ public class BookService {
     public Book getBookById(Long bookId) {
         return bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException(bookId));
+    }
+
+    @Transactional(readOnly = true)
+    public BookDetailsDto getBookDetails(Long bookId) {
+
+        if (!bookRepository.existsById(bookId)) {
+            throw new NotFoundBookException(bookId);
+        }
+
+        BookDetailsDto bookDetailsDto = bookRepository.findBookDetailsByBookId(bookId);
+
+        double sum = 0;
+        double avg;
+        for (ReviewDto reviewDto : bookDetailsDto.getReviews()) {
+            int reviewRating = reviewDto.getReviewRating();
+            sum += reviewRating;
+        }
+
+        avg = Math.round((sum / bookDetailsDto.getReviews().size() * 10) / 10.0);
+
+        bookDetailsDto.setRating(avg);
+
+        return bookDetailsDto;
     }
 }

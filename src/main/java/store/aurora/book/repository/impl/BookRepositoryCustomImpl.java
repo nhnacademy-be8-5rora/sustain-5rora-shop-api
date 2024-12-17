@@ -4,6 +4,7 @@ package store.aurora.book.repository.impl;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -20,8 +21,8 @@ import static store.aurora.book.entity.QPublisher.publisher;
 import static store.aurora.book.entity.QAuthor.author;
 import static store.aurora.book.entity.QAuthorRole.authorRole;
 import static store.aurora.book.entity.QBookImage.bookImage;
-import static store.aurora.book.entity.QCategory.category;
-import static store.aurora.book.entity.QBookCategory.bookCategory;
+import static store.aurora.book.entity.category.QCategory.category;
+import static store.aurora.book.entity.category.QBookCategory.bookCategory;
 import static store.aurora.utils.ValidationUtils.*;
 
 import java.util.Collections;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Objects;
 
 
+@Slf4j
 public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implements BookRepositoryCustom {
 
 
@@ -74,6 +76,8 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                         bookImagePathSubquery
                 ))
                 .fetch();
+
+        log.debug("customImpl 메서드 값 확인 {}",content.toString());
 
         // Count query for pagination
         long total = from(book)
@@ -136,6 +140,8 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .leftJoin(bookAuthor.author, author)
                 .where(author.name.like("%" + name + "%")) // 저자 이름 조건
                 .fetchCount();
+
+        log.debug("BookRepositoryCustomImpl 확인:");
 
         // 페이지 처리된 결과 반환
         return new PageImpl<>(content, pageable, total);

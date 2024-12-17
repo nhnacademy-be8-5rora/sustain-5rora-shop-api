@@ -1,6 +1,5 @@
 package store.aurora.book.repository.impl;
 
-
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,7 +10,10 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.annotation.DirtiesContext;
 import store.aurora.book.entity.*;
+import store.aurora.book.entity.category.BookCategory;
+import store.aurora.book.entity.category.Category;
 import store.aurora.book.repository.BookRepository;
 import store.aurora.search.dto.BookCategorySearchEntityDTO;
 import store.aurora.search.dto.BookSearchEntityDTO;
@@ -22,9 +24,7 @@ import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
-//데이터 아직 없어서 확인 못함
-
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @DataJpaTest
 @Slf4j
 public class BookRepositoryCustomTest {
@@ -37,55 +37,14 @@ public class BookRepositoryCustomTest {
 
     @BeforeEach
     public void setup() {
-        // Publisher 엔티티 삽입
-        Publisher publisher = new Publisher(null, "Example Publisher");
-        publisher = entityManager.merge(publisher);
-
-        // Author 엔티티 삽입 (ID가 null인 새로운 엔티티로 취급)
-        Author author = new Author(null, "Example Author"); // ID를 null로 설정하여 새로 저장
-        author = entityManager.merge(author);
-
-        // Book 엔티티 삽입
-        Book book = new Book(1L, "Example Title", 10000, 8000, 100, true, "1234567890123",
-                "Example content", "Example explanation", true, LocalDate.of(2020, 1, 1), publisher,
-                null, new ArrayList<>(),new ArrayList<>());
-        book = entityManager.merge(book);
-
-        // AuthorRole 엔티티 삽입
-        AuthorRole authorRole = new AuthorRole(1L, AuthorRole.Role.AUTHOR);
-        authorRole = entityManager.merge(authorRole);
-
-        // BookAuthor 엔티티 삽입
-        BookAuthor bookAuthor = new BookAuthor(null, author, authorRole, book);  // BookAuthor 생성, ID는 null로 설정
-        bookAuthor =entityManager.merge(bookAuthor);
-
-        // category 엔티티 삽입
-        Category category = new Category(1L, "Example Category", null, new ArrayList<>(), 1);
-        category = entityManager.merge(category);
-        Category category2 = new Category(2L, "Example Category2", null, new ArrayList<>(), 1);
-        category2 = entityManager.merge(category2);
-        // BookCategory 엔티티 삽입
-        BookCategory bookCategory = new BookCategory(1L, category, book); // ID는 null로 설정하여 새로 저장
-        entityManager.merge(bookCategory); // 저장 후 영속화
-        BookCategory bookCategory2 = new BookCategory(2L, category2, book); // ID는 null로 설정하여 새로 저장
-        entityManager.merge(bookCategory2); // 저장 후 영속화
-
-        log.debug("setup 카테고리 확인 : {}",category.getName());
-        log.debug("setup 카테고리 확인2 : {}",category2.getName());
-        log.debug("setup 카테고리 확인 : {}",bookCategory.getCategory().getName());
-        log.debug("setup 카테고리 확인2 : {}",bookCategory2.getCategory().getName());
-
+        // 데이터 삽입을 data.sql에서 처리하므로 setup 메서드는 비워둡니다.
     }
-
-
-
-
 
     @DisplayName("책 제목을 통해 책의 세부사항을 가져오는지 확인.(책이 존재하는 경우)")
     @Test
     public void testFindBooksByTitleWithDetails() {
         // Given
-        String title = "Example Title";
+        String title = "test title";
         PageRequest pageable = PageRequest.of(0, 10);  // 첫 번째 페이지, 10개의 결과
 
         // When
@@ -105,11 +64,11 @@ public class BookRepositoryCustomTest {
         });
     }
 
-    @DisplayName("책 제목을 통해 책의 세부사항을 가져오는지 확인.(책이 존재하는 경우)")
+    @DisplayName("책 제목을 통해 책의 세부사항을 가져오는지 확인.(책이 존재하지 않는 경우)")
     @Test
     public void testFindBooksByTitleWithDetailsNotExists() {
         // Given
-        String title = "Example Title1";
+        String title = "not exist title";
         PageRequest pageable = PageRequest.of(0, 10);  // 첫 번째 페이지, 10개의 결과
 
         // When
@@ -148,7 +107,7 @@ public class BookRepositoryCustomTest {
     @Test
     public void testFindBooksByAuthorNameWithDetails() {
         // Given
-        String authorName = "Example Author";
+        String authorName = "example author";
         PageRequest pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
 
         // When
@@ -168,12 +127,11 @@ public class BookRepositoryCustomTest {
         });
     }
 
-
     @DisplayName("작가 이름을 통해 책의 세부사항을 가져오는지 확인. (책이 존재하지 않는경우)")
     @Test
     public void testFindBooksByAuthorNameWithDetailsNotExists() {
         // Given
-        String authorName = "Example Author1";
+        String authorName = "not exist author";
         PageRequest pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
 
         // When
@@ -186,27 +144,27 @@ public class BookRepositoryCustomTest {
 
     }
 
-    @DisplayName("작가 이름을 통해 책의 세부사항을 가져오는지 확인. (작가 이름이 null or blank )")
+    @DisplayName("작가 이름이 null 또는 blank면 빈페이지")
     @Test
-    public void testFindBooksByAuthorNameWithDetailsByNullOrBlankName() {
+    public void testFindBooksByAuthorNameWithDetailsByNullOrBlankCategoryName() {
         // Given
         String authorName = null;
         PageRequest pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
 
         // When
         Page<BookSearchEntityDTO> result = bookRepository.findBooksByAuthorNameWithDetails(authorName, pageable);
-        log.debug("testFindBooksByAuthorNameWithDetails (책 존재하지 않는 경우) 메서드 결과 값 확인 {}",result.getContent());
 
         // Then
-        assertThat(result).isNotNull(); //존재하지않아도 빈 페이지를 보여주기에 결과는 null이면 안된다
-        assertThat(result.getContent()).isEmpty(); // 결과가 비어있어여함
+        assertThat(result).isNotNull(); // 페이지는 null이면 안 됨
+        log.debug("testFindBooksByAuthorNameWithDetailsByNullOrBlankCategoryName 결과 값 확인: {}", result.getContent());
+        assertThat(result.getContent()).isEmpty(); // 결과가 비어 있어야 함
 
-        authorName ="";
+        authorName = "";
         result = bookRepository.findBooksByAuthorNameWithDetails(authorName, pageable);
-        assertThat(result).isNotNull();
-        assertThat(result.getContent()).isEmpty();
-
+        assertThat(result).isNotNull(); // 페이지는 null이면 안 됨
+        assertThat(result.getContent()).isEmpty(); // 결과가 비어 있어야 함
     }
+
 
     @DisplayName("카테고리 이름으로 책의 세부사항을 가져오는지 확인 (카테고리가 존재하는 경우)")
     @Test
@@ -267,13 +225,9 @@ public class BookRepositoryCustomTest {
         log.debug("testFindBooksByCategoryNameWithDetailsByNullOrBlankCategoryName 결과 값 확인: {}", result.getContent());
         assertThat(result.getContent()).isEmpty(); // 결과가 비어 있어야 함
 
-        // Blank 테스트
         categoryName = "";
         result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
-        assertThat(result).isNotNull();
+        assertThat(result).isNotNull(); // 페이지는 null이면 안 됨
         assertThat(result.getContent()).isEmpty(); // 결과가 비어 있어야 함
     }
-
-
-
 }

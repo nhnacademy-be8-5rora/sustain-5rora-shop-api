@@ -2,7 +2,7 @@ package store.aurora.search.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import store.aurora.book.entity.BookCategory;
+
 import store.aurora.search.dto.BookCategorySearchResponseDTO;
 import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.search.dto.BookSearchResponseDTO;

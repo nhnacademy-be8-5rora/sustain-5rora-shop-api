@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import store.aurora.book.dto.*;
+import store.aurora.book.dto.category.CategoryResponseDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.entity.QBook;
@@ -37,6 +38,8 @@ import static store.aurora.user.entity.QUser.user;
 
 import static store.aurora.utils.ValidationUtils.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Objects;
@@ -355,7 +358,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .where(like.book.id.eq(bookId))
                 .fetchCount();
 
-        String categoryPath = findCategoryPathByBookId(bookId);
+        List<CategoryResponseDTO> categoryPathByBookId = findCategoryPathByBookId(bookId);
 
         return new BookDetailsDto(
                 book.getId(),
@@ -371,7 +374,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 reviews,
                 tagNames,  // 태그 이름들
                 likeCount,  // 좋아요 개수
-                categoryPath,
+                categoryPathByBookId,
                 0L
         );
     }
@@ -418,7 +421,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
     }
 
     @Override
-    public String findCategoryPathByBookId(Long bookId) {
+    public List<CategoryResponseDTO> findCategoryPathByBookId(Long bookId) {
         // 하위 카테고리 ID와 경로를 위한 이름 조회
         Category leafCategory = queryFactory
                 .select(bookCategory.category)
@@ -431,19 +434,25 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
             return null;
         }
 
-        // 경로 생성
-        StringBuilder pathBuilder = new StringBuilder();
         Category currentCategory = leafCategory;
+        List<CategoryResponseDTO> categoryList = new ArrayList<>();
+
 
         while (currentCategory != null) {
-            pathBuilder.insert(0, currentCategory.getName());
+            CategoryResponseDTO categoryResponseDTO = new CategoryResponseDTO(
+                    currentCategory.getId(),
+                    currentCategory.getName(),
+                    currentCategory.getParent().getId(),
+                    currentCategory.getParent().getName(),
+                    currentCategory.getDepth()
+            );
+            categoryList.add(categoryResponseDTO);
             currentCategory = currentCategory.getParent();
-            if (currentCategory != null) {
-                pathBuilder.insert(0, " > ");
-            }
         }
 
-        return pathBuilder.toString();
+        Collections.reverse(categoryList);
+
+        return categoryList;
     }
 
 }

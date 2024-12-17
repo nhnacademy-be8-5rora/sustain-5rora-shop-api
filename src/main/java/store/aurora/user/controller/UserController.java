@@ -42,10 +42,16 @@ public class UserController {
         return userService.isUserExists(userId);
     }
 
-    // 회원가입
+
+    // 회원가입(등록)
     @PostMapping
-    public ResponseEntity<Map<String, String>> signUp(@RequestBody @Valid SignUpRequest request) {
-        userService.registerUser(request);
+    public ResponseEntity<Map<String, String>> signUp(@RequestBody @Valid SignUpRequest request,
+                                                      @RequestParam boolean isOauth) {
+        if (isOauth) {
+            userService.registerOauthUser(request);
+        } else {
+            userService.registerUser(request);
+        }
         return ResponseEntity.ok(Map.of("message", "회원가입이 완료되었습니다."));
     }
 

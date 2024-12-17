@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
     private static final int INACTIVE_PERIOD_MONTHS = 3;    // 휴면 3개월 기준
     private final RedisTemplate<String, Object> redisTemplate;
 
-    // 회원가입
+    // 일반회원가입
     @Override
     public void registerUser(SignUpRequest request) {
         // 인증 상태 확인
@@ -89,6 +89,31 @@ public class UserServiceImpl implements UserService {
 
         // 인증 상태 삭제
         redisTemplate.delete(request.getPhoneNumber() + "_verified");
+    }
+
+    @Override
+    public void registerOauthUser(SignUpRequest request) {
+        User user = new User();
+        user.setId(request.getId());
+        user.setName(request.getName());
+        user.setBirth(LocalDate.parse(request.getBirth(), DateTimeFormatter.ofPattern("yyyyMMdd")));
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setEmail(request.getEmail());
+        user.setStatus(UserStatus.ACTIVE);
+        user.setLastLogin(null);
+        user.setSignUpDate(LocalDate.now());
+        user.setIsOauth(true);
+
+        userRepository.save(user);
+
+        UserRank userRank = userRankRepository.findByRankName("GENERAL");
+        UserRankHistory userRankHistory = new UserRankHistory();
+        userRankHistory.setUserRank(userRank);
+        userRankHistory.setChangeReason("회원가입");
+        userRankHistory.setChangedAt(LocalDateTime.now());
+        userRankHistory.setUser(user);
+
+        userRankHistoryRepository.save(userRankHistory);
     }
 
     // 회원탈퇴

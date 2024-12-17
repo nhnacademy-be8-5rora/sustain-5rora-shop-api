@@ -42,6 +42,8 @@ public class BookImageRepositoryTest {
         book.setSalePrice(800);
         book.setStock(50);
         book.setSale(true);
+        book.setIsbn("testIsbn");
+        book.setContents("Test Contents");
         book.setPublishDate(LocalDate.now());
         book.setPublisher(publisher);
         book.setExplanation("Test Explanation");
@@ -89,6 +91,8 @@ public class BookImageRepositoryTest {
         newBook.setSalePrice(12000);
         newBook.setStock(30);
         newBook.setSale(true);
+        newBook.setIsbn("newIsbn");
+        newBook.setContents("Test Contents");
         newBook.setPublishDate(LocalDate.now());
         newBook.setPublisher(publisher);
         newBook.setExplanation("Test Explanation");

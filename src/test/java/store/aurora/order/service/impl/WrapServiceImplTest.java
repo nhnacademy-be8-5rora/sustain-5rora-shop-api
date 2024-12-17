@@ -46,6 +46,7 @@ class WrapServiceImplTest {
         Wrap wrap1 = new Wrap();
         wrap1.setAmount(1000);
         wrap1.setName("포장지");
+        wrapService.createWrap(wrap1);
 
         assertNotNull(wrapService.getWraps());
         assertEquals(2, wrapService.getWraps().size());

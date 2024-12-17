@@ -1,7 +1,6 @@
 package store.aurora.book.repository.impl;
 
 
-import com.netflix.discovery.converters.Auto;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
@@ -12,21 +11,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
-import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.*;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.entity.QBook;
-import store.aurora.book.entity.QBookImage;
 import store.aurora.book.repository.BookRepositoryCustom;
-import store.aurora.review.entity.QReview;
 import store.aurora.search.dto.BookSearchEntityDTO;
-import store.aurora.storage.entity.QStorageInfo;
-import store.aurora.utils.ValidationUtils;
 
-import static com.querydsl.core.group.GroupBy.groupBy;
-import static java.util.Collections.list;
-import static store.aurora.book.entity.QBook.*;
 import static store.aurora.book.entity.QBook.book;
 import static store.aurora.book.entity.QBookAuthor.bookAuthor;
 import static store.aurora.book.entity.QBookView.bookView;
@@ -37,21 +28,15 @@ import static store.aurora.book.entity.QPublisher.publisher;
 import static store.aurora.book.entity.QAuthor.author;
 import static store.aurora.book.entity.QAuthorRole.authorRole;
 import static store.aurora.book.entity.QBookImage.bookImage;
-import static store.aurora.book.entity.QPublisher.publisher;
 import static store.aurora.book.entity.tag.QBookTag.bookTag;
 import static store.aurora.book.entity.tag.QTag.tag;
 import static store.aurora.review.entity.QReview.review;
 import static store.aurora.review.entity.QReviewImage.reviewImage;
-import static store.aurora.storage.entity.QStorageInfo.storageInfo;
 import static store.aurora.user.entity.QUser.user;
 
-import com.querydsl.core.types.dsl.Expressions;
-import static store.aurora.book.entity.category.QCategory.category;
-import static store.aurora.book.entity.category.QBookCategory.bookCategory;
-import static store.aurora.review.entity.QReview.review;
+
 import static store.aurora.utils.ValidationUtils.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Objects;

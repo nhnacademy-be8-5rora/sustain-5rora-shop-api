@@ -1,7 +1,6 @@
 package store.aurora.book.mapper;
 
 import store.aurora.book.dto.BookRequestDTO;
-import store.aurora.book.dto.BookResponseDTO;
 import store.aurora.book.entity.*;
 import store.aurora.book.entity.category.Category;
 
@@ -26,24 +25,24 @@ public class BookMapper {
         return book;
     }
 
-    public static BookResponseDTO toDTO(Book book) {
-        BookResponseDTO dto = new BookResponseDTO();
-        dto.setId(book.getId());
-        dto.setTitle(book.getTitle());
-        dto.setRegularPrice(book.getRegularPrice());
-        dto.setSalePrice(book.getSalePrice());
-        dto.setPackaging(book.isPackaging());
-        dto.setStock(book.getStock());
-        dto.setExplanation(book.getExplanation());
-        dto.setContents(book.getContents());
-        dto.setIsbn(book.getIsbn());
-        dto.setPublishDate(book.getPublishDate());
-        dto.setSale(book.isSale());
-        dto.setPublisherName(book.getPublisher().getName());
-        if (book.getSeries() != null) {
-            dto.setSeriesName(book.getSeries().getName());
-        }
-
-        return dto;
-    }
+//    public static BookResponseDTO toDTO(Book book) {
+//        BookResponseDTO dto = new BookResponseDTO();
+//        dto.setId(book.getId());
+//        dto.setTitle(book.getTitle());
+//        dto.setRegularPrice(book.getRegularPrice());
+//        dto.setSalePrice(book.getSalePrice());
+//        dto.setPackaging(book.isPackaging());
+//        dto.setStock(book.getStock());
+//        dto.setExplanation(book.getExplanation());
+//        dto.setContents(book.getContents());
+//        dto.setIsbn(book.getIsbn());
+//        dto.setPublishDate(book.getPublishDate());
+//        dto.setSale(book.isSale());
+//        dto.setPublisherName(book.getPublisher().getName());
+//        if (book.getSeries() != null) {
+//            dto.setSeriesName(book.getSeries().getName());
+//        }
+//
+//        return dto;
+//    }
 }

@@ -19,8 +19,11 @@ Content-Type: application/json
   "tagIds": []
 }
 
+### 책에 연결된 카테고리 조회
+GET localhost:8083/api/book-category/1
+
 ### 책 상세정보 수정
-PUT localhost:8083/api/books/3/details
+PUT localhost:8083/api/books/1/details
 Content-Type: application/json
 
 {
@@ -103,7 +106,7 @@ POST localhost:8083/api/book-category/1
 Content-Type: application/json
 
 {
-  "categoryIds": [1]
+  "categoryIds": [2,3,4,5]
 }
 
 ### 기존 도서에 카테고리 삭제

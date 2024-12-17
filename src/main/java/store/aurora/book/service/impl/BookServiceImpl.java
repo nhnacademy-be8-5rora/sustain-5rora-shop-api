@@ -8,7 +8,7 @@ import store.aurora.book.dto.BookDetailsUpdateDTO;
 import store.aurora.book.dto.BookInfoDTO;
 import store.aurora.book.dto.BookRequestDTO;
 import store.aurora.book.dto.ReviewDto;
-import store.aurora.book.dto.BookSalesInfoDTO;
+import store.aurora.book.dto.BookSalesInfoUpdateDTO;
 import store.aurora.book.dto.tag.BookTagRequestDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.Publisher;
@@ -40,7 +40,7 @@ public class BookServiceImpl implements BookService {
     private final BookImageRepository bookImageRepository;
 
     @Transactional
-    public Book saveBookWithPublisherAndSeries(BookRequestDTO requestDTO) {
+    public void saveBookWithPublisherAndSeries(BookRequestDTO requestDTO) {
         Publisher publisher = publisherService.findOrCreatePublisher(requestDTO.getPublisherName());
         Series series = seriesService.findOrCreateSeries(requestDTO.getSeriesName());
 
@@ -62,10 +62,9 @@ public class BookServiceImpl implements BookService {
             }
         }
 
-        return savedBook;
     }
     @Transactional
-    public Book updateBookDetails(Long bookId, BookDetailsUpdateDTO detailsDTO) {
+    public void updateBookDetails(Long bookId, BookDetailsUpdateDTO detailsDTO) {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new NotFoundBookException(bookId));
 
@@ -88,27 +87,27 @@ public class BookServiceImpl implements BookService {
         book.setSeries(series);
         book.setSale(detailsDTO.isSale());
 
-        return bookRepository.save(book);
+        bookRepository.save(book);
     }
 
     @Transactional
-    public Book updateBookSalesInfo(Long bookId, BookSalesInfoDTO salesInfoDTO) {
+    public void updateBookSalesInfo(Long bookId, BookSalesInfoUpdateDTO salesInfoDTO) {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new NotFoundBookException(bookId));
 
         book.setSalePrice(salesInfoDTO.getSalePrice());
         book.setStock(salesInfoDTO.getStock());
 
-        return bookRepository.save(book);
+        bookRepository.save(book);
     }
 
     @Transactional
-    public Book updateBookPackaging(Long bookId, boolean packaging) {
+    public void updateBookPackaging(Long bookId, boolean packaging) {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new NotFoundBookException(bookId));
 
         book.setPackaging(packaging);
-        return bookRepository.save(book);
+        bookRepository.save(book);
     }
 
     @Transactional(readOnly = true)
@@ -118,7 +117,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Transactional(readOnly = true)
-    public BookDetailsDto getBookDetails(Long bookId) {
+    public void getBookDetails(Long bookId) {
 
         if (!bookRepository.existsById(bookId)) {
             throw new NotFoundBookException(bookId);
@@ -137,7 +136,6 @@ public class BookServiceImpl implements BookService {
 
         bookDetailsDto.setRating(avg);
 
-        return bookDetailsDto;
     }
 
     public List<BookInfoDTO> getBookInfo(List<Long> bookIds) {

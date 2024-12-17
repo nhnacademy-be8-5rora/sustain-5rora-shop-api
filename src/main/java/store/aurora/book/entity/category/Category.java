@@ -30,6 +30,6 @@ public class Category {
     @Column(nullable = false)
     private Integer depth;
 
-    @Column(nullable = false)
+    @Column(name = "display_order", nullable = false)
     private Integer displayOrder;
 }

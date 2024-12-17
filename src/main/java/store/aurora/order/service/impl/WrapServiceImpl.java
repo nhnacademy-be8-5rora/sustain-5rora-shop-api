@@ -6,6 +6,8 @@ import store.aurora.order.entity.Wrap;
 import store.aurora.order.repository.WrapRepository;
 import store.aurora.order.service.WrapService;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class WrapServiceImpl implements WrapService {
@@ -18,6 +20,11 @@ public class WrapServiceImpl implements WrapService {
     @Override
     public Wrap getWrap(Long id) {
         return wrapRepository.getReferenceById(id);
+    }
+
+    @Override
+    public List<Wrap> getWraps() {
+        return wrapRepository.findAll();
     }
 
     @Override

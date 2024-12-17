@@ -31,6 +31,7 @@ class OrderRepositoryTest {
         User user = new User();
         user.setId("test");
         user.setName("test");
+        user.setBirth(LocalDate.now());
         user.setPhoneNumber("010-1234-5678");
         user.setEmail("test@test.com");
         user.setStatus(UserStatus.ACTIVE);

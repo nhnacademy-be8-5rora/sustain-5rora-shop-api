@@ -55,7 +55,6 @@ public class BookServiceImpl implements BookService {
             bookCategoryService.addCategoriesToBook(savedBook.getId(), requestDTO.getCategoryIds());
         }
 
-
         if (requestDTO.getTagIds() != null && !requestDTO.getTagIds().isEmpty()) {
             for (Long tagId : requestDTO.getTagIds()) {
                 BookTagRequestDto bookTagRequestDto = new BookTagRequestDto(savedBook.getId(), tagId);

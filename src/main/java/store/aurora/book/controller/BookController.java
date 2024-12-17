@@ -8,15 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import store.aurora.book.dto.BookDetailsDto;
 import store.aurora.book.dto.BookRequestDTO;
 import store.aurora.book.dto.BookResponseDTO;
-import store.aurora.book.dto.tag.BookTagRequestDto;
 import store.aurora.book.entity.Book;
-import store.aurora.book.entity.Category;
-import store.aurora.book.entity.tag.Tag;
 import store.aurora.book.mapper.BookMapper;
 import store.aurora.book.service.BookService;
-import store.aurora.book.service.tag.TagService;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/books")
@@ -31,11 +25,11 @@ public class BookController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-//    @PutMapping("/{id}")
-//    public ResponseEntity<BookResponseDTO> updateBook(@PathVariable Long id, @RequestBody @Valid BookRequestDTO requestDTO) {
-//        Book updatedBook = bookService.updateBook(id, requestDTO);
-//        BookResponseDTO response = BookMapper.toDTO(updatedBook);
-//        return ResponseEntity.ok(response);
+//    @PutMapping("/{bookId}")
+//    public ResponseEntity<BookResponseDTO> updateBook(@PathVariable Long bookId, @RequestBody @Valid BookRequestDTO requestDTO) {
+//        Book updatedBook = bookService.updateBook(bookId, requestDTO);
+//        return ResponseEntity.ok(BookMapper.toDTO(updatedBook));
+//
 //    }
 
 

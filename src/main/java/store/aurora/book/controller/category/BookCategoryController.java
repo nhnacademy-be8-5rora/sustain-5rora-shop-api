@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import store.aurora.book.dto.category.BookCategoryRequestDTO;
-import store.aurora.book.entity.Category;
-import store.aurora.book.service.BookCategoryService;
+import store.aurora.book.entity.category.Category;
+import store.aurora.book.service.category.BookCategoryService;
 
 import java.util.List;
 
@@ -15,15 +15,15 @@ import java.util.List;
 public class BookCategoryController {
     private final BookCategoryService bookCategoryService;
 
-    @PostMapping
-    public ResponseEntity<Void> addCategoryToBook(@RequestBody BookCategoryRequestDTO request) {
-        bookCategoryService.addCategoriesToBook(request.getBookId(), request.getCategoryIds());
+    @PostMapping("{bookId}")
+    public ResponseEntity<Void> addCategoryToBook(@PathVariable Long bookId, @RequestBody BookCategoryRequestDTO request) {
+        bookCategoryService.addCategoriesToBook(bookId, request.getCategoryIds());
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping
-    public ResponseEntity<Void> removeCategoryFromBook(@RequestBody BookCategoryRequestDTO request) {
-        bookCategoryService.removeCategoriesFromBook(request.getBookId(), request.getCategoryIds());
+    @DeleteMapping("{bookId}")
+    public ResponseEntity<Void> removeCategoryFromBook(@PathVariable Long bookId,@RequestBody BookCategoryRequestDTO request) {
+        bookCategoryService.removeCategoriesFromBook(bookId, request.getCategoryIds());
         return ResponseEntity.ok().build();
     }
 

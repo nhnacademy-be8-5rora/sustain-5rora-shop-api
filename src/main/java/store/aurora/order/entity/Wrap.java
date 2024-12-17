@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -30,4 +31,12 @@ public class Wrap {
 
     @OneToMany(mappedBy = "wrap", cascade = CascadeType.ALL)
     private List<OrderDetail> orderDetails;
+
+    public void addOrderDetail(OrderDetail orderDetail) {
+        if (orderDetails == null) {
+            orderDetails = new ArrayList<>();
+        }
+        orderDetails.add(orderDetail);
+        orderDetail.setWrap(this); // 양방향 관계 동기화
+    }
 }

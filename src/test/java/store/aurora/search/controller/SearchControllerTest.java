@@ -13,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import store.aurora.book.dto.AuthorDTO;
-import store.aurora.search.dto.BookCategorySearchResponseDTO;
 import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.search.service.SearchService;
 
@@ -50,7 +49,7 @@ class SearchControllerTest {
         String type = "title";
         int pageNum = 1;
         PageRequest pageRequest = PageRequest.of(pageNum - 1, 8);
-        BookSearchResponseDTO responseDTO = new BookSearchResponseDTO(1L, "Example Title", 1000, 900, null, "Example Publisher", null, null);
+        BookSearchResponseDTO responseDTO = new BookSearchResponseDTO(1L, "Example Title", 1000, 900, null, "Example Publisher", null, null,null,5L,3,3.5);
         Page<BookSearchResponseDTO> page = new PageImpl<>(Collections.singletonList(responseDTO));
 
         when(searchService.findBooksByTitleWithDetails(keyword, pageRequest)).thenReturn(page);
@@ -77,7 +76,7 @@ class SearchControllerTest {
         String type = "author";
         int pageNum = 1;
         PageRequest pageRequest = PageRequest.of(pageNum - 1, 8);
-        BookSearchResponseDTO responseDTO = new BookSearchResponseDTO(1L, "Example Book", 1000, 900, null, "Example Publisher", null, null);
+        BookSearchResponseDTO responseDTO = new BookSearchResponseDTO(1L, "Example Book", 1000, 900, null, "Example Publisher", null, null,null,5L,3,3.5);
         Page<BookSearchResponseDTO> page = new PageImpl<>(Collections.singletonList(responseDTO));
 
         when(searchService.findBooksByAuthorNameWithDetails(keyword, pageRequest)).thenReturn(page);
@@ -185,15 +184,15 @@ class SearchControllerTest {
         List<AuthorDTO> authors = new ArrayList<>();
         authors.add(new AuthorDTO("Author Name", null));  // AuthorDTO 예시
 
-        // 여러 개의 BookCategorySearchResponseDTO 객체 생성
-        BookCategorySearchResponseDTO responseDTO1 = new BookCategorySearchResponseDTO(
-                1L, "Example Book 1", 1000, 900, null, "Example Publisher", null, authors, categoryNames);
-        BookCategorySearchResponseDTO responseDTO2 = new BookCategorySearchResponseDTO(
-                2L, "Example Book 2", 1200, 1100, null, "Example Publisher", null, authors, categoryNames);
+        // 여러 개의 BookSearchResponseDTO 객체 생성
+        BookSearchResponseDTO responseDTO1 = new BookSearchResponseDTO(
+                1L, "Example Book 1", 1000, 900, null, "Example Publisher", null, authors, categoryNames, 5L,3,3.5);
+        BookSearchResponseDTO responseDTO2 = new BookSearchResponseDTO(
+                2L, "Example Book 2", 1200, 1100, null, "Example Publisher", null, authors, categoryNames, 5L,3,3.5);
 
         // Page 객체 생성
-        List<BookCategorySearchResponseDTO> responses = Arrays.asList(responseDTO1, responseDTO2);
-        Page<BookCategorySearchResponseDTO> page = new PageImpl<>(responses);
+        List<BookSearchResponseDTO> responses = Arrays.asList(responseDTO1, responseDTO2);
+        Page<BookSearchResponseDTO> page = new PageImpl<>(responses);
 
         // when
         when(searchService.findBooksByCategoryNameWithDetails(keyword, pageRequest)).thenReturn(page);
@@ -206,18 +205,20 @@ class SearchControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(responses.size())))  // content 배열의 크기 동적 검증
-                // 모든 항목 검증
-                .andExpect(jsonPath("$.content[0].id", is((int) (long) responseDTO1.getId())))
+                // 첫 번째 BookSearchResponseDTO 검증
+                .andExpect(jsonPath("$.content[0].id", is(responseDTO1.getId().intValue())))
                 .andExpect(jsonPath("$.content[0].title", is(responseDTO1.getTitle())))
-                .andExpect(jsonPath("$.content[0].categories[0]", is(responseDTO1.getCategories().get(0))))
-                .andExpect(jsonPath("$.content[1].id", is((int) (long) responseDTO2.getId())))
+                .andExpect(jsonPath("$.content[0].publisherName", is(responseDTO1.getPublisherName())))
+                .andExpect(jsonPath("$.content[0].categoryNames[0]", is(responseDTO1.getCategoryNames().get(0))))
+                .andExpect(jsonPath("$.content[0].authors[0].name", is(responseDTO1.getAuthors().get(0).getName())))
+                // 두 번째 BookSearchResponseDTO 검증
+                .andExpect(jsonPath("$.content[1].id", is(responseDTO2.getId().intValue())))
                 .andExpect(jsonPath("$.content[1].title", is(responseDTO2.getTitle())))
-                .andExpect(jsonPath("$.content[1].categories[0]", is(responseDTO2.getCategories().get(0))));
+                .andExpect(jsonPath("$.content[1].publisherName", is(responseDTO2.getPublisherName())))
+                .andExpect(jsonPath("$.content[1].categoryNames[0]", is(responseDTO2.getCategoryNames().get(0))))
+                .andExpect(jsonPath("$.content[1].authors[0].name", is(responseDTO2.getAuthors().get(0).getName())));
 
         // Verify that the search service was called once
         verify(searchService, times(1)).findBooksByCategoryNameWithDetails(keyword, pageRequest);
     }
-
-
-
 }

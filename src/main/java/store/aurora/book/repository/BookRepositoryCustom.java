@@ -3,12 +3,12 @@ package store.aurora.book.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import store.aurora.search.dto.BookCategorySearchEntityDTO;
+
 import store.aurora.search.dto.BookSearchEntityDTO;
 
 public interface BookRepositoryCustom {
     Page<BookSearchEntityDTO> findBooksByTitleWithDetails(String title, Pageable pageable);
     Page<BookSearchEntityDTO> findBooksByAuthorNameWithDetails(String name, Pageable pageable);
-    Page<BookCategorySearchEntityDTO> findBooksByCategoryNameWithDetails(String categoryName, Pageable pageable);
+    Page<BookSearchEntityDTO> findBooksByCategoryNameWithDetails(String categoryName, Pageable pageable);
 }
 

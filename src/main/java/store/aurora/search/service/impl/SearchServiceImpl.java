@@ -8,8 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.repository.BookRepository;
-import store.aurora.search.dto.BookCategorySearchEntityDTO;
-import store.aurora.search.dto.BookCategorySearchResponseDTO;
+
 import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.search.service.SearchService;
@@ -36,7 +35,6 @@ public class SearchServiceImpl implements SearchService {
         Page<BookSearchEntityDTO> bookSearchEntityDTOPage = bookRepository.findBooksByTitleWithDetails(title, pageable);
 
         // BookSearchEntityDTO -> BookSearchResponseDTO로 변환
-
         return bookSearchEntityDTOPage.map(BookSearchResponseDTO::new);
     }
 
@@ -55,12 +53,12 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public Page<BookCategorySearchResponseDTO> findBooksByCategoryNameWithDetails(String name, Pageable pageable) {
+    public Page<BookSearchResponseDTO> findBooksByCategoryNameWithDetails(String name, Pageable pageable) {
         if(Objects.isNull(name) || name.isBlank()) {
             return emptyPage(pageable);
         }
 
-        Page<BookCategorySearchEntityDTO> bookSearchEntityDTOPage = bookRepository.findBooksByCategoryNameWithDetails(name, pageable);
-        return bookSearchEntityDTOPage.map(BookCategorySearchResponseDTO::new);
+        Page<BookSearchEntityDTO> bookSearchEntityDTOPage = bookRepository.findBooksByCategoryNameWithDetails(name, pageable);
+        return bookSearchEntityDTOPage.map(BookSearchResponseDTO::new);
     }
 }

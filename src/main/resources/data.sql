@@ -76,4 +76,11 @@ VALUES ('AUTHOR'),
 INSERT INTO book_authors (author_id, author_role_id, book_id)
 VALUES (1, 1, 1),  -- John Doe is the AUTHOR of the book with ID 1
        (2, 2, 1),  -- Jane Smith is the EDITOR of the book with ID 1
-       (2,1,2)
+       (2,1,2);
+
+--  book_views 데이터 삽입
+INSERT INTO book_views (book_id, user_ip, user_id)
+VALUES
+    (1, '192.168.1.1', 'user123'),  -- Book ID 1 viewed by user123 with IP 192.168.1.1
+    (1, '192.168.1.2', 'user1234'), -- Book ID 1 viewed by user1234 with IP 192.168.1.2
+    (2, '192.168.1.3', 'user123');  -- Book ID 2 viewed by user123 with IP 192.168.1.3

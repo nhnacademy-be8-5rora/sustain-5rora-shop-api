@@ -15,7 +15,7 @@ import store.aurora.book.entity.*;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.repository.BookRepository;
-import store.aurora.search.dto.BookCategorySearchEntityDTO;
+
 import store.aurora.search.dto.BookSearchEntityDTO;
 
 import java.time.LocalDate;
@@ -174,7 +174,7 @@ public class BookRepositoryCustomTest {
         PageRequest pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
 
         // When
-        Page<BookCategorySearchEntityDTO> result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
+        Page<BookSearchEntityDTO> result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
 
         // Then
         assertThat(result).isNotNull();
@@ -202,7 +202,7 @@ public class BookRepositoryCustomTest {
         PageRequest pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
 
         // When
-        Page<BookCategorySearchEntityDTO> result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
+        Page<BookSearchEntityDTO> result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
 
         // Then
         assertThat(result).isNotNull(); // 페이지는 null이면 안 됨
@@ -218,7 +218,7 @@ public class BookRepositoryCustomTest {
         PageRequest pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
 
         // When
-        Page<BookCategorySearchEntityDTO> result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
+        Page<BookSearchEntityDTO> result = bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable);
 
         // Then
         assertThat(result).isNotNull(); // 페이지는 null이면 안 됨

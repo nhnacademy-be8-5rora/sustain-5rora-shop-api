@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 
 @NoArgsConstructor
 @Setter
-public class BookSearchEntityDTO {
+public class BookCategorySearchEntityDTO {
 
     private Long id;
     private String title;
@@ -29,8 +29,9 @@ public class BookSearchEntityDTO {
 
 
     private String imgPath;
+    private List<String> categoryNameList; // 카테고리 이름 리스트 추가
 
-    public BookSearchEntityDTO(Long id, String title, int regularPrice, int salePrice, LocalDate publishDate, String publisherName, String authorsString, String imgPath) {
+    public BookCategorySearchEntityDTO(Long id, String title, int regularPrice, int salePrice, LocalDate publishDate, String publisherName, String authorsString, String imgPath, String categoryNames) {
         this.id = id;
         this.title = title;
         this.regularPrice = regularPrice;
@@ -39,6 +40,7 @@ public class BookSearchEntityDTO {
         this.publisherName = publisherName;
         this.authors = convertAuthorsStringToList(authorsString); // 변환 로직
         this.imgPath = imgPath;
+        this.categoryNameList = Arrays.asList(categoryNames.split(", ")); // 쉼표로 구분된 카테고리 이름을 List로 변환
     }
     // 쉼표로 구분된 문자열을 List<AuthorDTO>로 변환
     private List<AuthorDTO> convertAuthorsStringToList(String authorsString) {
@@ -108,10 +110,10 @@ public class BookSearchEntityDTO {
     public String getImgPath() {
         return imgPath;
     }
-
+    public List<String> getCategoryNameList() {return categoryNameList;}
     @Override
     public String toString() {
-        return "BookSearchEntityDTO{" +
+        return "BookCategorySearchEntityDTO{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", regularPrice=" + regularPrice +
@@ -120,7 +122,9 @@ public class BookSearchEntityDTO {
                 ", publisherName='" + publisherName + '\'' +
                 ", authors=" + authors +
                 ", imgPath='" + imgPath + '\'' +
+                ", categoryNameList=" + categoryNameList +  // 카테고리 이름 목록 추가
                 '}';
     }
+
 
 }

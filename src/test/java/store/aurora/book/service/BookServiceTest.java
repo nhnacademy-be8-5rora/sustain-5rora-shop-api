@@ -9,12 +9,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import store.aurora.book.dto.BookInfoDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.BookImage;
 import store.aurora.book.repository.BookImageRepository;
 import store.aurora.book.repository.BookRepository;
-import store.aurora.book.repository.CategoryRepository;
+import store.aurora.book.service.category.BookCategoryService;
 import store.aurora.book.service.tag.TagService;
 
 import static org.mockito.Mockito.*;
@@ -23,6 +24,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.util.Arrays;
 import java.util.List;
 
+@DataJpaTest
 @ExtendWith(MockitoExtension.class) // Mock 객체를 초기화 / JUnit 5
 class BookServiceTest {
 
@@ -38,11 +40,6 @@ class BookServiceTest {
     @Mock
     private SeriesService seriesService;
 
-    @Mock
-    private CategoryRepository categoryRepository;
-
-    @Mock
-    private BookCategoryService bookCategoryService;
 
     @Mock
     private TagService tagService;

@@ -48,8 +48,32 @@ VALUES ('Penguin Books');
 insert into serieses (name)
 values ('test name');
 
--- insert into books (title, regular_price, sale_price, is_sale, explanation, publisher_id, series_id, PACKAGING, PUBLISH_DATE)
--- values ('test title', 10000, 9000, TRUE, 'test desc', 1, 1, FALSE, '2024-12-12');
--- isbn 추가해야 함
--- insert into books (title, regular_price, sale_price, is_sale, explanation, publisher_id, series_id, PACKAGING, PUBLISH_DATE)
--- values ('test title2', 10000, 9000, TRUE, 'test desc2', 1, 1, FALSE, '2024-12-12');
+-- 최상위 카테고리(부모가 없는 카테고리) 삽입
+INSERT INTO categories (name, parent_id, depth) VALUES ('Example Category', NULL, 0);
+INSERT INTO categories (name, parent_id, depth) VALUES ('Example Category2', NULL, 0);
+
+insert into books (title, regular_price, sale_price, is_sale, explanation, publisher_id, series_id, packaging, publish_date, isbn, stock, contents)
+values ('test title', 10000, 9000, TRUE, 'test desc', 1, 1, FALSE, '2024-12-12', '1234567890123', 100, 'sample contents');
+
+insert into books (title, regular_price, sale_price, is_sale, explanation, publisher_id, series_id, packaging, publish_date, isbn, stock, contents)
+values ('test title2', 10000, 9000, TRUE, 'test desc2', 1, 1, FALSE, '2024-12-12', '1234567890124', 100, 'sample contents2');
+
+-- BookCategory 엔티티 삽입
+INSERT INTO book_categories (category_id, book_id) VALUES (1, 1);
+INSERT INTO book_categories (category_id, book_id) VALUES (2, 1);
+
+-- Author 엔티티 삽입
+INSERT INTO authors (name)
+VALUES ('example author'),
+       ('example editor');
+
+-- AuthorRole 엔티티 삽입
+INSERT INTO author_roles (role)
+VALUES ('AUTHOR'),
+       ('EDITOR');
+
+-- book_authors 테이블에 데이터 삽입
+INSERT INTO book_authors (author_id, author_role_id, book_id)
+VALUES (1, 1, 1),  -- John Doe is the AUTHOR of the book with ID 1
+       (2, 2, 1),  -- Jane Smith is the EDITOR of the book with ID 1
+       (2,1,2)

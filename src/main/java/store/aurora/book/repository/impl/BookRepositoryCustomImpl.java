@@ -104,10 +104,10 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                                 .leftJoin(bookAuthor.authorRole, authorRole)
                                 .where(bookAuthor.book.id.eq(book.id)),
                         bookImagePathSubquery,
-                        // 카테고리 이름을 List로 변환
+                        // 카테고리 아이디를 List로 변환
                         JPAExpressions.select(Expressions.stringTemplate(
                                         "GROUP_CONCAT({0})",
-                                        category.name
+                                        category.id
                                 ))
                                 .from(bookCategory)
                                 .leftJoin(bookCategory.category, category)
@@ -189,10 +189,10 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                                 .leftJoin(bookAuthor.authorRole, authorRole)
                                 .where(bookAuthor.book.id.eq(book.id)),
                         bookImagePathSubquery,
-                        // 카테고리 이름을 List로 변환
+                        // 카테고리 아이디를 List로 변환
                         JPAExpressions.select(Expressions.stringTemplate(
                                         "GROUP_CONCAT({0})",
-                                        category.name
+                                        category.id
                                 ))
                                 .from(bookCategory)
                                 .leftJoin(bookCategory.category, category)
@@ -218,37 +218,33 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
     }
 
 
-    // 특정 카테고리이름을 가진 책들을 반환.
+    // 특정 카테고리Id를 가진 책들을 반환.
     @Override
-    public Page<BookSearchEntityDTO> findBooksByCategoryNameWithDetails(String categoryName, Pageable pageable) {
-        if (categoryName == null || categoryName.isBlank()) {
+    public Page<BookSearchEntityDTO> findBooksByCategoryWithDetails(Long categoryId, Pageable pageable) {
+        if (categoryId == null ) {
             return emptyPage(pageable);
         }
-
-        // 카테고리 이름으로 해당 카테고리의 ID를 가져오는 서브쿼리
-        var categoryIdSubquery = JPAExpressions.select(category.id)
-                .from(category)
-                .where(category.name.eq(categoryName));
 
         // 최하위 카테고리인지 확인하기 위한 서브쿼리
         var isLeafCategorySubquery = JPAExpressions.select(category.parent.id)
                 .from(category)
-                .where(category.id.eq(categoryIdSubquery));
+                .where(category.id.eq(categoryId)); // categoryId로 직접 비교
 
         // 최하위 카테고리일 경우 해당 카테고리만 가져오고, 그렇지 않으면 해당 카테고리와 하위 카테고리들을 모두 가져오기
         var categoryHierarchySubquery = JPAExpressions.select(category.id)
                 .from(category)
                 .where(
-                        category.id.in(categoryIdSubquery) // 현재 카테고리 포함
-                                .or(category.parent.id.in(categoryIdSubquery)) // 부모 카테고리의 자식 카테고리들 포함
+                        category.id.eq(categoryId) // 현재 카테고리 포함
+                                .or(category.parent.id.eq(categoryId)) // 부모 카테고리의 자식 카테고리들 포함
                                 .or(
                                         // 최하위 카테고리일 경우 본인만 포함
-                                        category.id.eq(categoryIdSubquery)
+                                        category.id.eq(categoryId)
                                                 .and(category.parent.id.isNull()) // 부모가 없는 최하위 카테고리 확인
                                 )
                 )
                 .distinct();
-        //리뷰 개수
+
+        // 리뷰 개수
         var reviewCountSubquery = JPAExpressions.select(review.count().intValue()) // int로 변환
                 .from(review)
                 .where(review.book.id.eq(book.id));
@@ -257,7 +253,6 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         var averageReviewRatingSubquery = JPAExpressions.select(review.reviewRating.avg())
                 .from(review)
                 .where(review.book.id.eq(book.id));
-
 
         // 서브쿼리: 첫 번째 이미지 경로 가져오기
         var bookImagePathSubquery = JPAExpressions.select(bookImage.filePath)
@@ -299,19 +294,17 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                                 .leftJoin(bookAuthor.authorRole, authorRole)
                                 .where(bookAuthor.book.id.eq(book.id)),
                         bookImagePathSubquery,
-                        // 카테고리 이름을 List로 변환
+                        // 카테고리 아이디를 List로 변환
                         JPAExpressions.select(Expressions.stringTemplate(
                                         "GROUP_CONCAT({0})",
-                                        category.name
+                                        category.id
                                 ))
                                 .from(bookCategory)
                                 .leftJoin(bookCategory.category, category)
                                 .where(bookCategory.book.id.eq(book.id)),
-                        viewCountSubquery, // 조회수 추
+                        viewCountSubquery, // 조회수 추가
                         reviewCountSubquery, // 리뷰 갯수 추가
                         averageReviewRatingSubquery // 평균 리뷰 점수 추가
-
-
                 ))
                 .fetch();
 
@@ -325,6 +318,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         // 페이지 처리된 결과 반환
         return new PageImpl<>(content, pageable, total);
     }
+
 
     @Override
     public BookDetailsDto findBookDetailsByBookId(Long bookId) {

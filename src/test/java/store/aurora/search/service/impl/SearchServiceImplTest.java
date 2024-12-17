@@ -43,7 +43,7 @@ class SearchServiceImplTest {
 
         BookSearchEntityDTO entityDTO = new BookSearchEntityDTO(1L, "Example Title", 20000, 18000,
                 LocalDate.of(2022, 1, 1), "Example Publisher",
-                "Author Name (AUTHOR)", "/images/example.jpg", "Example Category", 5L,5,3.5);
+                "Author Name (AUTHOR)", "/images/example.jpg", "1,3", 5L,5,3.5);
         Page<BookSearchEntityDTO> entityDTOPage = new PageImpl<>(Collections.singletonList(entityDTO));
 
         when(bookRepository.findBooksByTitleWithDetails(title, pageable)).thenReturn(entityDTOPage);
@@ -100,7 +100,7 @@ class SearchServiceImplTest {
 
         BookSearchEntityDTO entityDTO = new BookSearchEntityDTO(1L, "Example Title", 20000, 18000,
                 LocalDate.of(2022, 1, 1), "Example Publisher",
-                "Example Author (AUTHOR)", "/images/example.jpg", "Example Category", 5L,5,3.5);
+                "Example Author (AUTHOR)", "/images/example.jpg", "1,2", 5L,5,3.5);
         Page<BookSearchEntityDTO> entityDTOPage = new PageImpl<>(Collections.singletonList(entityDTO));
 
         when(bookRepository.findBooksByAuthorNameWithDetails(authorName, pageable)).thenReturn(entityDTOPage);
@@ -144,23 +144,23 @@ class SearchServiceImplTest {
     @DisplayName("카테고리 이름으로 책의 세부사항을 가져오는지 확인")
     void testFindBooksByCategoryNameWithDetails() {
         // Given
-        String categoryName = "Example Category";
+        Long categoryId = 1L;
         Pageable pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
 
         // Mock 데이터 준비
         BookSearchEntityDTO mockBook1 = new BookSearchEntityDTO(1L, "Book Title 1", 1000, 800, LocalDate.now(),
-                "Publisher 1", "Author1 (AUTHOR)", "imagePath1", "Example Category", 5L,5,3.5);
+                "Publisher 1", "Author1 (AUTHOR)", "imagePath1", "1,2", 5L,5,3.5);
         BookSearchEntityDTO mockBook2 = new BookSearchEntityDTO(2L, "Book Title 2", 1200, 1000, LocalDate.now(),
-                "Publisher 2", "Author2 (EDITOR)", "imagePath2", "Example Category", 5L,3,3.5);
+                "Publisher 2", "Author2 (EDITOR)", "imagePath2", "1,3", 5L,3,3.5);
 
         // Page 객체로 Mock 데이터 설정
         Page<BookSearchEntityDTO> mockPage = new PageImpl<>(List.of(mockBook1, mockBook2), pageable, 2);
 
         // Mocking repository의 동작
-        when(bookRepository.findBooksByCategoryNameWithDetails(categoryName, pageable)).thenReturn(mockPage);
+        when(bookRepository.findBooksByCategoryWithDetails(categoryId, pageable)).thenReturn(mockPage);
 
         // When
-        Page<BookSearchResponseDTO> result = searchService.findBooksByCategoryNameWithDetails(categoryName, pageable);
+        Page<BookSearchResponseDTO> result = searchService.findBooksByCategoryWithDetails(categoryId, pageable);
 
         // Then
         assertThat(result).isNotNull();
@@ -171,32 +171,29 @@ class SearchServiceImplTest {
         result.getContent().forEach(book -> {
             assertThat(book.getTitle()).isNotNull(); // 도서 제목이 비어있지 않아야 함
             assertThat(book.getPublisherName()).isNotNull(); // 출판사 정보가 비어있지 않아야 함
-            assertThat(book.getCategoryNames()).isNotEmpty(); // 카테고리 목록이 비어있지 않아야 함
-            assertThat(book.getCategoryNames()).contains("Example Category"); // 카테고리 이름이 포함되어야 함
+            assertThat(book.getCategoryIdList()).isNotEmpty(); // 카테고리 목록이 비어있지 않아야 함
+            assertThat(book.getCategoryIdList()).contains(categoryId); // 카테고리 이름이 포함되어야 함
             assertThat(book.getAuthors()).isNotEmpty(); // 저자 목록이 비어있지 않아야 함
         });
 
-        verify(bookRepository, times(1)).findBooksByCategoryNameWithDetails(categoryName, pageable);
+        verify(bookRepository, times(1)).findBooksByCategoryWithDetails(categoryId, pageable);
     }
 
     @DisplayName("카테고리 이름이 null 또는 blank일 경우 빈 페이지를 반환하는지 확인")
     @Test
     void findBooksByCategoryNameWithDetails_NullOrEmptyName_ReturnsEmptyPage() {
-        String categoryName = null;
-        String emptyCategoryName = "";
+        Long categoryId = null;
         Pageable pageable = PageRequest.of(0, 8);
 
         // When
-        Page<BookSearchResponseDTO> resultForNull = searchService.findBooksByCategoryNameWithDetails(categoryName, pageable);
-        Page<BookSearchResponseDTO> resultForEmpty = searchService.findBooksByCategoryNameWithDetails(emptyCategoryName, pageable);
+        Page<BookSearchResponseDTO> resultForNull = searchService.findBooksByCategoryWithDetails(categoryId, pageable);
 
         // Then
         assertThat(resultForNull).isNotNull();
         assertThat(resultForNull.getContent()).isEmpty();
 
-        assertThat(resultForEmpty).isNotNull();
-        assertThat(resultForEmpty.getContent()).isEmpty();
 
-        verify(bookRepository, times(0)).findBooksByCategoryNameWithDetails(anyString(), eq(pageable));
+
+        verify(bookRepository, times(0)).findBooksByCategoryWithDetails(anyLong(), eq(pageable));
     }
 }

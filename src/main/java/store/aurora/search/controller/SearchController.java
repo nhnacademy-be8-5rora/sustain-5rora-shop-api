@@ -40,7 +40,7 @@ public class SearchController {
                     break;
                 case "category":
                     // 카테고리로 검색하는 로직을 처리
-                    bookSearchResponseDTOPage=searchService.findBooksByCategoryNameWithDetails(keyword,pageRequest);
+                    bookSearchResponseDTOPage=searchService.findBooksByCategoryWithDetails(Long.valueOf(keyword),pageRequest);
                     break;
                 case "author":
                     // 작가로 검색하는 로직을 처리

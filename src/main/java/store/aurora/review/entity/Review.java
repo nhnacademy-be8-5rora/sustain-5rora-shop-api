@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import store.aurora.book.entity.Book;
+import store.aurora.user.entity.User;
 
 import java.time.LocalDateTime;
 
@@ -34,22 +36,16 @@ public class Review {
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime reviewCreateAt = LocalDateTime.now();
 
-//    @NotNull
-//    @Setter
-//    @ManyToOne//(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "book_id", nullable = false)
-//    private Book book;
-    private Long BookId;
-
     @NotNull
     @Setter
-    @Column(nullable = false, length = 50)
-    private String userId;
+    @ManyToOne(optional = false)//(fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id", nullable = false)
+    private Book book;
 
-//    @Setter
-//    @NotNull
-//    @OneToOne
-//    private User user;
+    @Setter
+    @NotNull
+    @OneToOne(optional = false)
+    private User user;
 
 //    @Setter
 //    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)

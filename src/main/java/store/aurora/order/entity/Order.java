@@ -12,6 +12,7 @@ import store.aurora.user.entity.User;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -30,44 +31,36 @@ public class Order {
     private LocalDate preferredDeliveryDate;
 
     // 배송비, default 0
-    @NotNull
-    @Column(name = "delivery_fee")
+    @Column(name = "delivery_fee", nullable = false)
     private int deliveryFee;
 
     // 주문 시각
-    @NotNull
-    @Column(name = "order_time")
+    @Column(name = "order_time", nullable = false)
     private LocalDateTime orderTime;
 
     // 총 주문 금액, default 0
-    @NotNull
-    @Column(name = "total_amount")
+    @Column(name = "total_amount", nullable = false)
     private int totalAmount;
 
     // 포인트 사용량, default 0
-    @NotNull
-    @Column(name = "point_amount")
+    @Column(name = "point_amount", nullable = false)
     private int pointAmount;
 
     // 주문 상태
-    @NotNull
-    @Column(name = "state")
+    @Column(name = "state", nullable = false)
     private OrderState state;
 
     // 주문자 이름
-    @NotNull
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
 
     // 주문자 전화 번호
-    @NotNull
-    @Column(name = "order_phone")
+    @Column(name = "order_phone", nullable = false)
     private String orderPhone;
 
     // 주문자 이메일
     @Email
-    @NotNull
-    @Column(name = "order_email")
+    @Column(name = "order_email", nullable = false)
     private String orderEmail;
 
     // 비회원 주문자 비밀번호, 회원 주문 시에는 null
@@ -79,7 +72,15 @@ public class Order {
     private User user;
 
     @OneToMany(mappedBy = "order")
-    private List<OrderDetail> orderDetails;
+    private List<OrderDetail> orderDetails = new ArrayList<>();
+
+    public void addOrderDetail(OrderDetail orderDetail) {
+        if (orderDetails == null) {
+            orderDetails = new ArrayList<>();
+        }
+        orderDetails.add(orderDetail);
+        orderDetail.setOrder(this); // 양방향 관계 동기화
+    }
 
     @OneToOne(mappedBy = "order")
     private ShipmentInformation shipmentInformation;

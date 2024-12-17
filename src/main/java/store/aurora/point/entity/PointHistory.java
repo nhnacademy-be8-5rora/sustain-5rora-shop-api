@@ -39,7 +39,7 @@ public class PointHistory {
 //    @ManyToOne
 //    @JoinColumn(name = "order_id")
 //    private Order order;
-    private Long orderId;
+    private Long orderId; // todo
 
     @Setter
     @Enumerated(EnumType.STRING)

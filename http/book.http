@@ -3,7 +3,7 @@ POST localhost:8083/api/books
 Content-Type: application/json
 
 {
-  "title": "Clean Cod2",
+  "title": "Clean Code",
   "regularPrice": 35000,
   "salePrice": 30000,
   "packaging": true,
@@ -15,10 +15,38 @@ Content-Type: application/json
   "isSale": true,
   "publisherName": "ksc",
   "seriesName": null,
-  "categoryIds": [1,2]
+  "categoryIds": [1],
+  "tagIds": []
 }
 
-### 카테고리 생성
+### 책 상세정보 수정
+PUT localhost:8083/api/books/3/details
+Content-Type: application/json
+
+{
+  "title": "Refactoring",
+  "explanation": "코드를 개선하기 위한 실용적인 가이드",
+  "contents": "Chapter 1: Introduction to Refactoring",
+  "isbn": "9780134757599",
+  "publishDate": "2018-11-10",
+  "publisherName": "Pearson",
+  "seriesName": null,
+  "isSale": true
+}
+
+### 책 판매가 정보 수정
+PUT localhost:8083/api/books/1/sales-info
+Content-Type: application/json
+
+{
+  "salePrice": 38000,
+  "stock": 20
+}
+
+### 책 포장여부 수정
+PATCH localhost:8083/api/books/1/packaging?packaging=false
+
+### 카테고리 생성1
 POST localhost:8083/api/categories
 Content-Type: application/json
 
@@ -26,7 +54,7 @@ Content-Type: application/json
 "name": "IT",
   "parentId": null
 }
-### 카테고리 생성
+### 카테고리 생성2
 POST localhost:8083/api/categories
 Content-Type: application/json
 
@@ -34,7 +62,7 @@ Content-Type: application/json
   "name": "모바일",
   "parentId": 1
 }
-### 카테고리 생성
+### 카테고리 생성3
 POST localhost:8083/api/categories
 Content-Type: application/json
 
@@ -42,7 +70,7 @@ Content-Type: application/json
   "name": "PC",
   "parentId": 1
 }
-### 카테고리 생성
+### 카테고리 생성4
 POST localhost:8083/api/categories
 Content-Type: application/json
 
@@ -50,7 +78,7 @@ Content-Type: application/json
   "name": "아이폰",
   "parentId": 2
 }
-### 카테고리 생성
+### 카테고리 생성5
 POST localhost:8083/api/categories
 Content-Type: application/json
 
@@ -68,4 +96,48 @@ Content-Type: application/json
 }
 
 ### 카테고리 삭제
-DELETE localhost:8083/api/categories/1
+DELETE localhost:8083/api/categories/5
+
+### 기존 도서에 카테고리 추가
+POST localhost:8083/api/book-category/1
+Content-Type: application/json
+
+{
+  "categoryIds": [1]
+}
+
+### 기존 도서에 카테고리 삭제
+DELETE localhost:8083/api/book-category/1
+Content-Type: application/json
+
+{
+  "categoryIds": [1]
+}
+
+### 태그 등록1
+POST http://localhost:8083/api/tags
+Content-Type: application/json
+
+{
+  "name": "Programming"
+}
+
+### 태그 등록2
+POST http://localhost:8083/api/tags
+Content-Type: application/json
+
+{
+  "name": "Programming1"
+}
+
+### 기존 책에 태그 추가
+POST http://localhost:8083/api/book-tag/
+Content-Type: application/json
+
+{
+"bookId": 1,
+"tagId": 2
+}
+
+### 책-태그 연결 삭제
+DELETE http://localhost:8083/api/book-tag/1

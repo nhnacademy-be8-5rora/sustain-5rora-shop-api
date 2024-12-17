@@ -5,11 +5,15 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import store.aurora.user.dto.SignUpRequest;
+import store.aurora.user.dto.UserDetailResponseDto;
+import store.aurora.user.dto.UserResponseDto;
 import store.aurora.user.entity.User;
 import store.aurora.user.entity.UserRank;
 import store.aurora.user.entity.UserRankHistory;
 import store.aurora.user.entity.UserStatus;
+import store.aurora.user.exception.RoleNotFoundException;
 import store.aurora.user.repository.UserRankHistoryRepository;
 import store.aurora.user.repository.UserRankRepository;
 import store.aurora.user.repository.UserRepository;
@@ -112,6 +116,12 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public User getUser(String userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    }
+
     // 휴면 해제 처리
     @Override
     public void reactivateUser(String userId) {
@@ -132,5 +142,25 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    private String getRole(User user, String userId) {
+        return user.getUserRoles().stream()
+                .findFirst()
+                .map(userRole -> userRole.getRole().getRoleName())
+//                .orElse("ROLE_USER"); // 기본값 설정
+                .orElseThrow(() -> new RoleNotFoundException(userId));
+    }
 
+    @Transactional(readOnly = true)
+    public UserResponseDto getUserByUserId(String userId) {
+        User user = getUser(userId);
+        String role = getRole(user, userId);
+        return new UserResponseDto(user.getId(), role);
+    }
+
+    @Transactional(readOnly = true)
+    public UserDetailResponseDto getPasswordAndRole(String userId) {
+        User user = getUser(userId);
+        String role = getRole(user, userId);
+        return new UserDetailResponseDto(user.getPassword(), role);
+    }
 }

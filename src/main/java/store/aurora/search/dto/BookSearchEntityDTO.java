@@ -9,6 +9,8 @@ import store.aurora.book.entity.AuthorRole;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @NoArgsConstructor
 @Setter
@@ -44,28 +46,42 @@ public class BookSearchEntityDTO {
             return List.of(); // 비어 있으면 빈 리스트 반환
         }
 
-        return Arrays.stream(authorsString.split(", "))
-                .map(author -> {
-                    String[] parts = author.split(" \\("); // "이름 (역할)" 형태 분리
-                    String name = parts[0];
-                    String role = parts.length > 1 ? parts[1].replace(")", "") : null;
-
-                    // 역할이 있을 경우, AuthorRole.Role로 변환
-                    AuthorRole.Role authorRole = null;
-                    if (role != null) {
-                        try {
-                            authorRole = AuthorRole.Role.valueOf(role);
-                        } catch (IllegalArgumentException e) {
-                            // 역할이 잘못된 값일 경우 예외 처리 (예: "Writer" -> "AUTHOR"로 대체 등)
-                            authorRole = null;  // 또는 기본값을 지정할 수 있음
-                        }
-                    }
-
-                    // AuthorDTO 생성 (role이 null일 수 있음)
-                    return new AuthorDTO(name, authorRole);
-                })
+        // 정규식 기반으로 저자 데이터를 안전하게 분리
+        return Arrays.stream(authorsString.split("\\s*,\\s*")) // 콤마와 공백 기준으로 분리
+                .map(this::parseAuthor) // 각 저자 문자열을 AuthorDTO로 변환
                 .toList();
     }
+
+    private AuthorDTO parseAuthor(String authorString) {
+        // 정규식으로 "이름 (역할)" 분리
+        Pattern pattern = Pattern.compile("^(.*?)\\s*\\((.*?)\\)$");
+        Matcher matcher = pattern.matcher(authorString);
+
+        String name;
+        String role = null;
+
+        if (matcher.find()) {
+            name = matcher.group(1).trim(); // 이름 추출
+            role = matcher.group(2).trim(); // 역할 추출
+        } else {
+            // 역할이 없는 경우
+            name = authorString.trim();
+        }
+
+        // 역할을 Enum으로 변환
+        AuthorRole.Role authorRole = null;
+        if (role != null && !role.isEmpty()) {
+            try {
+                authorRole = AuthorRole.Role.valueOf(role.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                System.err.println("Invalid role: " + role + ", defaulting to null.");
+                authorRole = null; // 잘못된 역할 처리
+            }
+        }
+
+        return new AuthorDTO(name, authorRole);
+    }
+
     public Long getId() {
         return id;
     }

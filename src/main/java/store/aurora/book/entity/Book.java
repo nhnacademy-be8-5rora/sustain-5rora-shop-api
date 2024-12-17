@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.tag.BookTag;
 
 import java.time.LocalDate;
@@ -37,7 +38,7 @@ public class Book {
     @Column(nullable = false)
     private boolean isSale;
 
-    @Column(length = 15)
+    @Column(nullable = false, unique = true, length = 15)
     private String isbn;
 
     @Column(columnDefinition = "TEXT")
@@ -59,9 +60,4 @@ public class Book {
     @JoinColumn(name = "series_id")
     private Series series;
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BookCategory> bookCategories = new ArrayList<>();
-
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BookTag> bookTags = new ArrayList<>();
 }

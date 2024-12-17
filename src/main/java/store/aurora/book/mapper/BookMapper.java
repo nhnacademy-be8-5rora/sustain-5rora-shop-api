@@ -3,12 +3,13 @@ package store.aurora.book.mapper;
 import store.aurora.book.dto.BookRequestDTO;
 import store.aurora.book.dto.BookResponseDTO;
 import store.aurora.book.entity.*;
+import store.aurora.book.entity.category.Category;
 
 import java.util.List;
 
 public class BookMapper {
 
-    public static Book toEntity(BookRequestDTO dto, Publisher publisher, Series series, List<Category> categories) {
+    public static Book toEntity(BookRequestDTO dto, Publisher publisher, Series series) {
         Book book = new Book();
         book.setTitle(dto.getTitle());
         book.setRegularPrice(dto.getRegularPrice());
@@ -22,12 +23,6 @@ public class BookMapper {
         book.setSale(dto.isSale());
         book.setPublisher(publisher);
         book.setSeries(series);
-        for (Category category : categories) {
-            BookCategory bookCategory = new BookCategory();
-            bookCategory.setBook(book);
-            bookCategory.setCategory(category);
-            book.getBookCategories().add(bookCategory);
-        }
         return book;
     }
 
@@ -48,6 +43,7 @@ public class BookMapper {
         if (book.getSeries() != null) {
             dto.setSeriesName(book.getSeries().getName());
         }
+
         return dto;
     }
 }

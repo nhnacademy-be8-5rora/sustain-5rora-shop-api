@@ -1,4 +1,4 @@
-package store.aurora.book.entity;
+package store.aurora.book.entity.category;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,9 +26,6 @@ public class Category {
     @ManyToOne
     @JoinColumn(name = "parent_id")
     private Category parent;
-
-    @OneToMany(mappedBy = "parent")
-    private List<Category> children = new ArrayList<>();
 
     @Column(nullable = false)
     private int depth;

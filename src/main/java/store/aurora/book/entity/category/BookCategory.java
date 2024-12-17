@@ -1,4 +1,4 @@
-package store.aurora.book.entity;
+package store.aurora.book.entity.category;
 
 
 import jakarta.persistence.*;
@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import store.aurora.book.entity.Book;
 
 @Getter
 @Setter
@@ -19,10 +20,11 @@ public class BookCategory {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "book_id", nullable = false)
+    private Book book;
+
+    @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @ManyToOne
-    @JoinColumn(name = "book_id", nullable = false)
-    private Book book;
 }

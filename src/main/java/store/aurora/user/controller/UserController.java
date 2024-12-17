@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import store.aurora.user.dto.SignUpRequest;
+import store.aurora.user.dto.UserDetailResponseDto;
+import store.aurora.user.dto.UserResponseDto;
 import store.aurora.user.service.DoorayMessengerService;
 import store.aurora.user.service.UserService;
 
@@ -22,6 +24,18 @@ public class UserController {
     private final UserService userService;
     @Autowired
     private final DoorayMessengerService doorayMessengerService;
+
+    @GetMapping("/auth/details")
+    public ResponseEntity<UserDetailResponseDto> getUserDetail(@RequestHeader("UserId") String userId) {
+        UserDetailResponseDto userResponseDto = userService.getPasswordAndRole(userId);
+        return ResponseEntity.ok(userResponseDto);
+    }
+
+    @GetMapping("/auth/me")
+    public ResponseEntity<UserResponseDto> getUser(@RequestHeader("X-USER-ID") String userId) {
+        UserResponseDto userResponseDto = userService.getUserByUserId(userId);
+        return ResponseEntity.ok(userResponseDto);
+    }
 
     // 회원가입
     @PostMapping

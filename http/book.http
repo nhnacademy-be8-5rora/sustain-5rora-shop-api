@@ -16,7 +16,7 @@ Content-Type: application/json
   "publisherName": "ksc",
   "seriesName": null,
   "categoryIds": [1],
-  "tagIds": [1]
+  "tagIds": []
 }
 
 ### 카테고리 생성1
@@ -76,7 +76,7 @@ POST localhost:8083/api/book-category/1
 Content-Type: application/json
 
 {
-  "categoryIds": [2,3]
+  "categoryIds": [1]
 }
 
 ### 기존 도서에 카테고리 삭제

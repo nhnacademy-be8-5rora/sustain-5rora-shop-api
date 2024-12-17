@@ -19,10 +19,11 @@ public class BookCategory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "book_id", nullable = false)
+    private Long bookId;
+
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @Column(name = "book_id", nullable = false)
-    private Long bookId;
 }

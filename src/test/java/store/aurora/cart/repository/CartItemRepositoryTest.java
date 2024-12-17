@@ -59,6 +59,8 @@ class CartItemRepositoryTest {
         book.setSalePrice(800);
         book.setStock(50);
         book.setSale(true);
+        book.setIsbn("book-isbn");
+        book.setContents("Test Contents");
         book.setPublishDate(LocalDate.now());
         book.setPublisher(publisher);
         book.setExplanation("Test Explanation");

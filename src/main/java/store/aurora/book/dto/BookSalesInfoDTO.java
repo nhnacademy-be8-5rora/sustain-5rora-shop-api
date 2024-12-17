@@ -10,8 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookSalesInfoDTO {
-    private Boolean isSale;
     private Integer salePrice;
     private Integer stock;
-    private Boolean packaging;
 }

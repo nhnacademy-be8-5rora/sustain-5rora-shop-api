@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.BookDetailsDto;
+import store.aurora.book.dto.BookDetailsUpdateDTO;
 import store.aurora.book.dto.BookInfoDTO;
 import store.aurora.book.dto.BookRequestDTO;
 import store.aurora.book.dto.ReviewDto;
+import store.aurora.book.dto.BookSalesInfoDTO;
 import store.aurora.book.dto.tag.BookTagRequestDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.Publisher;
@@ -62,7 +64,52 @@ public class BookService {
 
         return savedBook;
     }
+    @Transactional
+    public Book updateBookDetails(Long bookId, BookDetailsUpdateDTO detailsDTO) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new NotFoundBookException(bookId));
 
+        // 출판사 및 시리즈 정보 업데이트
+        Publisher publisher = publisherService.findOrCreatePublisher(detailsDTO.getPublisherName());
+        Series series = seriesService.findOrCreateSeries(detailsDTO.getSeriesName());
+
+        // 중복 ISBN 체크
+        Optional<Book> existingBook = bookRepository.findByIsbn(detailsDTO.getIsbn());
+        if (existingBook.isPresent() && !existingBook.get().getId().equals(bookId)) {
+            throw new ISBNAlreadyExistsException(detailsDTO.getIsbn());
+        }
+
+        book.setTitle(detailsDTO.getTitle());
+        book.setExplanation(detailsDTO.getExplanation());
+        book.setContents(detailsDTO.getContents());
+        book.setIsbn(detailsDTO.getIsbn());
+        book.setPublishDate(detailsDTO.getPublishDate());
+        book.setPublisher(publisher);
+        book.setSeries(series);
+        book.setSale(detailsDTO.isSale());
+
+        return bookRepository.save(book);
+    }
+
+    @Transactional
+    public Book updateBookSalesInfo(Long bookId, BookSalesInfoDTO salesInfoDTO) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new NotFoundBookException(bookId));
+
+        book.setSalePrice(salesInfoDTO.getSalePrice());
+        book.setStock(salesInfoDTO.getStock());
+
+        return bookRepository.save(book);
+    }
+
+    @Transactional
+    public Book updateBookPackaging(Long bookId, boolean packaging) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new NotFoundBookException(bookId));
+
+        book.setPackaging(packaging);
+        return bookRepository.save(book);
+    }
 
     @Transactional(readOnly = true)
     public Book getBookById(Long bookId) {

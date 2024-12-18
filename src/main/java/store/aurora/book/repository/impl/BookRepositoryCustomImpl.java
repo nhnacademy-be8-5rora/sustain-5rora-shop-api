@@ -436,8 +436,8 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
             CategoryResponseDTO categoryResponseDTO = new CategoryResponseDTO(
                     currentCategory.getId(),
                     currentCategory.getName(),
-                    currentCategory.getParent().getId(),
-                    currentCategory.getParent().getName(),
+                    (currentCategory.getParent() == null ) ? null : currentCategory.getParent().getId(),
+                    (currentCategory.getParent() == null ) ? null : currentCategory.getParent().getName(),
                     currentCategory.getDepth()
             );
             categoryList.add(categoryResponseDTO);

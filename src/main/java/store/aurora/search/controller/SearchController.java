@@ -1,17 +1,18 @@
 package store.aurora.search.controller;
 
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.search.service.SearchService;
 
-import java.util.Objects;
+import java.util.List;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -19,43 +20,49 @@ public class SearchController {
 
     private final SearchService searchService;
 
-    // 디버깅을 위한 요청 URL 예시:
-    // http://localhost:8083/api/books/search?type=title&keyword=한강&pageNum=1
+
+    //디버그위한 요청 url : http://localhost:8083/api/books/search?type=title&keyword=한강&pageNum=1
     @GetMapping("/api/books/search")
-    public ResponseEntity<Page<BookSearchResponseDTO>> search(
+    public ResponseEntity<Page<?>> search(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String type,
-            @RequestParam(required = false, defaultValue = "1") String pageNum) {
+            @RequestParam(required = false, defaultValue = "1") String pageNum) { // pageNum 기본값을 1로 설정
 
-        if (Objects.isNull(type) || type.isBlank() || Objects.isNull(keyword) || keyword.isBlank()) {
-            return ResponseEntity.badRequest().body(Page.empty());
+        int page = Integer.parseInt(pageNum) - 1; // pageNum은 1부터 시작하므로 1을 빼줘야 0-based 페이지로 맞춰짐
+        PageRequest pageRequest = PageRequest.of(page, 8); // 페이지 사이즈는 8로 고정
+
+        Page<?> bookSearchResponseDTOPage = null;
+        if (type != null && keyword != null) {
+            switch (type) {
+                case "title":
+                    // 제목으로 검색하는 로직을 처리
+                    bookSearchResponseDTOPage = searchService.findBooksByTitleWithDetails(keyword, pageRequest);
+                    break;
+                case "category":
+                    // 카테고리로 검색하는 로직을 처리
+                    bookSearchResponseDTOPage=searchService.findBooksByCategoryWithDetails(Long.valueOf(keyword),pageRequest);
+                    break;
+                case "author":
+                    // 작가로 검색하는 로직을 처리
+                    bookSearchResponseDTOPage = searchService.findBooksByAuthorNameWithDetails(keyword, pageRequest);
+                    break;
+                default:
+                    break;
+            }
         }
 
-        // 페이지 정보를 생성
-        int page = Integer.parseInt(pageNum) - 1; // pageNum은 1부터 시작하므로 0-based로 맞춤
-        Pageable pageable = PageRequest.of(page, 8); // 페이지 크기는 8로 고정
-
-        Page<BookSearchResponseDTO> resultPage;
-
-        // 검색 유형(type)에 따라 SearchService의 메서드 호출
-        switch (type) {
-            case "title":
-                resultPage = searchService.findBooksByTitleWithDetails(keyword, pageable);
-                break;
-            case "category":
-                resultPage = searchService.findBooksByCategoryWithDetails(Long.valueOf(keyword), pageable);
-                break;
-            case "author":
-                resultPage = searchService.findBooksByAuthorNameWithDetails(keyword, pageable);
-                break;
-            default:
-                return ResponseEntity.badRequest().body(Page.empty());
+        if (bookSearchResponseDTOPage == null) {
+            return ResponseEntity.noContent().build();  // 결과가 없으면 204 No Content 반환
         }
 
-        // 결과 반환
-        if (resultPage.isEmpty()) {
-            return ResponseEntity.noContent().build(); // 결과가 없을 경우 204 No Content
+        // PageImpl을 사용하여 반환
+        List<?> content = bookSearchResponseDTOPage.getContent();
+        long totalElements = bookSearchResponseDTOPage.getTotalElements();
+        Page<?> pageResult = new PageImpl<>(content, pageRequest, totalElements);
+
+        return ResponseEntity.ok().body(pageResult);  // 결과가 있으면 200 OK 반환
         }
-        return ResponseEntity.ok(resultPage); // 결과가 있을 경우 200 OK
-    }
+
+
+
 }

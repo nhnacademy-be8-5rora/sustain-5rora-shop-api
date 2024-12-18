@@ -1,5 +1,5 @@
-eureka:
-  client:
-    enabled: false
+#eureka:
+#  client:
+#    enabled: false
 server:
   port: 9083

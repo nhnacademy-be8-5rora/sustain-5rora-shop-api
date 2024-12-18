@@ -1,4 +1,4 @@
-package store.aurora.common.dto;
+package store.aurora.key;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

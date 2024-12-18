@@ -81,3 +81,23 @@ management:
   info:
     env:
       enabled: true
+
+## key manager
+key:
+  manager:
+    url: https://api-keymanager.nhncloudservice.com
+    path: /keymanager/v1.0/appkey/{app-key}/secrets/{keyId}
+    app-key: qTQNj7LyHhdAazH3
+    password: 123
+
+## mysql
+database:
+  mysql:
+    url: 0a26e1278d3d47ddaabe34348c5ad3d8
+    user-name: d05aa6d9bd8e44a6b2e775b429935482
+    password: a2eaad61880140b7a53cd7f48856f26c
+    initial-size: 10
+    max-total: 10
+    min-idle: 10
+    max-idle: 10
+    max-wait: 1000

@@ -3,6 +3,7 @@ package store.aurora.cart.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/cart")
 public class CartController {
@@ -28,7 +30,7 @@ public class CartController {
     public ResponseEntity<Map<String, Object>> getCart(@RequestHeader(value = "X-USER-ID", required = false) String userId,
                                                        HttpServletRequest request) {
         Map<String, Object> result;
-
+        log.debug("check point!!");
         if (Objects.isNull(userId)) {
             result = cartService.getGuestCartWithTotalPrice(request);
         } else {

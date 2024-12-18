@@ -172,30 +172,30 @@ class SearchControllerTest {
     @Test
     void searchByCategory_ReturnsResults() throws Exception {
         // Given
-        String keyword = "Example Category";
+        String keyword = "1";
         String type = "category";
         int pageNum = 1;
         PageRequest pageRequest = PageRequest.of(pageNum - 1, 8);
 
         // 수정된 BookCategorySearchResponseDTO 객체 생성
-        List<String> categoryNames = new ArrayList<>();
-        categoryNames.add("Example Category");  // 카테고리 이름 추가
+        List<Long> categoryIds = new ArrayList<>();
+        categoryIds.add(1L);  // 카테고리 이름 추가
 
         List<AuthorDTO> authors = new ArrayList<>();
         authors.add(new AuthorDTO("Author Name", null));  // AuthorDTO 예시
 
         // 여러 개의 BookSearchResponseDTO 객체 생성
         BookSearchResponseDTO responseDTO1 = new BookSearchResponseDTO(
-                1L, "Example Book 1", 1000, 900, null, "Example Publisher", null, authors, categoryNames, 5L,3,3.5);
+                1L, "Example Book 1", 1000, 900, null, "Example Publisher", null, authors, categoryIds, 5L,3,3.5);
         BookSearchResponseDTO responseDTO2 = new BookSearchResponseDTO(
-                2L, "Example Book 2", 1200, 1100, null, "Example Publisher", null, authors, categoryNames, 5L,3,3.5);
+                2L, "Example Book 2", 1200, 1100, null, "Example Publisher", null, authors, categoryIds, 5L,3,3.5);
 
         // Page 객체 생성
         List<BookSearchResponseDTO> responses = Arrays.asList(responseDTO1, responseDTO2);
         Page<BookSearchResponseDTO> page = new PageImpl<>(responses);
 
         // when
-        when(searchService.findBooksByCategoryNameWithDetails(keyword, pageRequest)).thenReturn(page);
+        when(searchService.findBooksByCategoryWithDetails(Long.valueOf(keyword), pageRequest)).thenReturn(page);
 
         // Then
         mockMvc.perform(get("/api/books/search")
@@ -209,16 +209,16 @@ class SearchControllerTest {
                 .andExpect(jsonPath("$.content[0].id", is(responseDTO1.getId().intValue())))
                 .andExpect(jsonPath("$.content[0].title", is(responseDTO1.getTitle())))
                 .andExpect(jsonPath("$.content[0].publisherName", is(responseDTO1.getPublisherName())))
-                .andExpect(jsonPath("$.content[0].categoryNames[0]", is(responseDTO1.getCategoryNames().get(0))))
+                .andExpect(jsonPath("$.content[0].categoryIdList[0]", is(1)))
                 .andExpect(jsonPath("$.content[0].authors[0].name", is(responseDTO1.getAuthors().get(0).getName())))
                 // 두 번째 BookSearchResponseDTO 검증
                 .andExpect(jsonPath("$.content[1].id", is(responseDTO2.getId().intValue())))
                 .andExpect(jsonPath("$.content[1].title", is(responseDTO2.getTitle())))
                 .andExpect(jsonPath("$.content[1].publisherName", is(responseDTO2.getPublisherName())))
-                .andExpect(jsonPath("$.content[1].categoryNames[0]", is(responseDTO2.getCategoryNames().get(0))))
+                .andExpect(jsonPath("$.content[1].categoryIdList[0]", is(1)))
                 .andExpect(jsonPath("$.content[1].authors[0].name", is(responseDTO2.getAuthors().get(0).getName())));
 
         // Verify that the search service was called once
-        verify(searchService, times(1)).findBooksByCategoryNameWithDetails(keyword, pageRequest);
+        verify(searchService, times(1)).findBooksByCategoryWithDetails(Long.valueOf(keyword), pageRequest);
     }
 }

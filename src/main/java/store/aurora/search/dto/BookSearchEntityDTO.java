@@ -8,9 +8,11 @@ import store.aurora.book.entity.AuthorRole;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor
 @Setter
@@ -30,7 +32,7 @@ public class BookSearchEntityDTO {
 
     private String imgPath;
 
-    private List<String> categoryNameList; // 카테고리 이름 리스트 추가
+    private List<Long> categoryIdList; // 카테고리 이름 리스트 추가
 
 
     private Long viewCount;
@@ -39,7 +41,7 @@ public class BookSearchEntityDTO {
 
 
 
-    public BookSearchEntityDTO(Long id, String title, int regularPrice, int salePrice, LocalDate publishDate, String publisherName, String authorsString, String imgPath,String categoryNames, Long viewCount, int reviewCount, double reviewRating) {
+    public BookSearchEntityDTO(Long id, String title, int regularPrice, int salePrice, LocalDate publishDate, String publisherName, String authorsString, String imgPath,String categoryIdList, Long viewCount, int reviewCount, double reviewRating) {
         this.id = id;
         this.title = title;
         this.regularPrice = regularPrice;
@@ -48,11 +50,22 @@ public class BookSearchEntityDTO {
         this.publisherName = publisherName;
         this.authors = convertAuthorsStringToList(authorsString); // 변환 로직
         this.imgPath = imgPath;
-        this.categoryNameList = (categoryNames != null && !categoryNames.isEmpty()) ? Arrays.asList(categoryNames.split(", ")) : List.of();
+        this.categoryIdList = convertCategoryIdsToList(categoryIdList); // 수정된 부분
         this.viewCount = viewCount;
         this.reviewCount = reviewCount;
         this.reviewRating = reviewRating;
     }
+
+    public List<Long> convertCategoryIdsToList(String categoryIds) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return Collections.emptyList(); // 빈 리스트 반환
+        }
+        return Arrays.stream(categoryIds.split(","))
+                .map(Long::parseLong)
+                .collect(Collectors.toList());
+    }
+
+
     // 쉼표로 구분된 문자열을 List<AuthorDTO>로 변환
     private List<AuthorDTO> convertAuthorsStringToList(String authorsString) {
         if (authorsString == null || authorsString.isEmpty()) {
@@ -124,8 +137,8 @@ public class BookSearchEntityDTO {
     public Long getViewCount() {
         return viewCount;
     }
-    public List<String> getCategoryNameList() {
-        return categoryNameList;
+    public List<Long> getCategoryIdList() {
+        return categoryIdList;
     }
     public int getReviewCount() {
         return reviewCount;
@@ -145,7 +158,7 @@ public class BookSearchEntityDTO {
                 ", publisherName='" + publisherName + '\'' +
                 ", authors=" + authors +
                 ", imgPath='" + imgPath + '\'' +
-                ", categoryNameList=" + categoryNameList + // 카테고리 이름 리스트 추가
+                ", categoryIdList=" + categoryIdList + // 카테고리 이름 리스트 추가
                 ", viewCount=" + viewCount + // viewCount 추가
                 ", reviewCount=" + reviewCount+
                 ", reviewRating=" + reviewRating +

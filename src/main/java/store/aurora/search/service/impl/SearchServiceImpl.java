@@ -52,12 +52,12 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public Page<BookSearchResponseDTO> findBooksByCategoryNameWithDetails(String name, Pageable pageable) {
-        if(Objects.isNull(name) || name.isBlank()) {
+    public Page<BookSearchResponseDTO> findBooksByCategoryWithDetails(Long categoryId, Pageable pageable) {
+        if(Objects.isNull(categoryId)) {
             return emptyPage(pageable);
         }
 
-        Page<BookSearchEntityDTO> bookSearchEntityDTOPage = bookRepository.findBooksByCategoryNameWithDetails(name, pageable);
+        Page<BookSearchEntityDTO> bookSearchEntityDTOPage = bookRepository.findBooksByCategoryWithDetails(categoryId, pageable);
         return bookSearchEntityDTOPage.map(BookSearchResponseDTO::new);
     }
 }

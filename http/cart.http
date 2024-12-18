@@ -11,7 +11,7 @@ Content-Type: application/json
 X-USER-ID: user123
 
 {
-  "bookId": 2,
+  "bookId": 1,
   "quantity": 2
 }
 

@@ -4,7 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import store.aurora.book.config.QuerydslConfiguration;
 import store.aurora.order.entity.OrderDetail;
 import store.aurora.order.entity.Shipment;
 import store.aurora.order.entity.enums.OrderState;
@@ -17,8 +19,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(SpringExtension.class)
 @DataJpaTest
+@Import(QuerydslConfiguration.class)
 class ShipmentRepositoryTest {
     @Autowired
     private ShipmentRepository shipmentRepository;

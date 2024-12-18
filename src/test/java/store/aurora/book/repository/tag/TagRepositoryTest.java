@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
+import store.aurora.book.config.QuerydslConfiguration;
 import store.aurora.book.entity.tag.Tag;
 
 import static org.assertj.core.api.Assertions.*;
@@ -15,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @Slf4j
+@Import(QuerydslConfiguration.class)
 class TagRepositoryTest {
 
     @Autowired

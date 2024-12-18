@@ -1,6 +1,6 @@
-logging:
-  level:
-    org.springframework.web: WARN
+#logging:
+#  level:
+#    org.springframework.web: WARN
 
 #nhn:
 #  storage:

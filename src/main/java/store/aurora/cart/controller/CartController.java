@@ -30,7 +30,7 @@ public class CartController {
     public ResponseEntity<Map<String, Object>> getCart(@RequestHeader(value = "X-USER-ID", required = false) String userId,
                                                        HttpServletRequest request) {
         Map<String, Object> result;
-        log.debug("check point!!");
+        log.debug("check point!!!!");
         if (Objects.isNull(userId)) {
             result = cartService.getGuestCartWithTotalPrice(request);
         } else {

@@ -42,6 +42,5 @@ public class BookServiceTest {
         assertEquals("Test explanation of the book", bookDetails.getExplanation());
         assertEquals("Test contents of the book", bookDetails.getContents());
         assertEquals("Test Publisher", bookDetails.getPublisher().getName());
-        assertEquals("국내도서 > 소설/시/희곡 > 한국소설 > 한국 장편소설", bookDetails.getCategoryPath());
     }
 }

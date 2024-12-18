@@ -8,7 +8,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import store.aurora.book.config.QuerydslConfiguration;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.BookImage;
 import store.aurora.book.entity.Publisher;
@@ -18,6 +20,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @DataJpaTest
+@Import(QuerydslConfiguration.class)
 public class BookImageRepositoryTest {
 
     @Autowired

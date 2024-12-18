@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
+import store.aurora.book.config.QuerydslConfiguration;
 import store.aurora.cart.entity.Cart;
 import store.aurora.user.entity.User;
 import store.aurora.user.repository.UserRepository;
@@ -15,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
+@Import(QuerydslConfiguration.class)
 public class CartRepositoryTest {
 
     @Autowired

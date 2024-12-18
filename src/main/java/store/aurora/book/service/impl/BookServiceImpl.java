@@ -27,7 +27,9 @@ import store.aurora.book.service.category.BookCategoryService;
 import store.aurora.book.service.tag.TagService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -142,8 +144,12 @@ public class BookServiceImpl implements BookService {
     public List<BookInfoDTO> getBookInfo(List<Long> bookIds) {
         List<Book> books = bookRepository.findAllById(bookIds);
 
-        return books.stream()
-                .map(book -> {
+        Map<Long, Book> bookMap = books.stream()
+                .collect(Collectors.toMap(Book::getId, book -> book));
+
+        return bookIds.stream()
+                .map(bookId -> {
+                    Book book = bookMap.get(bookId);
                     BookInfoDTO bookInfoDTO = new BookInfoDTO();
                     bookInfoDTO.setTitle(book.getTitle());
                     bookInfoDTO.setRegularPrice(book.getRegularPrice());
@@ -159,5 +165,11 @@ public class BookServiceImpl implements BookService {
                     return bookInfoDTO;
                 })
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public void notExistThrow(Long bookId) {
+        if (!bookRepository.existsById(bookId))
+            throw new BookNotFoundException(bookId);
     }
 }

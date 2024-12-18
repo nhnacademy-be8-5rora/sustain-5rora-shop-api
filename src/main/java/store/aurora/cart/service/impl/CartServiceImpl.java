@@ -117,7 +117,7 @@ public class CartServiceImpl implements CartService {
             item.setQuantity(quantity);
         } else {
             // 장바구니에 없으면 새로 추가
-//            bookService.notExistThrow(bookId); // todo
+            bookService.notExistThrow(bookId);
             cartItems.add(new CartItemDTO(bookId, quantity));
         }
 

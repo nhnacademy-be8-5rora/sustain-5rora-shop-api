@@ -6,9 +6,14 @@ X-USER-ID: user123
 GET http://localhost:8083/api/cart
 
 ### 회원 장바구니 추가
-POST http://localhost:8083/api/cart?bookId=2&quantity=2
+POST http://localhost:8083/api/cart
+Content-Type: application/json
 X-USER-ID: user123
 
+{
+  "bookId": 2,
+  "quantity": 2
+}
 
 ### 회원 장바구니 추가 (not exist book)
 POST http://localhost:8083/api/cart?bookId=10&quantity=2
@@ -21,10 +26,22 @@ X-USER-ID: user123
 #------------------------- 비인증자 -----------------------
 
 ### 비인증자 장바구니 추가
-POST http://localhost:8083/api/cart?bookId=1&quantity=2
+POST http://localhost:8083/api/cart
+Content-Type: application/json
+
+{
+  "bookId": 2,
+  "quantity": 2
+}
 
 ### 비인증자 장바구니 추가 (not exist book)
-POST http://localhost:8083/api/cart?bookId=10&quantity=2
+POST http://localhost:8083/api/cart
+Content-Type: application/json
+
+{
+  "bookId": 2,
+  "quantity": 2
+}
 
 ### 비인증자 장바구니 조회
 GET http://localhost:8083/api/cart

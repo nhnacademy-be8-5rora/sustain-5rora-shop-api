@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import store.aurora.cart.dto.CartItemDTO;
+import store.aurora.cart.entity.Cart;
 import store.aurora.cart.service.CartService;
 
 import java.io.IOException;
@@ -41,23 +43,22 @@ public class CartController {
 
     @PostMapping
     public ResponseEntity<String> addItemToCart(@RequestHeader(value = "X-USER-ID", required = false) String userId,
-                                                @RequestParam(value = "bookId") Long bookId,
-                                                @RequestParam(value = "quantity") int quantity,
+                                                @RequestBody CartItemDTO cartItemDTO,
                                                 HttpServletRequest request,
                                                 HttpServletResponse response) {
 
-        if (bookId <= 0 || quantity <= 0) {
+        if (cartItemDTO.getBookId() <= 0 || cartItemDTO.getQuantity() <= 0) {
             return ResponseEntity.badRequest().body("Invalid bookId or quantity.");
         }
 
         if (Objects.isNull(userId)) {
             try {
-                cartService.addItemToGuestCart(bookId, quantity, request, response);
+                cartService.addItemToGuestCart(cartItemDTO.getBookId(), cartItemDTO.getQuantity(), request, response);
             } catch (IOException e) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to add item to cart.");
             }
         } else {
-            cartService.addItemToCart(userId, bookId, quantity);
+            cartService.addItemToCart(userId, cartItemDTO.getBookId(), cartItemDTO.getQuantity());
         }
 
         return ResponseEntity.ok("Item added to cart successfully");

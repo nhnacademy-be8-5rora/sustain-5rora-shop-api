@@ -13,7 +13,7 @@ import store.aurora.book.dto.BookInfoDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.service.BookService;
 import store.aurora.cart.dto.CartDTO;
-import store.aurora.cart.dto.CartItemResponseDTO;
+import store.aurora.cart.dto.CartItemDTO;
 import store.aurora.cart.entity.Cart;
 import store.aurora.cart.entity.CartItem;
 import store.aurora.cart.repository.CartItemRepository;
@@ -104,21 +104,21 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void addItemToGuestCart(Long bookId, int quantity, HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException, JsonProcessingException {
-        List<CartItemResponseDTO> cartItems = getCartFromCookie(request);
+        List<CartItemDTO> cartItems = getCartFromCookie(request);
 
         // 기존 장바구니에서 해당 상품이 있는지 확인
-        Optional<CartItemResponseDTO> existingItem = cartItems.stream()
+        Optional<CartItemDTO> existingItem = cartItems.stream()
                 .filter(item -> item.getBookId().equals(bookId))
                 .findFirst();
 
         if (existingItem.isPresent()) {
             // 이미 장바구니에 있으면 수량만 업데이트
-            CartItemResponseDTO item = existingItem.get();
+            CartItemDTO item = existingItem.get();
             item.setQuantity(quantity);
         } else {
             // 장바구니에 없으면 새로 추가
             bookService.notExistThrow(bookId);
-            cartItems.add(new CartItemResponseDTO(bookId, quantity));
+            cartItems.add(new CartItemDTO(bookId, quantity));
         }
 
         saveCookie(cartItems, response);
@@ -126,7 +126,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void deleteGuestCartItem(Long bookId, HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException, JsonProcessingException {
-        List<CartItemResponseDTO> cartItems = getCartFromCookie(request);
+        List<CartItemDTO> cartItems = getCartFromCookie(request);
         cartItems.removeIf(item -> item.getBookId().equals(bookId));
         saveCookie(cartItems, response);
     }
@@ -134,7 +134,7 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional
     public Map<String, Object> getGuestCartWithTotalPrice(HttpServletRequest request) {
-        List<CartItemResponseDTO> cartItemResponseDTOS = getCartFromCookie(request);
+        List<CartItemDTO> cartItemResponseDTOS = getCartFromCookie(request);
 
         List<CartDTO> cartItems = cartItemResponseDTOS.stream()
                 .map(cartItem -> new CartDTO(
@@ -173,7 +173,7 @@ public class CartServiceImpl implements CartService {
         return result;
     }
 
-    private List<CartItemResponseDTO> getCartFromCookie(HttpServletRequest request){
+    private List<CartItemDTO> getCartFromCookie(HttpServletRequest request){
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
@@ -183,7 +183,7 @@ public class CartServiceImpl implements CartService {
                         String decodedCartJson = URLDecoder.decode(cookie.getValue(), "UTF-8");
 
                         // JSON 파싱 (ObjectMapper 사용 예시)
-                        return objectMapper.readValue(decodedCartJson, new TypeReference<List<CartItemResponseDTO>>(){});
+                        return objectMapper.readValue(decodedCartJson, new TypeReference<List<CartItemDTO>>(){});
 //                        return objectMapper.readValue(cookie.getValue(), objectMapper.getTypeFactory().constructCollectionType(List.class, CartItemResponseDTO.class));
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
@@ -196,7 +196,7 @@ public class CartServiceImpl implements CartService {
         return new ArrayList<>(); // 장바구니 쿠키가 없으면 빈 리스트 반환
     }
 
-    private void saveCookie(List<CartItemResponseDTO> cartItems, HttpServletResponse response) throws UnsupportedEncodingException, JsonProcessingException {
+    private void saveCookie(List<CartItemDTO> cartItems, HttpServletResponse response) throws UnsupportedEncodingException, JsonProcessingException {
         String cartJson = objectMapper.writeValueAsString(cartItems);
         log.debug("cart cookie to send: {}", cartJson);
         String encodedCartJson = URLEncoder.encode(cartJson, "UTF-8");

@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CartItemResponseDTO {
+public class CartItemDTO {
     private Long bookId;
     private Integer quantity;
 }

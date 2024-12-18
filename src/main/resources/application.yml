@@ -35,14 +35,14 @@ spring:
     console:
       enabled: true
       path: /h2-console
-logging:
-  level:
-    root: debug
-    org.hibernate.orm.jdbc.bind: trace
-    org.springframework.transaction.interceptor: trace
-
-    sun.rmi: WARN
-    javax.management: WARN
+#logging:
+#  level:
+#    root: debug
+#    org.hibernate.orm.jdbc.bind: trace
+#    org.springframework.transaction.interceptor: trace
+#
+#    sun.rmi: WARN
+#    javax.management: WARN
 
 
 eureka:

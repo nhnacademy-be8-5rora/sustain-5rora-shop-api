@@ -26,7 +26,7 @@ public class Wrap {
     private int amount;
 
     // 포장 종류 이름
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, length = 64)
     private String name;
 
     @OneToMany(mappedBy = "wrap", cascade = CascadeType.ALL)

@@ -3,6 +3,7 @@ package store.aurora.user.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import store.aurora.user.dto.SignUpRequest;
@@ -44,7 +45,8 @@ public class UserController {
     @PostMapping
     public ResponseEntity<Map<String, String>> signUp(@RequestBody @Valid SignUpRequest request) {
         userService.registerUser(request);
-        return ResponseEntity.ok(Map.of("message", "회원가입이 완료되었습니다."));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Map.of("message", "회원가입이 완료되었습니다."));
     }
 
     // 인증코드 생성 및 전송
@@ -61,7 +63,7 @@ public class UserController {
         boolean isVerified = doorayMessengerService.verifyCode(request.getPhoneNumber(), request.getVerificationCode());
 
         if (!isVerified) {
-            return ResponseEntity.status(400)
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "잘못된 인증 코드입니다. 또는 코드가 만료되었습니다."));
         } else {
             return ResponseEntity.ok(Map.of("message", "인증이 완료되었습니다."));
@@ -82,11 +84,5 @@ public class UserController {
         return ResponseEntity.ok(Map.of("message", "휴면 계정이 활성화되었습니다."));
     }
 
-
-    // 로그아웃
-//    @PostMapping("/logout")
-//    public ResponseEntity<String> logout(@RequestHeader(value = "") String token) {
-//
-//    }
 
 }

@@ -34,6 +34,7 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     public Like cancelLike(Long bookId, String userId) {
+        // test
         return likeRepository.deleteByBookIdAndUserId(bookId, userId);
     }
 }

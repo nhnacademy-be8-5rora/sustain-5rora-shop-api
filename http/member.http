@@ -9,3 +9,11 @@ X-USER-ID: user123
 ### 멤버 조회 (no role member)
 GET http://localhost:8083/api/users/auth/details
 UserId: user1234
+
+### 멤버 존재 하는지
+GET http://localhost:8083/api/users/auth/exists
+UserId: user1234
+
+### 멤버 존재 하는지 (not exist)
+GET http://localhost:8083/api/users/auth/exists
+UserId: user123455

@@ -13,4 +13,5 @@ public interface UserService {
     User getUser(String userId);
     UserDetailResponseDto getPasswordAndRole(String userId);
     UserResponseDto getUserByUserId(String userId);
+    Boolean isUserExists(String userId);
 }

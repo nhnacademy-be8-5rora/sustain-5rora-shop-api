@@ -13,8 +13,23 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class ShipmentServiceImpl implements ShipmentService {
     private final ShipmentRepository shipmentRepository;
+
+    @Override
+    public boolean isExist(Long id) {
+        if(Objects.isNull(id)) {
+            throw new IllegalArgumentException("id is null");
+        }
+        return shipmentRepository.existsById(id);
+    }
+
     @Override
     public Shipment createShipment(Shipment shipment) {
+        if(Objects.isNull(shipment)) {
+            throw new IllegalArgumentException("shipment is null");
+        }
+        if(Objects.isNull(shipment.getState())){
+            throw new IllegalArgumentException("shipment state is null");
+        }
         return shipmentRepository.save(shipment);
     }
 
@@ -23,36 +38,30 @@ public class ShipmentServiceImpl implements ShipmentService {
         if(Objects.isNull(id)) {
             throw new IllegalArgumentException("id is null");
         }
+        if(!shipmentRepository.existsById(id)) {
+            throw new IllegalArgumentException("shipment is not exist");
+        }
         return shipmentRepository.getReferenceById(id);
     }
 
     @Override
+    // 필요한가?
     public List<Shipment> getShipments() {
         return shipmentRepository.findAll();
     }
 
     @Override
     public void updateShipment(Shipment shipment) {
-        checkShipmentValuable(shipment);
-        shipmentRepository.save(shipment);
-    }
-
-    @Override
-    public void deleteShipment(Shipment shipment) {
-        checkShipmentValuable(shipment);
-        shipmentRepository.delete(shipment);
-    }
-
-    private void checkShipmentValuable(Shipment shipment) {
         if(Objects.isNull(shipment)) {
             throw new IllegalArgumentException("shipment is null");
         }
-        if(Objects.isNull(shipment.getId())) {
-            throw new IllegalArgumentException("shipment id is null");
+        if(Objects.isNull(shipment.getState())){
+            throw new IllegalArgumentException("shipment state is null");
         }
-        if(!shipmentRepository.existsById(shipment.getId())) {
+        if(!isExist(shipment.getId())) {
             throw new IllegalArgumentException("shipment is not exist");
         }
+        shipmentRepository.save(shipment);
     }
 
     @Override
@@ -60,7 +69,7 @@ public class ShipmentServiceImpl implements ShipmentService {
         if(Objects.isNull(shipmentId)) {
             throw new IllegalArgumentException("shipmentId is null");
         }
-        if(!shipmentRepository.existsById(shipmentId)) {
+        if(!isExist(shipmentId)) {
             throw new IllegalArgumentException("shipment is not exist");
         }
         shipmentRepository.deleteById(shipmentId);

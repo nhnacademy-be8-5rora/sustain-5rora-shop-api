@@ -30,7 +30,6 @@ public class Shipment {
     private String trackingNumber;
 
     // 택배사 코드
-    @NotNull
     @Column(name = "shipment_companies_code", length = 5)
     private ShippingCompaniesCode shipmentCompaniesCode;
 

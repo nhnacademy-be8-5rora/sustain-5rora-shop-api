@@ -35,13 +35,22 @@ public class UserController {
         return ResponseEntity.ok(userResponseDto);
     }
 
-    // 회원가입
-    @PostMapping
-    public ResponseEntity<Map<String, String>> signUp(@RequestBody @Valid SignUpRequest request) {
-        userService.registerUser(request);
-        return ResponseEntity.ok(Map.of("message", "회원가입이 완료되었습니다."));
+    @GetMapping("/auth/exists")
+    public boolean checkUserExistence(@RequestHeader String userId) {
+        return userService.isUserExists(userId);
     }
 
+    // 회원가입(등록)
+    @PostMapping
+    public ResponseEntity<Map<String, String>> signUp(@RequestBody @Valid SignUpRequest request,
+                                                      @RequestParam boolean isOauth) {
+        if (isOauth) {
+            userService.registerOauthUser(request);
+        } else {
+            userService.registerUser(request);
+        }
+        return ResponseEntity.ok(Map.of("message", "회원가입이 완료되었습니다."));
+    }
     // 인증코드 생성 및 전송
     @PostMapping("/send-verification-code")
     public ResponseEntity<Map<String, String>> sendCode(@RequestBody SignUpRequest request) {
@@ -76,12 +85,5 @@ public class UserController {
         userService.reactivateUser(userId);
         return ResponseEntity.ok(Map.of("message", "휴면 계정이 활성화되었습니다."));
     }
-
-
-    // 로그아웃
-//    @PostMapping("/logout")
-//    public ResponseEntity<String> logout(@RequestHeader(value = "") String token) {
-//
-//    }
 
 }

@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.jdbc.Sql;
 import store.aurora.book.config.QuerydslConfiguration;
 import store.aurora.book.entity.*;
 import store.aurora.book.entity.category.BookCategory;
@@ -28,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Import(QuerydslConfiguration.class)
+@Sql("/store/aurora/book/repository/impl/test.sql")
 @DataJpaTest
 @Slf4j
 public class BookRepositoryCustomTest {

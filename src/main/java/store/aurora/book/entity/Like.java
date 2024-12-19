@@ -15,7 +15,8 @@ import store.aurora.user.entity.User;
 @Table(name = "likes")
 public class Like {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "book_id", nullable = false)
@@ -25,5 +26,5 @@ public class Like {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private Boolean isDelete = true;
+    private boolean isLike;
 }

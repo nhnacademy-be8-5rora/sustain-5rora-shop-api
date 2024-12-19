@@ -1,5 +1,6 @@
 package store.aurora.user.repository;
 
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import store.aurora.user.entity.User;
@@ -17,4 +18,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     boolean existsById(String id);
     boolean existsByPhoneNumber(String phoneNumber);
     boolean existsByEmail(String email);
+
+    Object getUserById(@NotNull String id);
 }

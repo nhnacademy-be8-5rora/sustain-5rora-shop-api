@@ -128,4 +128,11 @@ class ShipmentServiceImplTest {
             shipmentService.deleteByShipmentId(null);
         });
     }
+
+    @Test
+    void deleteByShipmentIdWithNonExistId() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            shipmentService.deleteByShipmentId(999L);
+        });
+    }
 }

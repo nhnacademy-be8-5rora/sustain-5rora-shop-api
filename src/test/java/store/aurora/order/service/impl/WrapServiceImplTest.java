@@ -1,8 +1,6 @@
 package store.aurora.order.service.impl;
 
 import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,6 +15,18 @@ class WrapServiceImplTest {
     private WrapServiceImpl wrapService;
 
     @Test
+    void isExist() {
+        Wrap wrap = new Wrap();
+        wrap.setAmount(1000);
+        wrap.setName("포장지");
+        wrapService.createWrap(wrap);
+
+        assertTrue(wrapService.isExist(wrap.getId()));
+
+        assertFalse(wrapService.isExist(100L));
+    }
+
+    @Test
     void createWrap() {
         Wrap wrap = new Wrap();
         wrap.setAmount(1000);
@@ -24,6 +34,14 @@ class WrapServiceImplTest {
         wrapService.createWrap(wrap);
 
         assertNotNull(wrap.getId());
+    }
+    @Test
+    void createWrapThrowException() {
+        assertThrows(IllegalArgumentException.class, ()->wrapService.createWrap(null));
+
+        Wrap wrap = new Wrap();
+        wrap.setAmount(1000);
+        assertThrows(IllegalArgumentException.class, ()->wrapService.createWrap(wrap));
     }
 
     @Test
@@ -67,14 +85,40 @@ class WrapServiceImplTest {
     }
 
     @Test
-    void deleteWrap() {
+    void updateWrapThrowExceptionsInputNull() {
+        assertThrows(IllegalArgumentException.class, ()->wrapService.updateWrap(null));
+    }
+
+    @Test
+    void updateWrapThrowExceptionNotCreated(){
+        Wrap wrap = new Wrap();
+        wrap.setAmount(1000);
+        wrap.setName("포장지");
+        assertThrows(IllegalArgumentException.class, ()->wrapService.updateWrap(wrap));
+        wrapService.createWrap(wrap);
+    }
+
+    @Test
+    void updateWrapThrowExceptionNameNull(){
         Wrap wrap = new Wrap();
         wrap.setAmount(1000);
         wrap.setName("포장지");
         wrapService.createWrap(wrap);
 
-        wrapService.deleteWrap(wrap);
-        assertThrows(Exception.class ,()->wrapService.getWrap(wrap.getId()));
+        wrap.setName(null);
+        assertThrows(IllegalArgumentException.class, ()->wrapService.updateWrap(wrap));
+    }
+
+    @Test
+    void updateWrapThrowExceptionNotExist() {
+        Wrap wrap = new Wrap();
+        wrap.setAmount(1000);
+        wrap.setName("포장지");
+        wrapService.createWrap(wrap);
+
+        assertDoesNotThrow(()->wrapService.updateWrap(wrap));
+        wrapService.deleteByWrapId(wrap.getId());
+        assertThrows(IllegalArgumentException.class, ()->wrapService.updateWrap(wrap));
     }
 
     @Test
@@ -85,6 +129,12 @@ class WrapServiceImplTest {
         wrapService.createWrap(wrap);
 
         wrapService.deleteByWrapId(wrap.getId());
-        assertThrows(Exception.class ,()->wrapService.getWrap(wrap.getId()));
+        assertFalse(wrapService.isExist(wrap.getId()));
+    }
+
+    @Test
+    void deleteByWrapIdThrowException() {
+        assertThrows(IllegalArgumentException.class, ()->wrapService.deleteByWrapId(null));
+        assertThrows(IllegalArgumentException.class, ()->wrapService.deleteByWrapId(100L));
     }
 }

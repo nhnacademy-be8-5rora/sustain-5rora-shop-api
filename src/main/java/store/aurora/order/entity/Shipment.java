@@ -31,7 +31,7 @@ public class Shipment {
 
     // 택배사 코드
     @NotNull
-    @Column(name = "shipment_companies_code")
+    @Column(name = "shipment_companies_code", length = 5)
     private ShippingCompaniesCode shipmentCompaniesCode;
 
     // 출고일

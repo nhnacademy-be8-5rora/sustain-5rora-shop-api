@@ -1,4 +1,4 @@
-package store.aurora.repository;
+package store.aurora.order.repository;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

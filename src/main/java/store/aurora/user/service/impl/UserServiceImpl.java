@@ -152,6 +152,12 @@ public class UserServiceImpl implements UserService {
         return new UserResponseDto(user.getId(), role);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Boolean isUserExists(String userId) {
+        return userRepository.existsById(userId);
+    }
+
     @Transactional(readOnly = true)
     public UserDetailResponseDto getPasswordAndRole(String userId) {
         User user = getUser(userId);

@@ -1,14 +1,16 @@
-eureka:
-  client:
-    enabled: false
+#eureka:
+#  client:
+#    enabled: false
 
 storage:
   local:
     base-path: ./uploads
-
 spring:
   servlet:
     multipart:
       enabled: true
       max-file-size: 10MB      # 파일 크기 제한
       max-request-size: 10MB
+
+#server:
+#  port: 9083

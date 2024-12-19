@@ -35,6 +35,11 @@ public class UserController {
         return ResponseEntity.ok(userResponseDto);
     }
 
+    @GetMapping("/auth/exists")
+    public boolean checkUserExistence(@RequestHeader String userId) {
+        return userService.isUserExists(userId);
+    }
+
     // 회원가입
     @PostMapping
     public ResponseEntity<Map<String, String>> signUp(@RequestBody @Valid SignUpRequest request) {

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import store.aurora.book.dto.BookDetailsDto;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.dto.BookDetailsUpdateDTO;
 import store.aurora.book.dto.BookRequestDTO;
@@ -94,8 +95,8 @@ public class BookController {
 //    }
 
     @GetMapping("/{bookId}")
-    public ResponseEntity<Void> getBookDetails(@PathVariable Long bookId) {
-        bookService.getBookDetails(bookId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<BookDetailsDto> getBookDetails(@PathVariable Long bookId) {
+        BookDetailsDto bookDetails = bookService.getBookDetails(bookId);
+        return ResponseEntity.ok(bookDetails);
     }
 }

@@ -18,26 +18,26 @@ public class TagController {
     private final TagService tagService;
 
     @PostMapping("/api/tags")
-    public ResponseEntity createTag(@Valid @RequestBody TagRequestDto requestDto) {
+    public ResponseEntity<Void> createTag(@Valid @RequestBody TagRequestDto requestDto) {
         tagService.createTag(requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
 
     @DeleteMapping("/api/tags/{tagId}")
-    public ResponseEntity removeTag(@PathVariable Long tagId) {
+    public ResponseEntity<Void> removeTag(@PathVariable Long tagId) {
         tagService.removeTag(tagId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/api/book-tag/")
-    public ResponseEntity addBookTag(@RequestBody BookTagRequestDto requestDto) {
+    public ResponseEntity<Void> addBookTag(@RequestBody BookTagRequestDto requestDto) {
         tagService.addBookTag(requestDto);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("api/book-tag/{bookTagId}")
-    public ResponseEntity removeBookTag(@PathVariable Long bookTagId) {
+    public ResponseEntity<Void> removeBookTag(@PathVariable Long bookTagId) {
         tagService.removeBookTag(bookTagId);
         return ResponseEntity.ok().build();
     }

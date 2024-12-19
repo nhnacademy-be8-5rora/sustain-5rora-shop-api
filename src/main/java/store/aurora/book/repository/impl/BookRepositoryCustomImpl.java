@@ -438,7 +438,8 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                     currentCategory.getName(),
                     (currentCategory.getParent() == null ) ? null : currentCategory.getParent().getId(),
                     (currentCategory.getParent() == null ) ? null : currentCategory.getParent().getName(),
-                    currentCategory.getDepth()
+                    currentCategory.getDepth(),
+                    currentCategory.getDisplayOrder()
             );
             categoryList.add(categoryResponseDTO);
             currentCategory = currentCategory.getParent();

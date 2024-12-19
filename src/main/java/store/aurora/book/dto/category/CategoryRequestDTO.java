@@ -10,7 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CategoryRequestDTO {
 
+    private Long parentId;
     @NotBlank
     private String name;
-    private Long parentId;
 }

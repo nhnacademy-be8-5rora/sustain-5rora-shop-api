@@ -14,5 +14,6 @@ public class CategoryResponseDTO {
     private String name;
     private Long parentId;
     private String parentName;
-    private int depth;
+    private Integer depth;
+    private Integer displayOrder;
 }

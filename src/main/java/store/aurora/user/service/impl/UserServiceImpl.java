@@ -13,7 +13,9 @@ import store.aurora.user.entity.User;
 import store.aurora.user.entity.UserRank;
 import store.aurora.user.entity.UserRankHistory;
 import store.aurora.user.entity.UserStatus;
+import store.aurora.user.exception.DuplicateUserException;
 import store.aurora.user.exception.RoleNotFoundException;
+import store.aurora.user.exception.VerificationException;
 import store.aurora.user.repository.UserRankHistoryRepository;
 import store.aurora.user.repository.UserRankRepository;
 import store.aurora.user.repository.UserRepository;
@@ -43,18 +45,18 @@ public class UserServiceImpl implements UserService {
         // 인증 상태 확인
         String verificationStatus = (String) redisTemplate.opsForValue().get(request.getPhoneNumber() + "_verified");
         if (verificationStatus == null || !verificationStatus.equals("true")) {
-            throw new IllegalArgumentException("인증 코드가 확인되지 않았습니다. 인증을 완료한 후 회원가입을 진행해주세요.");
+            throw new VerificationException("인증 코드가 확인되지 않았습니다. 인증을 완료한 후 회원가입을 진행해주세요.");
         }
 
         // 유효성 검사
         if (userRepository.existsById(request.getId())) {
-            throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
+            throw new DuplicateUserException("이미 존재하는 아이디입니다.");
         }
         if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
-            throw new IllegalArgumentException("이미 존재하는 전화번호입니다.");
+            throw new DuplicateUserException("이미 존재하는 전화번호입니다.");
         }
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+            throw new DuplicateUserException("이미 존재하는 이메일입니다.");
         }
 
         // 비밀번호 암호화

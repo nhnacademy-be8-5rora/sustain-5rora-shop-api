@@ -60,4 +60,5 @@ public class Book {
     @JoinColumn(name = "series_id")
     private Series series;
 
+    // todo addCategory, addTag
 }

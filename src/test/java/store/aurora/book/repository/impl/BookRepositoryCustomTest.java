@@ -29,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Import(QuerydslConfiguration.class)
-@Sql("/store/aurora/book/repository/impl/test.sql")
+@Sql("/store/aurora/book/repository/impl/test.sql") // todo classpath
 @DataJpaTest
 @Slf4j
 public class BookRepositoryCustomTest {

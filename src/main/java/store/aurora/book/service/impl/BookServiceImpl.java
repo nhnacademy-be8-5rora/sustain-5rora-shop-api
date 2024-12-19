@@ -28,7 +28,7 @@ import store.aurora.book.service.PublisherService;
 import store.aurora.book.service.SeriesService;
 import store.aurora.book.service.category.BookCategoryService;
 import store.aurora.book.service.tag.TagService;
-import store.aurora.file.FileStorageService;
+//import store.aurora.file.FileStorageService;
 
 import java.io.IOException;
 import java.util.List;
@@ -45,7 +45,7 @@ public class BookServiceImpl implements BookService {
     private final BookCategoryService bookCategoryService;
     private final TagService tagService;
     private final BookImageRepository bookImageRepository;
-    private final FileStorageService fileStorageService;
+//    private final FileStorageService fileStorageService;
 
     @Transactional
     public void saveBookWithPublisherAndSeries(BookRequestDTO requestDTO) {
@@ -130,32 +130,32 @@ public class BookServiceImpl implements BookService {
     }
 
 
-    @Transactional
-    public void addBookImages(Long bookId, List<MultipartFile> files) throws IOException {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new NotFoundBookException(bookId));
-
-        // 책에 기존 썸네일이 있는지 확인
-        boolean hasThumbnail = bookImageRepository.existsByBookAndIsThumbnailTrue(book);
-
-        for (int i = 0; i < files.size(); i++) {
-            String uploadedPath = fileStorageService.uploadFile(files.get(i),"Books");
-
-            BookImage bookImage = new BookImage();
-            bookImage.setBook(book);
-            bookImage.setFilePath(uploadedPath);
-
-            // 썸네일이 없을 경우 첫 번째 이미지를 썸네일로 설정
-            if (!hasThumbnail) {
-                bookImage.setThumbnail(true);
-                hasThumbnail = true; // 플래그 업데이트
-            } else {
-                bookImage.setThumbnail(false);
-            }
-
-            bookImageRepository.save(bookImage);
-        }
-    }
+//    @Transactional
+//    public void addBookImages(Long bookId, List<MultipartFile> files) throws IOException {
+//        Book book = bookRepository.findById(bookId)
+//                .orElseThrow(() -> new NotFoundBookException(bookId));
+//
+//        // 책에 기존 썸네일이 있는지 확인
+//        boolean hasThumbnail = bookImageRepository.existsByBookAndIsThumbnailTrue(book);
+//
+//        for (int i = 0; i < files.size(); i++) {
+//            String uploadedPath = fileStorageService.uploadFile(files.get(i),"Books");
+//
+//            BookImage bookImage = new BookImage();
+//            bookImage.setBook(book);
+//            bookImage.setFilePath(uploadedPath);
+//
+//            // 썸네일이 없을 경우 첫 번째 이미지를 썸네일로 설정
+//            if (!hasThumbnail) {
+//                bookImage.setThumbnail(true);
+//                hasThumbnail = true; // 플래그 업데이트
+//            } else {
+//                bookImage.setThumbnail(false);
+//            }
+//
+//            bookImageRepository.save(bookImage);
+//        }
+//    }
 
 
     @Transactional
@@ -168,7 +168,7 @@ public class BookServiceImpl implements BookService {
         }
 
         // 파일 삭제
-        fileStorageService.deleteFile(bookImage.getFilePath());
+//        fileStorageService.deleteFile(bookImage.getFilePath());
         bookImageRepository.delete(bookImage);
     }
 

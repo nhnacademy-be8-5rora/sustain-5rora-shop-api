@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface BookImageRepository extends JpaRepository<BookImage, Long> {
     List<BookImage> findByBook(Book book);
-    boolean existsByBookAndIsThumbnailTrue(Book book);
+//    boolean existsByBookAndIsThumbnailTrue(Book book);
 //    void updateAllThumbnailsToFalse(Long bookId);
 }
 

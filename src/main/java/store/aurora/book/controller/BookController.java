@@ -12,7 +12,7 @@ import store.aurora.book.dto.BookRequestDTO;
 import store.aurora.book.dto.BookSalesInfoUpdateDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.service.BookService;
-import store.aurora.file.FileStorageService;
+//import store.aurora.file.FileStorageService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BookController {
     private final BookService bookService;
-    private final FileStorageService fileStorageService;
+//    private final FileStorageService fileStorageService;
 
     @PostMapping
     public ResponseEntity<Void> createBook(

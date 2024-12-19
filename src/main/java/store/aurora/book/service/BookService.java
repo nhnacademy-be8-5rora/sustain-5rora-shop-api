@@ -14,7 +14,7 @@ public interface BookService {
     void updateBookDetails(Long bookId, BookDetailsUpdateDTO detailsDTO);
     void updateBookSalesInfo(Long bookId, BookSalesInfoUpdateDTO salesInfoDTO);
     void updateBookPackaging(Long bookId, boolean packaging);
-    void addBookImages(Long bookId, List<MultipartFile> files) throws IOException;
+//    void addBookImages(Long bookId, List<MultipartFile> files) throws IOException;
     void deleteBookImage(Long bookId, Long imageId) throws IOException;
     void updateThumbnail(Long bookId, Long imageId);
     Book getBookById(Long bookId);

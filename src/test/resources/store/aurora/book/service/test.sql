@@ -10,8 +10,8 @@ INSERT INTO storage_infos(storage_name, storage_url)
 VALUES ('storage1', 'storage_url_1');
 
 -- BookImage 테이블에 데이터 삽입
-INSERT INTO book_images (book_id, file_id, file_path)
-VALUES (1,1, 'image_path_1');
+INSERT INTO book_images (book_id, storage_id, file_path, is_thumbnail)
+VALUES (1,1, 'image_path_1',FALSE);
 
 INSERT INTO categories (name, parent_id, depth, display_order) VALUES ('국내도서', NULL, 0, 1);
 INSERT INTO categories (name, parent_id, depth, display_order) VALUES ('소설/시/희곡', 1, 1, 1);

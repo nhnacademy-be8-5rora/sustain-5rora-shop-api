@@ -1,3 +1,15 @@
+### oauth 회원가입
+POST http://localhost:8083/api/users?isOauth=true
+Content-Type: application/json
+
+{
+  "id": "payco:testId2",
+  "name": "홍길동",
+  "birth": "19000101",
+  "phoneNumber": "01012345678",
+  "email": "test@test.com"
+}
+
 ### 멤버 조회 (password, role)
 GET http://localhost:8083/api/users/auth/details
 UserId: user123

@@ -90,6 +90,31 @@ public class UserServiceImpl implements UserService {
         redisTemplate.delete(request.getPhoneNumber() + "_verified");
     }
 
+    @Override
+    public void registerOauthUser(SignUpRequest request) {
+        User user = new User();
+        user.setId(request.getId());
+        user.setName(request.getName());
+        user.setBirth(LocalDate.parse(request.getBirth(), DateTimeFormatter.ofPattern("yyyyMMdd")));
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setEmail(request.getEmail());
+        user.setStatus(UserStatus.ACTIVE);
+        user.setLastLogin(null);
+        user.setSignUpDate(LocalDate.now());
+        user.setIsOauth(true);
+
+        userRepository.save(user);
+
+        UserRank userRank = userRankRepository.findByRankName("GENERAL");
+        UserRankHistory userRankHistory = new UserRankHistory();
+        userRankHistory.setUserRank(userRank);
+        userRankHistory.setChangeReason("회원가입");
+        userRankHistory.setChangedAt(LocalDateTime.now());
+        userRankHistory.setUser(user);
+
+        userRankHistoryRepository.save(userRankHistory);
+    }
+
     // 회원탈퇴
     @Override
     public void deleteUser(String userId) {

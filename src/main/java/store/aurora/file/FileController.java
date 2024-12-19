@@ -21,8 +21,8 @@ public class FileController {
                 return ResponseEntity.badRequest().body("No file uploaded or file is empty.");
             }
 
-            String filePath = fileStorageService.uploadFile(file);
-            return ResponseEntity.ok("File uploaded successfully: " + filePath);
+            String filePath = fileStorageService.uploadFile(file,"Books/");
+            return ResponseEntity.ok(filePath); // 파일 경로 반환
         } catch (IOException e) {
             return ResponseEntity.status(500).body("File upload failed: " + e.getMessage());
         }

@@ -1,11 +1,11 @@
 package store.aurora.order.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,11 +22,12 @@ public class Wrap {
     private Long id;
 
     // 가격(원) default 0
+    @ColumnDefault("0")
     @Column(name="amount", nullable = false)
-    private int amount;
+    private Integer amount;
 
     // 포장 종류 이름
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, length = 64)
     private String name;
 
     @OneToMany(mappedBy = "wrap", cascade = CascadeType.ALL)

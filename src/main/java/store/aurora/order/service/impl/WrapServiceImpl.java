@@ -7,18 +7,34 @@ import store.aurora.order.repository.WrapRepository;
 import store.aurora.order.service.WrapService;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 public class WrapServiceImpl implements WrapService {
     private final WrapRepository wrapRepository;
+
     @Override
-    public Wrap createWrap(Wrap wrap) {
-        return wrapRepository.save(wrap);
+    public boolean isExist(Long id) {
+        return wrapRepository.existsById(id);
+    }
+
+    @Override
+    public void createWrap(Wrap wrap) {
+        if(Objects.isNull(wrap)) {
+            throw new IllegalArgumentException("wrap is null");
+        }
+        if(Objects.isNull(wrap.getName())) {
+            throw new IllegalArgumentException("wrap name is null");
+        }
+        wrapRepository.save(wrap);
     }
 
     @Override
     public Wrap getWrap(Long id) {
+        if(!isExist(id)) {
+            throw new IllegalArgumentException("wrap is not exist");
+        }
         return wrapRepository.getReferenceById(id);
     }
 
@@ -29,16 +45,29 @@ public class WrapServiceImpl implements WrapService {
 
     @Override
     public void updateWrap(Wrap wrap) {
+        if(Objects.isNull(wrap)) {
+            throw new IllegalArgumentException("wrap is null");
+        }
+        if(Objects.isNull(wrap.getName())){
+            throw new IllegalArgumentException("wrap name is null");
+        }
+        if(Objects.isNull(wrap.getId())) {
+            throw new IllegalArgumentException("wrap id is null");
+        }
+        else if(!isExist(wrap.getId())) {
+            throw new IllegalArgumentException("wrap is not exist");
+        }
         wrapRepository.save(wrap);
     }
 
     @Override
-    public void deleteWrap(Wrap wrap) {
-        wrapRepository.delete(wrap);
-    }
-
-    @Override
     public void deleteByWrapId(Long wrapId) {
+        if(Objects.isNull(wrapId)) {
+            throw new IllegalArgumentException("wrap id is null");
+        }
+        if(!isExist(wrapId)) {
+            throw new IllegalArgumentException("wrap is not exist");
+        }
         wrapRepository.deleteById(wrapId);
     }
 }

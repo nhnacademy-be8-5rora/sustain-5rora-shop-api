@@ -16,6 +16,7 @@ public class LikeController {
     private final LikeService likeService;
 
 
+    // merge
     @PostMapping("/books/{bookId}")
     public ResponseEntity<LikeDto> doLike(@PathVariable Long bookId,
                                           @RequestHeader(name = "X-USER-ID") String userId) {

@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 import store.aurora.order.entity.enums.OrderState;
 import store.aurora.user.entity.User;
 
@@ -32,19 +33,21 @@ public class Order {
 
     // 배송비, default 0
     @Column(name = "delivery_fee", nullable = false)
-    private int deliveryFee;
+    private Integer deliveryFee;
 
     // 주문 시각
     @Column(name = "order_time", nullable = false)
     private LocalDateTime orderTime;
 
     // 총 주문 금액, default 0
+    @ColumnDefault("0")
     @Column(name = "total_amount", nullable = false)
-    private int totalAmount;
+    private Integer totalAmount;
 
     // 포인트 사용량, default 0
+    @ColumnDefault("0")
     @Column(name = "point_amount", nullable = false)
-    private int pointAmount;
+    private Integer pointAmount;
 
     // 주문 상태
     @Column(name = "state", nullable = false)

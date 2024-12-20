@@ -1,4 +1,6 @@
-package store.aurora.repository;
+//TODO [ERROR] : 모든 테스트 에러
+
+package store.aurora.order.repository;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,23 +10,22 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import store.aurora.book.config.QuerydslConfiguration;
 import store.aurora.order.entity.Order;
-import store.aurora.order.entity.OrderDetail;
+import store.aurora.order.entity.Payment;
 import store.aurora.order.entity.enums.OrderState;
-import store.aurora.order.repository.OrderDetailRepository;
+import store.aurora.order.entity.enums.PaymentState;
 import store.aurora.order.repository.OrderRepository;
+import store.aurora.order.repository.PaymentRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DataJpaTest
 @Import(QuerydslConfiguration.class)
-class OrderDetailRepositoryTest {
-
+@DataJpaTest
+class PaymentRepositoryTest {
     @Autowired
-    private OrderDetailRepository orderDetailRepository;
-
+    private PaymentRepository paymentRepository;
     @Autowired
     private OrderRepository orderRepository;
 
@@ -43,27 +44,21 @@ class OrderDetailRepositoryTest {
         order.setOrderEmail("johndoe@example.com");
         orderRepository.save(order);
 
-        OrderDetail orderDetail = new OrderDetail();
-        orderDetail.setOrder(order);
-        orderDetail.setState(OrderState.CONFIRMED);
-        orderDetail.setAmountDetail(100);
-        orderDetail.setAmountDetail(1);
-        orderDetailRepository.save(orderDetail);
+        Payment payment = new Payment();
+        payment.setId(1L);
+        payment.setStatus(PaymentState.PENDING);
+        payment.setOrder(order);
+        payment.setAmount(100);
 
-        OrderDetail orderDetail1 = new OrderDetail();
-        orderDetail1.setOrder(order);
-        orderDetail1.setState(OrderState.CONFIRMED);
-        orderDetail1.setAmountDetail(100);
-        orderDetail1.setAmountDetail(1);
-        orderDetailRepository.save(orderDetail1);
+        paymentRepository.save(payment);
 
         // Act
-        List<OrderDetail> retrievedOrderDetails = orderDetailRepository.findByOrder(order);
-        OrderDetail retrievedOrderDetail = retrievedOrderDetails.getFirst();
+        List<Payment> retrievedPayments = paymentRepository.findByOrder(order);
+        Payment retrievedPayment = retrievedPayments.getFirst();
 
         // Assert
-        assertEquals(2, retrievedOrderDetails.size());
-        assertNotNull(retrievedOrderDetail);
-        assertEquals(orderDetail.getId(), retrievedOrderDetail.getId());
+        assertNotNull(retrievedPayment);
+        assertEquals(payment.getId(), retrievedPayment.getId());
+        assertEquals(payment.getAmount(), retrievedPayment.getAmount());
     }
 }

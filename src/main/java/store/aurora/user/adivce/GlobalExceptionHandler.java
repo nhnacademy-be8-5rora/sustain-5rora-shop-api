@@ -13,15 +13,21 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(VerificationException.class)
-    public ResponseEntity<Map<String, String>> handlerVerificationException(VerificationException ex) {
+    public ResponseEntity<Map<String, String>> handleVerificationException(VerificationException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("message", ex.getMessage()));
+                .body(Map.of("error", ex.getMessage()));
     }
 
     @ExceptionHandler(DuplicateUserException.class)
-    public ResponseEntity<Map<String, String>> handlerDuplicateUserException(DuplicateUserException ex) {
+    public ResponseEntity<Map<String, String>> handleDuplicateUserException(DuplicateUserException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(Map.of("message", ex.getMessage()));
+                .body(Map.of("error", ex.getMessage()));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleGeneralException(Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "알 수 없는 오류가 발생하여 회원가입에 실패했습니다."));
     }
     
 }

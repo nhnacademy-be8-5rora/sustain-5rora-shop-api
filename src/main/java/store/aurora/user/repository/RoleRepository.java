@@ -6,4 +6,5 @@ import store.aurora.user.entity.Role;
 
 @Repository
 public interface RoleRepository extends JpaRepository<Role, Long> {
+    Role findByRoleName(String roleName);
 }

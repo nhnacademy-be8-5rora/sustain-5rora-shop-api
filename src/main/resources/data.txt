@@ -35,6 +35,15 @@ VALUES (
        TRUE
    );
 
+-- UserRank
+INSERT INTO user_ranks (id, rank_name, rank_min_amount, rank_max_amount, point_rate)
+VALUES
+(1, 'GENERAL', 0, 100000, 0.01),  -- 10만원 이하, 1% 포인트 적립
+(2, 'ROYAL', 100000, 200000, 0.02),  -- 10만원 ~ 20만원, 2% 포인트 적립
+(3, 'GOLD', 200000, 300000, 0.03),  -- 20만원 ~ 30만원, 3% 포인트 적립
+(4, 'PLATINUM', 300000, NULL, 0.03);  -- 30만원 이상, 3% 포인트 적립
+
+
 INSERT INTO roles (role_name) VALUES ('ROLE_ADMIN');
 INSERT INTO roles (role_name) VALUES ('ROLE_USER');
 

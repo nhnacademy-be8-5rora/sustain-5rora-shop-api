@@ -1,16 +1,14 @@
 package store.aurora.user.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 
 @Getter
+@Setter
 @AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @Entity
 @Table(name = "user_ranks")
 public class UserRank {
@@ -18,13 +16,14 @@ public class UserRank {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "rank_name", nullable = false)
-    private String rankName;
+    private Rank rankName;
 
     @Column(name = "rank_min_amount", nullable = false)
     private int minAmount;
 
-    @Column(name = "rank_max_amount", nullable = false)
+    @Column(name = "rank_max_amount")
     private int maxAmount;
 
     @Column(name = "point_rate", precision = 5, scale = 2, nullable = false)

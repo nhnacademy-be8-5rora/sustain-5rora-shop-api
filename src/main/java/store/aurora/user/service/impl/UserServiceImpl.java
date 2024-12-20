@@ -9,10 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import store.aurora.user.dto.SignUpRequest;
 import store.aurora.user.dto.UserDetailResponseDto;
 import store.aurora.user.dto.UserResponseDto;
-import store.aurora.user.entity.User;
-import store.aurora.user.entity.UserRank;
-import store.aurora.user.entity.UserRankHistory;
-import store.aurora.user.entity.UserStatus;
+import store.aurora.user.entity.*;
 import store.aurora.user.exception.DuplicateUserException;
 import store.aurora.user.exception.RoleNotFoundException;
 import store.aurora.user.exception.VerificationException;
@@ -79,7 +76,10 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         // 회원등급 저장
-        UserRank userRank = userRankRepository.findByRankName("GENERAL");
+        UserRank userRank = userRankRepository.findByRankName(Rank.GENERAL);
+        if (userRank == null) {
+            throw new RuntimeException("해당 등급을 찾을 수 없습니다.");
+        }
         UserRankHistory userRankHistory = new UserRankHistory();
         userRankHistory.setUserRank(userRank);
         userRankHistory.setChangeReason("회원가입");
@@ -107,7 +107,10 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
 
-        UserRank userRank = userRankRepository.findByRankName("GENERAL");
+        UserRank userRank = userRankRepository.findByRankName(Rank.GENERAL);
+        if (userRank == null) {
+            throw new RuntimeException("해당 등급을 찾을 수 없습니다.");
+        }
         UserRankHistory userRankHistory = new UserRankHistory();
         userRankHistory.setUserRank(userRank);
         userRankHistory.setChangeReason("회원가입");

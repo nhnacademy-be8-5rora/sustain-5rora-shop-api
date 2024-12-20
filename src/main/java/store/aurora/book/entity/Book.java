@@ -83,7 +83,7 @@ public class Book {
             bookCategory.setBook(null);
         }
     }
-    @OneToMany(mappedBy = "book")
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookTag> bookTags;
 
 }

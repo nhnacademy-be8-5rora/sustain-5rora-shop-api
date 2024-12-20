@@ -36,4 +36,11 @@ public class SeriesServiceImpl implements SeriesService {
     public void deleteSeries(Long id) {
         seriesRepository.deleteById(id);
     }
+
+    @Override
+    @Transactional
+    public Series findOrCreateSeries(String name) {
+        return seriesRepository.findByName(name)
+                .orElseGet(() -> seriesRepository.save(new Series(null, name)));
+    }
 }

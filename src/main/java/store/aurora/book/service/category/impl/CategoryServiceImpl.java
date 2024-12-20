@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.category.CategoryRequestDTO;
 import store.aurora.book.dto.category.CategoryResponseDTO;
+import store.aurora.book.entity.Book;
+import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.exception.category.CategoryLinkedToBooksException;
 import store.aurora.book.exception.category.CategoryNotFoundException;
@@ -25,49 +27,29 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional
     public void createCategory(CategoryRequestDTO requestDTO) {
-        if (requestDTO.getName() == null || requestDTO.getName().trim().isEmpty()) {
-            throw new InvalidCategoryException("카테고리 이름은 비어 있을 수 없습니다.");
-        }
+        validateCategoryName(requestDTO.getName());
 
-        Category parent = null;
-        if (requestDTO.getParentId() != null) {
-            parent = categoryRepository.findById(requestDTO.getParentId())
-                    .orElseThrow(() -> new CategoryNotFoundException(requestDTO.getParentId()));
-            if (categoryRepository.existsByNameAndParent(requestDTO.getName(), parent)) {
-                throw new InvalidCategoryException("같은 부모 아래에 동일한 이름의 카테고리가 존재합니다.");
-            }
-        } else if (categoryRepository.existsByNameAndParentIsNull(requestDTO.getName())) {
-            throw new InvalidCategoryException("최상위 부모 간 이름은 고유해야 합니다.");
-        }
+
+        Category parent = getParentCategory(requestDTO.getParentId());
+        validateUniqueCategoryName(requestDTO.getName(), parent);
 
         Category category = new Category();
         category.setName(requestDTO.getName());
         category.setParent(parent);
         category.setDepth((parent != null) ? parent.getDepth() + 1 : 0);
-        Integer maxOrder = categoryRepository.findMaxDisplayOrderByParent(parent);
-        category.setDisplayOrder((maxOrder != null) ? maxOrder + 1 : 0);
+        category.setDisplayOrder(calculateDisplayOrder(parent));
 
         categoryRepository.save(category);
     }
 
+
     @Transactional
     public void updateCategoryName(Long categoryId, String newName) {
-        if (newName == null || newName.trim().isEmpty()) {
-            throw new InvalidCategoryException("카테고리 이름은 비어 있을 수 없습니다.");
-        }
+        validateCategoryName(newName);
 
-        Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
+        Category category = findCategoryByIdOrThrow(categoryId);
 
-        if (category.getParent() != null) {
-            if (categoryRepository.existsByNameAndParent(newName, category.getParent())) {
-                throw new InvalidCategoryException("같은 부모 아래에 동일한 이름의 카테고리가 존재할 수 없습니다.");
-            }
-        } else {
-            if (categoryRepository.existsByNameAndParentIsNull(newName)) {
-                throw new InvalidCategoryException("최상위 부모 간에는 동일한 이름을 사용할 수 없습니다.");
-            }
-        }
+        validateUniqueCategoryName(newName, category.getParent());
         category.setName(newName);
 
         categoryRepository.save(category);
@@ -75,11 +57,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Transactional
     public void deleteCategory(Long categoryId) {
-        Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
+        Category category = findCategoryByIdOrThrow(categoryId);
 
-        boolean isCategoryLinkedToBooks = bookCategoryRepository.existsByCategoryId(categoryId);
-        if (isCategoryLinkedToBooks) {
+        if (bookCategoryRepository.existsByCategoryId(categoryId)) {
             throw new CategoryLinkedToBooksException(categoryId);
         }
 
@@ -96,6 +76,58 @@ public class CategoryServiceImpl implements CategoryService {
                 .stream()
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Book> getBooksByCategoryId(Long categoryId) {
+        Category category = categoryRepository.findCategoryWithBooksById(categoryId)
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
+
+        return category.getBookCategories().stream()
+                .map(BookCategory::getBook)
+                .toList();
+    }
+
+
+
+    private void validateCategoryName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new InvalidCategoryException("카테고리 이름은 비어 있을 수 없습니다.");
+        }
+    }
+
+    private Category findCategoryByIdOrThrow(Long categoryId) {
+        return categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
+    }
+
+
+    private Category getParentCategory(Long parentId) {
+        if (parentId == null) {
+            return null;
+        }
+        return categoryRepository.findById(parentId)
+                .orElseThrow(() -> new CategoryNotFoundException(parentId));
+    }
+
+    private void validateUniqueCategoryName(String name, Category parent) {
+        boolean exists;
+        if (parent != null) {
+            exists = categoryRepository.existsByNameAndParent(name, parent);
+        } else {
+            exists = categoryRepository.existsByNameAndParentIsNull(name);
+        }
+
+        if (exists) {
+            throw new InvalidCategoryException("해당 이름의 카테고리가 이미 존재합니다.");
+        }
+    }
+
+    private int calculateDisplayOrder(Category parent) {
+        Integer maxOrder = categoryRepository.findMaxDisplayOrderByParent(parent);
+        return (maxOrder != null) ? maxOrder + 1 : 0;
     }
 
     private CategoryResponseDTO mapToResponseDTO(Category category) {

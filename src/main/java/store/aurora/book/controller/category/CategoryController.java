@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import store.aurora.book.dto.category.CategoryRequestDTO;
 import store.aurora.book.dto.category.CategoryResponseDTO;
+import store.aurora.book.dto.response.BookResponseDTO;
+import store.aurora.book.entity.Book;
 import store.aurora.book.entity.category.Category;
 //import store.aurora.book.mapper.CategoryMapper;
 import store.aurora.book.service.category.CategoryService;
@@ -43,5 +45,14 @@ public class CategoryController {
     public ResponseEntity<Void> deleteCategory(@PathVariable Long categoryId) {
         categoryService.deleteCategory(categoryId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{categoryId}/books")
+    public ResponseEntity<List<BookResponseDTO>> getBooksByCategory(@PathVariable Long categoryId) {
+        List<Book> books = categoryService.getBooksByCategoryId(categoryId);
+        List<BookResponseDTO> response = books.stream()
+                .map(book -> new BookResponseDTO(book.getId(), book.getTitle()))
+                .toList();
+        return ResponseEntity.ok(response);
     }
 }

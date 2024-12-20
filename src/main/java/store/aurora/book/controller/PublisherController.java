@@ -1,5 +1,6 @@
 package store.aurora.book.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import store.aurora.book.entity.Publisher;
@@ -7,15 +8,12 @@ import store.aurora.book.service.PublisherService;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/publishers")
 public class PublisherController {
 
     private final PublisherService publisherService;
-
-    public PublisherController(PublisherService publisherService) {
-        this.publisherService = publisherService;
-    }
 
     @GetMapping
     public ResponseEntity<List<Publisher>> getAllPublishers() {

@@ -37,4 +37,12 @@ public class PublisherServiceImpl implements PublisherService {
         publisherRepository.deleteById(id);
     }
 
+    @Override
+    @Transactional
+    public Publisher findOrCreatePublisher(String name) {
+        return publisherRepository.findByName(name)
+                .orElseGet(() -> publisherRepository.save(new Publisher(null, name)));
+    }
+
+
 }

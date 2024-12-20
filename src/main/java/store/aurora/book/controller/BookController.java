@@ -41,7 +41,7 @@ public class BookController {
 //        // 업로드된 파일 경로를 DTO에 설정
 //        requestDTO.setImagePaths(uploadedPaths);
 
-        bookService.saveBookWithPublisherAndSeries(requestDTO);
+        bookService.saveBook(requestDTO);
 
         return new ResponseEntity<>(HttpStatus.CREATED);
     }

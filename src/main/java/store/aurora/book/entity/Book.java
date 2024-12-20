@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import store.aurora.book.entity.category.BookCategory;
+import store.aurora.book.entity.category.Category;
 import store.aurora.book.entity.tag.BookTag;
 
 import java.time.LocalDate;
@@ -60,5 +61,25 @@ public class Book {
     @JoinColumn(name = "series_id")
     private Series series;
 
-    // todo addCategory, addTag
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookCategory> bookCategories = new ArrayList<>();
+
+    public List<Category> getCategories() {
+        return bookCategories.stream()
+                .map(BookCategory::getCategory)
+                .toList();
+    }
+
+    public void addBookCategory(BookCategory bookCategory) {
+        if (!bookCategories.contains(bookCategory)) {
+            bookCategories.add(bookCategory);
+            bookCategory.setBook(this);
+        }
+    }
+    public void removeBookCategory(BookCategory bookCategory) {
+        if (bookCategories.contains(bookCategory)) {
+            bookCategories.remove(bookCategory);
+            bookCategory.setBook(null);
+        }
+    }
 }

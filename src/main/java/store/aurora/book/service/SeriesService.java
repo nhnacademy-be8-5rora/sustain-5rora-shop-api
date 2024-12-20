@@ -11,4 +11,6 @@ public interface SeriesService {
     Series createSeries(Series series);
     Series updateSeries(Long id, Series updatedSeries);
     void deleteSeries(Long id);
+    Series findOrCreateSeries(String name);
+
 }

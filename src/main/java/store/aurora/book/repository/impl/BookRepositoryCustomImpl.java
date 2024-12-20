@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import store.aurora.book.dto.*;
+import store.aurora.book.dto.category.BookCategoryDto;
 import store.aurora.book.dto.category.CategoryResponseDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.category.Category;
@@ -39,9 +40,7 @@ import static store.aurora.user.entity.QUser.user;
 
 import static store.aurora.utils.ValidationUtils.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.Objects;
 
@@ -56,6 +55,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         super(Book.class);
         this.queryFactory = queryFactory;
     }
+
     //특정 String을 포함하는 제목을 가진 책들을 조인해서 값들을 반환.
     @Override
     public Page<BookSearchEntityDTO> findBooksByTitleWithDetails(String title, Pageable pageable) {
@@ -103,7 +103,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         // bookDetail 가져오기
         List<BookSearchEntityDTO> content = from(book)
                 .leftJoin(book.publisher, publisher)
-                .where(Expressions.stringTemplate("LOWER({0})", book.title).like("%" + title.toLowerCase() + "%"))
+                .where(book.title.like("%" + title + "%"))
                 .groupBy(book.id, book.title, book.regularPrice, book.salePrice, book.publishDate, publisher.name)
                 .select(Projections.constructor(
                         BookSearchEntityDTO.class,
@@ -398,7 +398,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .where(like.book.id.eq(bookId))
                 .fetchCount();
 
-        List<CategoryResponseDTO> categoryPathByBookId = findCategoryPathByBookId(bookId);
+        List<BookCategoryDto> categoryPathByBookId = findCategoryPathByBookId(bookId);
 
         return new BookDetailsDto(
                 book.getId(),
@@ -461,39 +461,65 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
     }
 
     @Override
-    public List<CategoryResponseDTO> findCategoryPathByBookId(Long bookId) {
-        // 하위 카테고리 ID와 경로를 위한 이름 조회
-        Category leafCategory = queryFactory
+    public List<BookCategoryDto> findCategoryPathByBookId(Long bookId) {
+        // 1. Book ID로 연관된 Category 리스트 조회
+        List<Category> categoryList = queryFactory
                 .select(bookCategory.category)
                 .from(bookCategory)
                 .join(bookCategory.category, category)
                 .where(bookCategory.book.id.eq(bookId))
-                .fetchOne();
+                .fetch();
 
-        if (leafCategory == null) {
-            return null;
+        // 2. 각 카테고리와 상위 관계를 CategoryDto로 변환
+        Map<Long, BookCategoryDto> categoryMap = new HashMap<>();
+
+        for (Category category : categoryList) {
+            Category current = category;
+
+            while (current != null) {
+                categoryMap.putIfAbsent(
+                        current.getId(),
+                        new BookCategoryDto(
+                                current.getId(),
+                                current.getName(),
+                                current.getDepth(),
+                                current.getDisplayOrder(),
+                                new ArrayList<>()
+                        )
+                );
+                current = current.getParent();
+            }
         }
 
-        Category currentCategory = leafCategory;
-        List<CategoryResponseDTO> categoryList = new ArrayList<>();
+        // 3. 부모-자식 관계 설정
+        List<BookCategoryDto> roots = new ArrayList<>();
+        Set<Long> processedIds = new HashSet<>();
 
+        for (Category category : categoryList) {
+            Category current = category;
 
-        while (currentCategory != null) {
-            CategoryResponseDTO categoryResponseDTO = new CategoryResponseDTO(
-                    currentCategory.getId(),
-                    currentCategory.getName(),
-                    (currentCategory.getParent() == null ) ? null : currentCategory.getParent().getId(),
-                    (currentCategory.getParent() == null ) ? null : currentCategory.getParent().getName(),
-                    currentCategory.getDepth()
-            );
-            categoryList.add(categoryResponseDTO);
-            currentCategory = currentCategory.getParent();
+            while (current != null) {
+                BookCategoryDto currentDto = categoryMap.get(current.getId());
+
+                if (current.getParent() != null) {
+                    BookCategoryDto parentDto = categoryMap.get(current.getParent().getId());
+                    if (!parentDto.getChildren().contains(currentDto)) {
+                        parentDto.getChildren().add(currentDto);
+                    }
+                } else if (!processedIds.contains(current.getId())) {
+                    roots.add(currentDto); // 최상위 카테고리 추가
+                    processedIds.add(current.getId());
+                }
+
+                current = current.getParent();
+            }
         }
 
-        Collections.reverse(categoryList);
-
-        return categoryList;
+        // 4. 최상위 카테고리 리스트 반환
+        roots.sort(Comparator.comparingInt(BookCategoryDto::getDisplayOrder)); // 정렬 기준 설정
+        return roots;
     }
+
 
 
 

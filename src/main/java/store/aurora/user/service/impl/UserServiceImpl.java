@@ -13,9 +13,7 @@ import store.aurora.user.entity.*;
 import store.aurora.user.exception.DuplicateUserException;
 import store.aurora.user.exception.RoleNotFoundException;
 import store.aurora.user.exception.VerificationException;
-import store.aurora.user.repository.UserRankHistoryRepository;
-import store.aurora.user.repository.UserRankRepository;
-import store.aurora.user.repository.UserRepository;
+import store.aurora.user.repository.*;
 import store.aurora.user.service.DoorayMessengerService;
 import store.aurora.user.service.UserService;
 
@@ -35,6 +33,8 @@ public class UserServiceImpl implements UserService {
 
     private static final int INACTIVE_PERIOD_MONTHS = 3;    // 휴면 3개월 기준
     private final RedisTemplate redisTemplate;
+    private final RoleRepository roleRepository;
+    private final UserRoleRepository userRoleRepository;
 
     // 회원가입
     @Override
@@ -88,6 +88,13 @@ public class UserServiceImpl implements UserService {
 
         userRankHistoryRepository.save(userRankHistory);
 
+        Role role = roleRepository.findByRoleName("ROLE_USER");
+        UserRole userRole = new UserRole();
+        userRole.setRole(role);
+        userRole.setUser(user);
+
+        userRoleRepository.save(userRole);
+
         // 인증 상태 삭제
         redisTemplate.delete(request.getPhoneNumber() + "_verified");
     }
@@ -118,6 +125,13 @@ public class UserServiceImpl implements UserService {
         userRankHistory.setUser(user);
 
         userRankHistoryRepository.save(userRankHistory);
+
+        Role role = roleRepository.findByRoleName("ROLE_USER");
+        UserRole userRole = new UserRole();
+        userRole.setRole(role);
+        userRole.setUser(user);
+
+        userRoleRepository.save(userRole);
     }
 
     // 회원탈퇴

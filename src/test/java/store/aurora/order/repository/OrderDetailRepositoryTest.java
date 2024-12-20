@@ -8,20 +8,23 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import store.aurora.book.config.QuerydslConfiguration;
 import store.aurora.order.entity.Order;
-import store.aurora.order.entity.Payment;
+import store.aurora.order.entity.OrderDetail;
 import store.aurora.order.entity.enums.OrderState;
-import store.aurora.order.entity.enums.PaymentState;
+import store.aurora.order.repository.OrderDetailRepository;
+import store.aurora.order.repository.OrderRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Import(QuerydslConfiguration.class)
 @DataJpaTest
-class PaymentRepositoryTest {
+@Import(QuerydslConfiguration.class)
+class OrderDetailRepositoryTest {
+
     @Autowired
-    private PaymentRepository paymentRepository;
+    private OrderDetailRepository orderDetailRepository;
+
     @Autowired
     private OrderRepository orderRepository;
 
@@ -40,21 +43,27 @@ class PaymentRepositoryTest {
         order.setOrderEmail("johndoe@example.com");
         orderRepository.save(order);
 
-        Payment payment = new Payment();
-        payment.setId(1L);
-        payment.setStatus(PaymentState.PENDING);
-        payment.setOrder(order);
-        payment.setAmount(100);
-    
-        paymentRepository.save(payment);
-    
+        OrderDetail orderDetail = new OrderDetail();
+        orderDetail.setOrder(order);
+        orderDetail.setState(OrderState.CONFIRMED);
+        orderDetail.setAmountDetail(100);
+        orderDetail.setAmountDetail(1);
+        orderDetailRepository.save(orderDetail);
+
+        OrderDetail orderDetail1 = new OrderDetail();
+        orderDetail1.setOrder(order);
+        orderDetail1.setState(OrderState.CONFIRMED);
+        orderDetail1.setAmountDetail(100);
+        orderDetail1.setAmountDetail(1);
+        orderDetailRepository.save(orderDetail1);
+
         // Act
-        List<Payment> retrievedPayments = paymentRepository.findByOrder(order);
-        Payment retrievedPayment = retrievedPayments.getFirst();
-    
+        List<OrderDetail> retrievedOrderDetails = orderDetailRepository.findByOrder(order);
+        OrderDetail retrievedOrderDetail = retrievedOrderDetails.getFirst();
+
         // Assert
-        assertNotNull(retrievedPayment);
-        assertEquals(payment.getId(), retrievedPayment.getId());
-        assertEquals(payment.getAmount(), retrievedPayment.getAmount());
+        assertEquals(2, retrievedOrderDetails.size());
+        assertNotNull(retrievedOrderDetail);
+        assertEquals(orderDetail.getId(), retrievedOrderDetail.getId());
     }
 }

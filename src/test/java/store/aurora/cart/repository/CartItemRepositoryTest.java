@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Import(QuerydslConfiguration.class)
 @DataJpaTest
 class CartItemRepositoryTest {
+
     @Autowired
     private CartItemRepository cartItemRepository;
 

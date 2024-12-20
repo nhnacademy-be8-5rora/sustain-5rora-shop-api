@@ -16,10 +16,10 @@ import java.util.List;
  *     )
  */
 public interface ShipmentService {
+    boolean isExist(Long id);
     Shipment createShipment(Shipment shipment);
     Shipment getShipment(Long id);
     List<Shipment> getShipments();
     void updateShipment(Shipment shipment);
-    void deleteShipment(Shipment shipment);
     void deleteByShipmentId(Long shipmentId);
 }

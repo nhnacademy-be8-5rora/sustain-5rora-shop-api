@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Import(QuerydslConfiguration.class)
 @DataJpaTest
 class OrderRepositoryTest {
+
     @Autowired
     private OrderRepository orderRepository;
 

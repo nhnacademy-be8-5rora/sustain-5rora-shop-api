@@ -28,10 +28,11 @@ public class TagServiceImpl implements TagService {
     private final BookTagRepository bookTagRepository;
     private final BookRepository bookRepository;
 
+    //todo tag entity 양방햐응로 바껴서 수정해야함
     @Override
     public void createTag(TagRequestDto requestDto) {
-        Tag tag = new Tag(null, requestDto.name());
-        tagRepository.save(tag);
+//        Tag tag = new Tag(null, requestDto.name());
+//        tagRepository.save(tag);
     }
 
     @Override

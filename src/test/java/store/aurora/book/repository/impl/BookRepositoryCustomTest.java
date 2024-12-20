@@ -120,6 +120,8 @@ public class BookRepositoryCustomTest {
         seriesRepository.save(series2);
 
         // Category 생성
+        Category category1 = new Category(1L,"Example Category", null, 0, 1,new ArrayList<>());
+        Category category2 = new Category(2L,"Example Category2", null, 0, 2,new ArrayList<>());
         Category category1 = new Category(1L,"Example Category", null, 0, 1);
         Category category2 = new Category(2L,"Example Category2", null, 0, 2);
         Category category3 = new Category(3L,"Science Fiction", null, 0, 3);
@@ -129,6 +131,8 @@ public class BookRepositoryCustomTest {
         categoryRepository.save(category3);
         categoryRepository.save(category4);
 
+        // Book 생성
+        //todo book 양방향으로 바껴서 수정해야 함
         // Book 생성 (6개 책 데이터 추가)
         Book book1 = new Book(
                 1L,
@@ -142,6 +146,11 @@ public class BookRepositoryCustomTest {
                 "test desc",
                 false,
                 LocalDate.of(2024, 12, 12),
+                publisher,
+                series,
+                new ArrayList<>(),
+                new ArrayList<>()
+
                 publisher1,
                 series
         );
@@ -158,6 +167,11 @@ public class BookRepositoryCustomTest {
                 "test desc2",
                 false,
                 LocalDate.of(2024, 12, 12),
+                publisher,
+                series,
+                new ArrayList<>(),
+                new ArrayList<>()
+
                 publisher2,
                 series
         );

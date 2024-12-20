@@ -1,3 +1,5 @@
+//TODO [ERROR] : 모든 테스트 에러
+
 package store.aurora.order.repository;
 
 import org.junit.jupiter.api.Test;
@@ -12,6 +14,8 @@ import store.aurora.order.entity.Shipment;
 import store.aurora.order.entity.enums.OrderState;
 import store.aurora.order.entity.enums.ShipmentState;
 import store.aurora.order.entity.enums.ShippingCompaniesCode;
+import store.aurora.order.repository.OrderDetailRepository;
+import store.aurora.order.repository.ShipmentRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;

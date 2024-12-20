@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.List;
 
 public interface BookService {
-    void saveBookWithPublisherAndSeries(BookRequestDTO requestDTO);
+    void saveBook(BookRequestDTO requestDTO);
     void updateBookDetails(Long bookId, BookDetailsUpdateDTO detailsDTO);
     void updateBookSalesInfo(Long bookId, BookSalesInfoUpdateDTO salesInfoDTO);
     void updateBookPackaging(Long bookId, boolean packaging);

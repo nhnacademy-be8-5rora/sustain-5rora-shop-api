@@ -3,6 +3,8 @@ package store.aurora.book.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.dto.BookDetailsDto;
 import store.aurora.book.dto.BookDetailsUpdateDTO;
@@ -20,6 +22,7 @@ import store.aurora.book.exception.book.NotFoundBookException;
 import store.aurora.book.entity.*;
 import store.aurora.book.exception.BookNotFoundException;
 import store.aurora.book.exception.book.NotFoundBookImageException;
+import store.aurora.book.exception.category.CategoryLimitException;
 import store.aurora.book.mapper.BookMapper;
 import store.aurora.book.repository.BookImageRepository;
 import store.aurora.book.repository.BookRepository;
@@ -33,6 +36,7 @@ import store.aurora.book.service.tag.TagService;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -48,15 +52,21 @@ public class BookServiceImpl implements BookService {
 //    private final FileStorageService fileStorageService;
 
     @Transactional
-    public void saveBookWithPublisherAndSeries(BookRequestDTO requestDTO) {
-        Publisher publisher = publisherService.findOrCreatePublisher(requestDTO.getPublisherName());
-        Series series = seriesService.findOrCreateSeries(requestDTO.getSeriesName());
-
+    public void saveBook(BookRequestDTO requestDTO) {
         if (bookRepository.existsByIsbn(requestDTO.getIsbn())) {
             throw new ISBNAlreadyExistsException(requestDTO.getIsbn());
         }
 
-        Book book = BookMapper.toEntity(requestDTO, publisher, series);
+        Publisher publisher = publisherService.findOrCreatePublisher(requestDTO.getPublisherName());
+
+        Series series = null;
+        if (requestDTO.getSeriesName() != null) {
+            series = seriesService.findOrCreateSeries(requestDTO.getSeriesName());
+        }
+
+        Book book = BookMapper.toEntity(requestDTO);
+        book.setPublisher(publisher);
+        book.setSeries(series);
         Book savedBook = bookRepository.save(book);
 
         // 이미지 저장
@@ -71,11 +81,15 @@ public class BookServiceImpl implements BookService {
 //        }
         // todo : entity 의 add 메서드로 처리
         // todo 카테고리가 비어있을 때 처리
-        if (requestDTO.getCategoryIds() != null && !requestDTO.getCategoryIds().isEmpty()) {
+
+        if (!CollectionUtils.isEmpty(requestDTO.getCategoryIds())) {
             bookCategoryService.addCategoriesToBook(savedBook.getId(), requestDTO.getCategoryIds());
+        }else {
+            throw new CategoryLimitException();
+
         }
         // todo : null, empty 체크 메서드
-        if (requestDTO.getTagIds() != null && !requestDTO.getTagIds().isEmpty()) {
+        if (!CollectionUtils.isEmpty(requestDTO.getTagIds())) {
             for (Long tagId : requestDTO.getTagIds()) {
                 BookTagRequestDto bookTagRequestDto = new BookTagRequestDto(savedBook.getId(), tagId);
                 tagService.addBookTag(bookTagRequestDto);
@@ -88,10 +102,6 @@ public class BookServiceImpl implements BookService {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new NotFoundBookException(bookId));
 
-        // 출판사 및 시리즈 정보 업데이트
-        Publisher publisher = publisherService.findOrCreatePublisher(detailsDTO.getPublisherName());
-        Series series = seriesService.findOrCreateSeries(detailsDTO.getSeriesName());
-
         // 중복 ISBN 체크
         Optional<Book> existingBook = bookRepository.findByIsbn(detailsDTO.getIsbn());
         if (existingBook.isPresent() && !existingBook.get().getId().equals(bookId)) {
@@ -103,10 +113,21 @@ public class BookServiceImpl implements BookService {
         book.setContents(detailsDTO.getContents());
         book.setIsbn(detailsDTO.getIsbn());
         book.setPublishDate(detailsDTO.getPublishDate());
-        book.setPublisher(publisher);
-        book.setSeries(series);
         book.setSale(detailsDTO.isSale());
 
+        // 출판사 업데이트
+        if (StringUtils.hasText(detailsDTO.getPublisherName())) {
+            Publisher publisher = publisherService.findOrCreatePublisher(detailsDTO.getPublisherName());
+            book.setPublisher(publisher);
+        }
+
+        // 시리즈 업데이트
+        if (StringUtils.hasText(detailsDTO.getSeriesName())) {
+            Series series = seriesService.findOrCreateSeries(detailsDTO.getSeriesName());
+            book.setSeries(series);
+        } else {
+            book.setSeries(null); // 시리즈 이름이 없으면 null로 설정
+        }
         bookRepository.save(book);
     }
 
@@ -186,6 +207,13 @@ public class BookServiceImpl implements BookService {
         bookImageRepository.save(bookImage);
     }
 
+
+
+
+
+
+
+
     @Transactional(readOnly = true)
     public Book getBookById(Long bookId) {
         return bookRepository.findById(bookId)
@@ -202,18 +230,21 @@ public class BookServiceImpl implements BookService {
         BookDetailsDto bookDetailsDto = bookRepository.findBookDetailsByBookId(bookId);
 
         double sum = 0;
-        double avg;
-        for (ReviewDto reviewDto : bookDetailsDto.getReviews()) {
-            int reviewRating = reviewDto.getReviewRating();
-            sum += reviewRating;
+        double avg = 0.0;
+        if(Objects.nonNull(bookDetailsDto.getReviews())) {
+            for (ReviewDto reviewDto : bookDetailsDto.getReviews()) {
+                int reviewRating = reviewDto.getReviewRating();
+                sum += reviewRating;
+            }
+            avg = Math.round((sum / bookDetailsDto.getReviews().size() * 10) / 10.0);
         }
 
-        avg = Math.round((sum / bookDetailsDto.getReviews().size() * 10) / 10.0);
 
         bookDetailsDto.setRating(avg);
 
         return bookDetailsDto;
     }
+
 
     public List<BookInfoDTO> getBookInfo(List<Long> bookIds) {
         List<Book> books = bookRepository.findAllById(bookIds);

@@ -35,6 +35,15 @@ VALUES (
        TRUE
    );
 
+-- UserRank
+INSERT INTO user_ranks (id, rank_name, rank_min_amount, rank_max_amount, point_rate)
+VALUES
+(1, 'GENERAL', 0, 100000, 0.01),  -- 10만원 이하, 1% 포인트 적립
+(2, 'ROYAL', 100000, 200000, 0.02),  -- 10만원 ~ 20만원, 2% 포인트 적립
+(3, 'GOLD', 200000, 300000, 0.03),  -- 20만원 ~ 30만원, 3% 포인트 적립
+(4, 'PLATINUM', 300000, NULL, 0.03);  -- 30만원 이상, 3% 포인트 적립
+
+
 INSERT INTO roles (role_name) VALUES ('ROLE_ADMIN');
 INSERT INTO roles (role_name) VALUES ('ROLE_USER');
 
@@ -65,6 +74,9 @@ VALUES
     ('Example Category', NULL, 0, 1), -- 최상위 카테고리, depth 0
     ('Example Category2', NULL, 0, 2); -- 또 다른 최상위 카테고리, depth 0
 
+INSERT INTO categories (name, parent_id, depth, display_order) VALUES ('Ex Cate Child1', 1, 1, 1);
+INSERT INTO categories (name, parent_id, depth, display_order) VALUES ('Ex Cate Child2', 1, 1, 2);
+
 
 insert into books (title, regular_price, sale_price, is_sale, explanation, publisher_id, series_id, packaging, publish_date, isbn, stock, contents)
 values ('test title', 10000, 9000, TRUE, 'test desc', 1, 1, FALSE, '2024-12-12', '1234567890123', 100, 'sample contents');
@@ -73,8 +85,9 @@ insert into books (title, regular_price, sale_price, is_sale, explanation, publi
 values ('test title2', 10000, 9000, TRUE, 'test desc2', 1, 1, FALSE, '2024-12-12', '1234567890124', 100, 'sample contents2');
 
 -- BookCategory 엔티티 삽입
-INSERT INTO book_categories (category_id, book_id) VALUES (1, 1);
+INSERT INTO book_categories (category_id, book_id) VALUES (3, 1);
 INSERT INTO book_categories (category_id, book_id) VALUES (2, 1);
+INSERT INTO book_categories (category_id, book_id) VALUES (4, 1);
 
 -- Author 엔티티 삽입
 INSERT INTO authors (name)

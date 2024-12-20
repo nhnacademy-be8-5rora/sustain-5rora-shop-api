@@ -9,16 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 import store.aurora.user.dto.SignUpRequest;
 import store.aurora.user.dto.UserDetailResponseDto;
 import store.aurora.user.dto.UserResponseDto;
-import store.aurora.user.entity.User;
-import store.aurora.user.entity.UserRank;
-import store.aurora.user.entity.UserRankHistory;
-import store.aurora.user.entity.UserStatus;
+import store.aurora.user.entity.*;
 import store.aurora.user.exception.DuplicateUserException;
 import store.aurora.user.exception.RoleNotFoundException;
 import store.aurora.user.exception.VerificationException;
-import store.aurora.user.repository.UserRankHistoryRepository;
-import store.aurora.user.repository.UserRankRepository;
-import store.aurora.user.repository.UserRepository;
+import store.aurora.user.repository.*;
 import store.aurora.user.service.DoorayMessengerService;
 import store.aurora.user.service.UserService;
 
@@ -38,6 +33,8 @@ public class UserServiceImpl implements UserService {
 
     private static final int INACTIVE_PERIOD_MONTHS = 3;    // 휴면 3개월 기준
     private final RedisTemplate redisTemplate;
+    private final RoleRepository roleRepository;
+    private final UserRoleRepository userRoleRepository;
 
     // 회원가입
     @Override
@@ -79,7 +76,10 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         // 회원등급 저장
-        UserRank userRank = userRankRepository.findByRankName("GENERAL");
+        UserRank userRank = userRankRepository.findByRankName(Rank.GENERAL);
+        if (userRank == null) {
+            throw new RuntimeException("해당 등급을 찾을 수 없습니다.");
+        }
         UserRankHistory userRankHistory = new UserRankHistory();
         userRankHistory.setUserRank(userRank);
         userRankHistory.setChangeReason("회원가입");
@@ -87,6 +87,13 @@ public class UserServiceImpl implements UserService {
         userRankHistory.setUser(user);
 
         userRankHistoryRepository.save(userRankHistory);
+
+        Role role = roleRepository.findByRoleName("ROLE_USER");
+        UserRole userRole = new UserRole();
+        userRole.setRole(role);
+        userRole.setUser(user);
+
+        userRoleRepository.save(userRole);
 
         // 인증 상태 삭제
         redisTemplate.delete(request.getPhoneNumber() + "_verified");
@@ -107,7 +114,10 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
 
-        UserRank userRank = userRankRepository.findByRankName("GENERAL");
+        UserRank userRank = userRankRepository.findByRankName(Rank.GENERAL);
+        if (userRank == null) {
+            throw new RuntimeException("해당 등급을 찾을 수 없습니다.");
+        }
         UserRankHistory userRankHistory = new UserRankHistory();
         userRankHistory.setUserRank(userRank);
         userRankHistory.setChangeReason("회원가입");
@@ -115,6 +125,13 @@ public class UserServiceImpl implements UserService {
         userRankHistory.setUser(user);
 
         userRankHistoryRepository.save(userRankHistory);
+
+        Role role = roleRepository.findByRoleName("ROLE_USER");
+        UserRole userRole = new UserRole();
+        userRole.setRole(role);
+        userRole.setUser(user);
+
+        userRoleRepository.save(userRole);
     }
 
     // 회원탈퇴

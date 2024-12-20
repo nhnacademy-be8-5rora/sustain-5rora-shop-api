@@ -8,6 +8,7 @@ import lombok.Setter;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.entity.tag.BookTag;
+import store.aurora.book.entity.tag.Tag;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -61,6 +62,7 @@ public class Book {
     @JoinColumn(name = "series_id")
     private Series series;
 
+<<<<<<< HEAD
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookCategory> bookCategories = new ArrayList<>();
 
@@ -82,4 +84,9 @@ public class Book {
             bookCategory.setBook(null);
         }
     }
+=======
+    @OneToMany(mappedBy = "book_tag")
+    private List<BookTag> bookTags;
+
+>>>>>>> develop
 }

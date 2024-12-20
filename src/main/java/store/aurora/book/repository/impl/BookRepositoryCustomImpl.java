@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import store.aurora.book.dto.*;
+import store.aurora.book.dto.category.BookCategoryDto;
 import store.aurora.book.dto.category.CategoryResponseDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.category.Category;
@@ -38,11 +39,8 @@ import static store.aurora.user.entity.QUser.user;
 
 import static store.aurora.utils.ValidationUtils.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.Objects;
 
 
 @Slf4j
@@ -55,6 +53,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         super(Book.class);
         this.queryFactory = queryFactory;
     }
+
     //특정 String을 포함하는 제목을 가진 책들을 조인해서 값들을 반환.
     @Override
     public Page<BookSearchEntityDTO> findBooksByTitleWithDetails(String title, Pageable pageable) {
@@ -123,7 +122,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 ))
                 .fetch();
 
-        log.debug("customImpl 메서드 값 확인 {}",content.toString());
+        log.debug("customImpl 메서드 값 확인 {}", content.toString());
 
         // Count query for pagination
         long total = from(book)
@@ -224,7 +223,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
     // 특정 카테고리Id를 가진 책들을 반환.
     @Override
     public Page<BookSearchEntityDTO> findBooksByCategoryWithDetails(Long categoryId, Pageable pageable) {
-        if (categoryId == null ) {
+        if (categoryId == null) {
             return emptyPage(pageable);
         }
 
@@ -352,7 +351,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .where(like.book.id.eq(bookId))
                 .fetchCount();
 
-        List<CategoryResponseDTO> categoryPathByBookId = findCategoryPathByBookId(bookId);
+        List<BookCategoryDto> categoryPathByBookId = findCategoryPathByBookId(bookId);
 
         return new BookDetailsDto(
                 book.getId(),
@@ -414,7 +413,9 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .fetch();
     }
 
+    //todo 양방향 매핑으로 바뀌어서 고쳐야 함
     @Override
+<<<<<<< HEAD
     public List<CategoryResponseDTO> findCategoryPathByBookId(Long bookId) {
         // 하위 카테고리 ID와 경로를 위한 이름 조회
         Category leafCategory = queryFactory
@@ -448,6 +449,63 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         Collections.reverse(categoryList);
 
         return categoryList;
+=======
+    public List<BookCategoryDto> findCategoryPathByBookId(Long bookId) {
+//        // 하위 카테고리 ID와 경로를 위한 이름 조회
+//
+//        List<Category> categoryList = queryFactory
+//                .select(bookCategory.category)
+//                .from(bookCategory)
+//                .join(bookCategory.category, category)
+//                .where(bookCategory.book.id.eq(bookId))
+//                .stream().toList();
+//
+//
+//        Map<Long, BookCategoryDto> categoryMap = new HashMap<>();
+//
+//        // 1. 모든 카테고리를 CategoryDto로 변환 후 저장
+//        for (Category category : categoryList) {
+//            Category current = category;
+//            while (current != null) {
+//                categoryMap.put(current.getId(),
+//                        new BookCategoryDto(current.getId(), current.getName(), current.getDepth(), category.getDisplayOrder(), new ArrayList<>()));
+//                current = current.getParent();
+//            }
+//        }
+//
+//        // 2. 부모-자식 관계를 설정
+//        List<BookCategoryDto> roots = new ArrayList<>();
+//        Set<Long> processedCategories = new HashSet<>(); // 중복 방지를 위한 Set
+//
+//        for (Category category : categoryList) {
+//            Category current = category;
+//
+//            // 상위 부모까지 거슬러 올라가며 부모-자식 관계 설정
+//            while (current != null) {
+//                BookCategoryDto categoryDto = categoryMap.get(current.getId());
+//                if (categoryDto == null) break;
+//
+//                // 부모 관계 설정
+//                if (current.getParent() != null) {
+//                    BookCategoryDto parentDto = categoryMap.get(current.getParent().getId());
+//                    if (parentDto != null && !parentDto.getChildren().contains(categoryDto)) {
+//                        parentDto.getChildren().add(categoryDto);
+//                    }
+//                } else if (!processedCategories.contains(current.getId())) {
+//                    // 최상위 카테고리는 roots에 추가
+//                    roots.add(categoryDto);
+//                    processedCategories.add(current.getId());
+//                }
+//
+//                current = current.getParent();
+//            }
+//        }
+//
+//
+//
+//        return roots; // 최상위 루트 카테고리 반환
+        return null;
+>>>>>>> develop
     }
 
 }

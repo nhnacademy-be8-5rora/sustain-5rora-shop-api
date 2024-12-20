@@ -2,6 +2,7 @@ package store.aurora.book.dto;
 
 
 import lombok.*;
+import store.aurora.book.dto.category.BookCategoryDto;
 import store.aurora.book.dto.category.CategoryResponseDTO;
 
 import java.time.LocalDate;
@@ -27,7 +28,7 @@ public class BookDetailsDto {
     private List<ReviewDto> reviews;
     private List<String> tagNames;
     private int likeCount;
-    private List<CategoryResponseDTO> categoryPath;
+    private List<BookCategoryDto> categoryPath;
     private double rating;
 }
 

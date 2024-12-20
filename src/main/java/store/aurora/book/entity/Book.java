@@ -62,7 +62,6 @@ public class Book {
     @JoinColumn(name = "series_id")
     private Series series;
 
-<<<<<<< HEAD
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookCategory> bookCategories = new ArrayList<>();
 
@@ -84,9 +83,7 @@ public class Book {
             bookCategory.setBook(null);
         }
     }
-=======
-    @OneToMany(mappedBy = "book_tag")
+    @OneToMany(mappedBy = "book")
     private List<BookTag> bookTags;
 
->>>>>>> develop
 }

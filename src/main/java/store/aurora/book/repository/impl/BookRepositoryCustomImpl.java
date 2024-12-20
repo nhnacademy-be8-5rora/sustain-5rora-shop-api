@@ -415,41 +415,6 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
 
     //todo 양방향 매핑으로 바뀌어서 고쳐야 함
     @Override
-<<<<<<< HEAD
-    public List<CategoryResponseDTO> findCategoryPathByBookId(Long bookId) {
-        // 하위 카테고리 ID와 경로를 위한 이름 조회
-        Category leafCategory = queryFactory
-                .select(bookCategory.category)
-                .from(bookCategory)
-                .join(bookCategory.category, category)
-                .where(bookCategory.book.id.eq(bookId))
-                .fetchOne();
-
-        if (leafCategory == null) {
-            return null;
-        }
-
-        Category currentCategory = leafCategory;
-        List<CategoryResponseDTO> categoryList = new ArrayList<>();
-
-
-        while (currentCategory != null) {
-            CategoryResponseDTO categoryResponseDTO = new CategoryResponseDTO(
-                    currentCategory.getId(),
-                    currentCategory.getName(),
-                    (currentCategory.getParent() == null ) ? null : currentCategory.getParent().getId(),
-                    (currentCategory.getParent() == null ) ? null : currentCategory.getParent().getName(),
-                    currentCategory.getDepth(),
-                    currentCategory.getDisplayOrder()
-            );
-            categoryList.add(categoryResponseDTO);
-            currentCategory = currentCategory.getParent();
-        }
-
-        Collections.reverse(categoryList);
-
-        return categoryList;
-=======
     public List<BookCategoryDto> findCategoryPathByBookId(Long bookId) {
 //        // 하위 카테고리 ID와 경로를 위한 이름 조회
 //
@@ -505,7 +470,6 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
 //
 //        return roots; // 최상위 루트 카테고리 반환
         return null;
->>>>>>> develop
     }
 
 }

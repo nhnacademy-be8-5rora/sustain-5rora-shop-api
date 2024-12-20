@@ -88,13 +88,14 @@ public class BookCategoryServiceImpl implements BookCategoryService {
         }
     }
 
-    private BookCategory createBookCategory(Book book, Long categoryId) {
-        Category category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new InvalidCategoryException("유효하지 않은 카테고리 ID: " + categoryId));
+    private BookCategory createBookCategory(Book book, Category category) {
         BookCategory bookCategory = new BookCategory();
         bookCategory.setBook(book);
         bookCategory.setCategory(category);
+
         book.addBookCategory(bookCategory); // 양방향 동기화
+        category.addBookCategory(bookCategory);
+
         return bookCategory;
     }
 }

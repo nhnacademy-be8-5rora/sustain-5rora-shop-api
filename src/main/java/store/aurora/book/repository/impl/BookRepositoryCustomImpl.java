@@ -416,59 +416,60 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
     //todo 양방향 매핑으로 바뀌어서 고쳐야 함
     @Override
     public List<BookCategoryDto> findCategoryPathByBookId(Long bookId) {
-        // 하위 카테고리 ID와 경로를 위한 이름 조회
-
-        List<Category> categoryList = queryFactory
-                .select(bookCategory.category)
-                .from(bookCategory)
-                .join(bookCategory.category, category)
-                .where(bookCategory.book.id.eq(bookId))
-                .stream().toList();
-
-
-        Map<Long, BookCategoryDto> categoryMap = new HashMap<>();
-
-        // 1. 모든 카테고리를 CategoryDto로 변환 후 저장
-        for (Category category : categoryList) {
-            Category current = category;
-            while (current != null) {
-                categoryMap.put(current.getId(),
-                        new BookCategoryDto(current.getId(), current.getName(), current.getDepth(), category.getDisplayOrder(), new ArrayList<>()));
-                current = current.getParent();
-            }
-        }
-
-        // 2. 부모-자식 관계를 설정
-        List<BookCategoryDto> roots = new ArrayList<>();
-        Set<Long> processedCategories = new HashSet<>(); // 중복 방지를 위한 Set
-
-        for (Category category : categoryList) {
-            Category current = category;
-
-            // 상위 부모까지 거슬러 올라가며 부모-자식 관계 설정
-            while (current != null) {
-                BookCategoryDto categoryDto = categoryMap.get(current.getId());
-                if (categoryDto == null) break;
-
-                // 부모 관계 설정
-                if (current.getParent() != null) {
-                    BookCategoryDto parentDto = categoryMap.get(current.getParent().getId());
-                    if (parentDto != null && !parentDto.getChildren().contains(categoryDto)) {
-                        parentDto.getChildren().add(categoryDto);
-                    }
-                } else if (!processedCategories.contains(current.getId())) {
-                    // 최상위 카테고리는 roots에 추가
-                    roots.add(categoryDto);
-                    processedCategories.add(current.getId());
-                }
-
-                current = current.getParent();
-            }
-        }
-
-
-
-        return roots; // 최상위 루트 카테고리 반환
+//        // 하위 카테고리 ID와 경로를 위한 이름 조회
+//
+//        List<Category> categoryList = queryFactory
+//                .select(bookCategory.category)
+//                .from(bookCategory)
+//                .join(bookCategory.category, category)
+//                .where(bookCategory.book.id.eq(bookId))
+//                .stream().toList();
+//
+//
+//        Map<Long, BookCategoryDto> categoryMap = new HashMap<>();
+//
+//        // 1. 모든 카테고리를 CategoryDto로 변환 후 저장
+//        for (Category category : categoryList) {
+//            Category current = category;
+//            while (current != null) {
+//                categoryMap.put(current.getId(),
+//                        new BookCategoryDto(current.getId(), current.getName(), current.getDepth(), category.getDisplayOrder(), new ArrayList<>()));
+//                current = current.getParent();
+//            }
+//        }
+//
+//        // 2. 부모-자식 관계를 설정
+//        List<BookCategoryDto> roots = new ArrayList<>();
+//        Set<Long> processedCategories = new HashSet<>(); // 중복 방지를 위한 Set
+//
+//        for (Category category : categoryList) {
+//            Category current = category;
+//
+//            // 상위 부모까지 거슬러 올라가며 부모-자식 관계 설정
+//            while (current != null) {
+//                BookCategoryDto categoryDto = categoryMap.get(current.getId());
+//                if (categoryDto == null) break;
+//
+//                // 부모 관계 설정
+//                if (current.getParent() != null) {
+//                    BookCategoryDto parentDto = categoryMap.get(current.getParent().getId());
+//                    if (parentDto != null && !parentDto.getChildren().contains(categoryDto)) {
+//                        parentDto.getChildren().add(categoryDto);
+//                    }
+//                } else if (!processedCategories.contains(current.getId())) {
+//                    // 최상위 카테고리는 roots에 추가
+//                    roots.add(categoryDto);
+//                    processedCategories.add(current.getId());
+//                }
+//
+//                current = current.getParent();
+//            }
+//        }
+//
+//
+//
+//        return roots; // 최상위 루트 카테고리 반환
+        return null;
     }
 
 }

@@ -215,6 +215,7 @@ public class BookServiceImpl implements BookService {
         return bookDetailsDto;
     }
 
+
     public List<BookInfoDTO> getBookInfo(List<Long> bookIds) {
         List<Book> books = bookRepository.findAllById(bookIds);
 

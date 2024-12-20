@@ -3,4 +3,4 @@ logging:
     org.springframework.web: WARN
 
 server:
-  port: 9093
+  port: 9281

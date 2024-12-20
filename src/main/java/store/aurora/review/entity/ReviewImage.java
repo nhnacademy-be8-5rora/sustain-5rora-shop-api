@@ -30,9 +30,10 @@ public class ReviewImage {
     @Column(nullable = false)
     private String imageFilePath;
 
+    // todo
     @Setter
-    @NotNull
+    //@NotNull
     @ManyToOne//(fetch = FetchType.LAZY)
-    @JoinColumn(name = "storage_infos_id", nullable = false)
+    @JoinColumn(name = "storage_infos_id")//, nullable = false)
     private StorageInfo storageInfo;
 }

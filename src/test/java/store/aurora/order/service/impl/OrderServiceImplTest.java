@@ -1,6 +1,7 @@
 package store.aurora.order.service.impl;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -216,6 +217,31 @@ class OrderServiceImplTest {
         orderService.updateOrder(order);
 
         verify(orderRepository, times(1)).save(any(Order.class));
+    }
+
+    @Test
+    void updateOrderWithNullOrder() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            orderService.updateOrder(null);
+        });
+    }
+
+    @Test
+    void updateOrderWithNotExist(){
+        Order order = OrderMapper.orderMapper(
+                0, LocalDateTime.now(),
+                0, 0,
+                OrderState.PENDING, "John Doe", "010-1234-5678",
+                "", null);
+
+        // 테스트를 위해서 임의로 지정한 값
+        // 실제 코드에서 작성하면 안됨
+        order.setId(1L);
+        when(orderRepository.existsById(anyLong())).thenReturn(false);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            orderService.updateOrder(order);
+        });
     }
 
     @Test

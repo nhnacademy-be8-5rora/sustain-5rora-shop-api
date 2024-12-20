@@ -145,6 +145,7 @@ public class CartServiceImpl implements CartService {
         return getBookInfo(cartItems);
     }
 
+    // todo : private-> 트랜잭션 전파되는지
     private Map<String, Object> getBookInfo(List<CartDTO> cartItems) {
         List<Long> bookIds = cartItems.stream()
                 .map(CartDTO::getBookId)

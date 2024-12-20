@@ -106,7 +106,7 @@ POST localhost:8083/api/book-category/1
 Content-Type: application/json
 
 {
-  "categoryIds": [2,3,4,5]
+  "categoryIds": [2,3]
 }
 
 ### 기존 도서에 카테고리 삭제
@@ -144,3 +144,5 @@ Content-Type: application/json
 
 ### 책-태그 연결 삭제
 DELETE http://localhost:8083/api/book-tag/1
+
+

@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "reviews")
 @Getter
+@Setter
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,8 +25,7 @@ public class Review {
     @Column(nullable = false)
     private int reviewRating;
 
-    @Min(1)
-    @Max(5)
+
     @Setter
     @Column(columnDefinition = "TEXT")
     private String reviewContent;

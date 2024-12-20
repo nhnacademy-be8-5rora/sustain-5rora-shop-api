@@ -15,7 +15,6 @@ import store.aurora.book.repository.BookRepository;
 import store.aurora.book.repository.category.CategoryRepository;
 import store.aurora.book.service.category.BookCategoryService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -27,26 +26,22 @@ public class BookCategoryServiceImpl implements BookCategoryService {
 
     @Transactional
     public void addCategoriesToBook(Long bookId, List<Long> categoryIds) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new NotFoundBookException(bookId));
+        Book book = findBookById(bookId);
 
-        List<Category> categories = categoryRepository.findAllById(categoryIds);
-        if (categories.size() != categoryIds.size()) {
-            throw new InvalidCategoryException("유효하지 않은 카테고리 ID가 포함되어 있습니다.");
-        }
+        // 유효한 카테고리 검증 및 조회
+        List<Category> categories = validateAndGetCategories(categoryIds);
 
-        List<BookCategory> existingBookCategories = bookCategoryRepository.findByBookIdAndCategoryIdIn(bookId, categoryIds);
-        List<Long> existingCategoryIds = new ArrayList<>();
-        for (BookCategory bookCategory : existingBookCategories) {
-            existingCategoryIds.add(bookCategory.getCategory().getId());
-        }
+        // 이미 추가된 카테고리를 필터링
+        List<Category> existingCategories = book.getBookCategories().stream()
+                .map(BookCategory::getCategory)
+                .toList();
 
-        List<BookCategory> newBookCategories = new ArrayList<>();
-        for (Category category : categories) {
-            if (!existingCategoryIds.contains(category.getId())) {
-                newBookCategories.add(new BookCategory(null, book, category));
-            }
-        }
+        List<BookCategory> newBookCategories = categories.stream()
+                .filter(category -> !existingCategories.contains(category))
+                .map(category -> createBookCategory(book, category))
+                .toList();
+
+        // 새로운 카테고리가 있을 경우 저장
         if (!newBookCategories.isEmpty()) {
             bookCategoryRepository.saveAll(newBookCategories);
         }
@@ -54,41 +49,64 @@ public class BookCategoryServiceImpl implements BookCategoryService {
 
     @Transactional
     public void removeCategoriesFromBook(Long bookId, List<Long> categoryIds) {
-        if (!bookRepository.existsById(bookId)) {
-            throw new NotFoundBookException(bookId);
-        }
+        Book book = findBookById(bookId);
 
-        List<Category> categories = categoryRepository.findAllById(categoryIds);
-        if (categories.size() != categoryIds.size()) {
-            throw new InvalidCategoryException("유효하지 않은 카테고리 ID가 포함되어 있습니다.");
-        }
+        // 삭제할 `BookCategory` 찾기
+        List<BookCategory> bookCategoriesToDelete = book.getBookCategories().stream()
+                .filter(bookCategory -> categoryIds.contains(bookCategory.getCategory().getId()))
+                .toList();
 
-        List<BookCategory> bookCategoriesToDelete = bookCategoryRepository.findByBookIdAndCategoryIdIn(bookId, categoryIds);
         if (bookCategoriesToDelete.isEmpty()) {
             throw new CategoryNotFoundException("삭제할 카테고리가 존재하지 않습니다.");
         }
 
-        long currentCategoryCount = bookCategoryRepository.countByBookId(bookId);
-        if (currentCategoryCount - bookCategoriesToDelete.size() <= 0) {
+        // 최소 하나의 카테고리는 유지해야 함
+        long remainingCategories = book.getBookCategories().size() - bookCategoriesToDelete.size();
+        if (remainingCategories <= 0) {
             throw new CategoryLimitException();
+        }
+
+        // 양방향 동기화를 통해 제거
+        for (BookCategory bookCategory : bookCategoriesToDelete) {
+            book.removeBookCategory(bookCategory);
+            bookCategory.getCategory().removeBookCategory(bookCategory);
         }
 
         bookCategoryRepository.deleteAll(bookCategoriesToDelete);
     }
 
-
-
     @Transactional(readOnly = true)
     public List<Category> getCategoriesByBookId(Long bookId) {
-        if (!bookRepository.existsById(bookId)) {
-            throw new NotFoundBookException(bookId);
-        }
+        Book book = findBookById(bookId);
 
-        List<BookCategory> bookCategories = bookCategoryRepository.findByBookId(bookId);
-        List<Category> categories = new ArrayList<>();
-        for (BookCategory bookCategory : bookCategories) {
-            categories.add(bookCategory.getCategory());
+        // 책에 연결된 카테고리 리스트 반환
+        return book.getBookCategories().stream()
+                .map(BookCategory::getCategory)
+                .toList();
+    }
+
+    private Book findBookById(Long bookId) {
+        return bookRepository.findById(bookId)
+                .orElseThrow(() -> new NotFoundBookException(bookId));
+    }
+
+    private List<Category> validateAndGetCategories(List<Long> categoryIds) {
+        List<Category> categories = categoryRepository.findAllById(categoryIds);
+        if (categories.size() != categoryIds.size()) {
+            throw new InvalidCategoryException("유효하지 않은 카테고리 ID가 포함되어 있습니다.");
         }
         return categories;
+    }
+
+    private BookCategory createBookCategory(Book book, Category category) {
+        BookCategory bookCategory = new BookCategory();
+        bookCategory.setBook(book);
+        bookCategory.setCategory(category);
+
+        // 양방향 동기화
+        book.addBookCategory(bookCategory);
+        category.addBookCategory(bookCategory);
+
+        return bookCategory;
     }
 }

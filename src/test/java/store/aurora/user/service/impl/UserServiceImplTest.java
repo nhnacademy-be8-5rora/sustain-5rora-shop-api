@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import store.aurora.user.dto.SignUpRequest;
 import store.aurora.user.dto.UserResponseDto;
 import store.aurora.user.entity.Role;
 import store.aurora.user.entity.User;
@@ -22,10 +23,7 @@ import store.aurora.user.repository.UserRepository;
 import store.aurora.user.service.DoorayMessengerService;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 class UserServiceImplTest {
 
@@ -33,7 +31,7 @@ class UserServiceImplTest {
     @Mock private UserRankRepository userRankRepository;
     @Mock private UserRankHistoryRepository userRankHistoryRepository;
     @Mock private DoorayMessengerService doorayMessengerService;
-    @Mock private RedisTemplate redisTemplate;
+    @Mock private RedisTemplate<String, String> redisTemplate;
 
     @InjectMocks private UserServiceImpl userService;
 
@@ -55,6 +53,7 @@ class UserServiceImplTest {
 
         // Bypass passwordEncoder initialization in UserServiceImpl
         ReflectionTestUtils.setField(userService, "passwordEncoder", new BCryptPasswordEncoder());
+
     }
 
     @Test
@@ -81,5 +80,16 @@ class UserServiceImplTest {
 
         // When & Then
         assertThrows(RoleNotFoundException.class, () -> userService.getUserByUserId("user2"));
+    }
+
+    // 회원가입 테스트
+    @Test
+    void registerUser_Success() {
+        // Given
+//        SignUpRequest request = new SignUpRequest(
+//                "testId", "password123", "홍길동", "20000101", "01012345678", "test@example.com"
+//        );
+
+
     }
 }

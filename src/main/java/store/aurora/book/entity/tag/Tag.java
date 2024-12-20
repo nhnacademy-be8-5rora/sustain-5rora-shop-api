@@ -24,7 +24,7 @@ public class Tag {
     @Column(nullable = false, length = 15)
     private String name;
 
-    @OneToMany(mappedBy = "book_tag")
+    @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookTag> bookTags;
 
 }

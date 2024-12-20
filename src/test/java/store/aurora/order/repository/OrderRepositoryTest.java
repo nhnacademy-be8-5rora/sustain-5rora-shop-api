@@ -23,8 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @DataJpaTest
 class OrderRepositoryTest {
 
-    //TODO [ERROR]: book entity가 양방향으로 바껴서 난 에러일 수 있음 확인해야 함
-
     @Autowired
     private OrderRepository orderRepository;
 

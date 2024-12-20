@@ -13,6 +13,8 @@ import store.aurora.order.entity.Order;
 import store.aurora.order.entity.Payment;
 import store.aurora.order.entity.enums.OrderState;
 import store.aurora.order.entity.enums.PaymentState;
+import store.aurora.order.repository.OrderRepository;
+import store.aurora.order.repository.PaymentRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;

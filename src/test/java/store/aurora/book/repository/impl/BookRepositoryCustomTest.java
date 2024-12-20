@@ -105,8 +105,8 @@ public class BookRepositoryCustomTest {
         seriesRepository.save(series);
 
         // Category 생성
-        Category category1 = new Category(1L,"Example Category", null, 0, 1);
-        Category category2 = new Category(2L,"Example Category2", null, 0, 2);
+        Category category1 = new Category(1L,"Example Category", null, 0, 1,new ArrayList<>());
+        Category category2 = new Category(2L,"Example Category2", null, 0, 2,new ArrayList<>());
         categoryRepository.save(category1);
         categoryRepository.save(category2);
 
@@ -126,7 +126,9 @@ public class BookRepositoryCustomTest {
                 LocalDate.of(2024, 12, 12),
                 publisher,
                 series,
+                new ArrayList<>(),
                 new ArrayList<>()
+
         );
 
         Book book2 = new Book(
@@ -143,7 +145,9 @@ public class BookRepositoryCustomTest {
                 LocalDate.of(2024, 12, 12),
                 publisher,
                 series,
+                new ArrayList<>(),
                 new ArrayList<>()
+
         );
 
         bookRepository.save(book1);

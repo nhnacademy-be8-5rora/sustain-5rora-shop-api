@@ -60,10 +60,6 @@ public class User {
     @Column(name = "is_oauth", nullable = false)
     private Boolean isOauth;
 
-
-
-
-
     // 사용자에서 주소목록을 조회할 경우
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<UserAddress> userAddresses;

@@ -65,7 +65,7 @@ INSERT INTO user_roles (user_id, role_id) VALUES ('user123', 1);
 
 
 insert into publishers (name) values ('Penguin Books');
-insert into serieses (name) values ('test name');
+insert into series (name) values ('test name');
 
 
 -- 최상위 카테고리(부모가 없는 카테고리) 삽입

@@ -36,6 +36,7 @@ import store.aurora.book.service.tag.TagService;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -229,13 +230,15 @@ public class BookServiceImpl implements BookService {
         BookDetailsDto bookDetailsDto = bookRepository.findBookDetailsByBookId(bookId);
 
         double sum = 0;
-        double avg;
-        for (ReviewDto reviewDto : bookDetailsDto.getReviews()) {
-            int reviewRating = reviewDto.getReviewRating();
-            sum += reviewRating;
+        double avg = 0.0;
+        if(Objects.nonNull(bookDetailsDto.getReviews())) {
+            for (ReviewDto reviewDto : bookDetailsDto.getReviews()) {
+                int reviewRating = reviewDto.getReviewRating();
+                sum += reviewRating;
+            }
+            avg = Math.round((sum / bookDetailsDto.getReviews().size() * 10) / 10.0);
         }
 
-        avg = Math.round((sum / bookDetailsDto.getReviews().size() * 10) / 10.0);
 
         bookDetailsDto.setRating(avg);
 

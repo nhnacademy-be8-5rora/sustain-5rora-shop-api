@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({DuplicateUserException.class, AlreadyActiveUserException.class})
-    public ResponseEntity<Map<String, String>> handleConflictException(DuplicateUserException ex) {
+    public ResponseEntity<Map<String, String>> handleConflictException(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", ex.getMessage()));
     }

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.tag.BookTag;
+import store.aurora.book.entity.tag.Tag;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -59,5 +60,8 @@ public class Book {
     @ManyToOne
     @JoinColumn(name = "series_id")
     private Series series;
+
+    @OneToMany(mappedBy = "book_tag")
+    private List<BookTag> bookTags;
 
 }

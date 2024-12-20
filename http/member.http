@@ -6,7 +6,7 @@ Content-Type: application/json
   "id": "payco:testId2",
   "name": "홍길동",
   "birth": "19000101",
-  "phoneNumber": "01012345678",
+  "phoneNumber": "821012345678",
   "email": "test@test.com"
 }
 

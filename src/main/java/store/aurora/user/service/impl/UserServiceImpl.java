@@ -10,17 +10,15 @@ import store.aurora.user.dto.SignUpRequest;
 import store.aurora.user.dto.UserDetailResponseDto;
 import store.aurora.user.dto.UserResponseDto;
 import store.aurora.user.entity.*;
-import store.aurora.user.exception.DuplicateUserException;
-import store.aurora.user.exception.RoleNotFoundException;
-import store.aurora.user.exception.VerificationException;
+import store.aurora.user.exception.*;
 import store.aurora.user.repository.*;
-import store.aurora.user.service.DoorayMessengerService;
 import store.aurora.user.service.UserService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RequiredArgsConstructor
 @Service
@@ -28,7 +26,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserRankRepository userRankRepository;
     private final UserRankHistoryRepository userRankHistoryRepository;
-    private final DoorayMessengerService doorayMessengerService;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private static final int INACTIVE_PERIOD_MONTHS = 3;    // 휴면 3개월 기준
@@ -78,7 +75,7 @@ public class UserServiceImpl implements UserService {
         // 회원등급 저장
         UserRank userRank = userRankRepository.findByRankName(Rank.GENERAL);
         if (userRank == null) {
-            throw new RuntimeException("해당 등급을 찾을 수 없습니다.");
+            throw new NoSuchElementException("해당 등급을 찾을 수 없습니다.");
         }
         UserRankHistory userRankHistory = new UserRankHistory();
         userRankHistory.setUserRank(userRank);
@@ -88,7 +85,11 @@ public class UserServiceImpl implements UserService {
 
         userRankHistoryRepository.save(userRankHistory);
 
+        // 권한 저장
         Role role = roleRepository.findByRoleName("ROLE_USER");
+        if (role == null) {
+            throw new NoSuchElementException("해당 권한을 찾을 수 없습니다.");
+        }
         UserRole userRole = new UserRole();
         userRole.setRole(role);
         userRole.setUser(user);
@@ -114,9 +115,10 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
 
+        // 회원등급 저장
         UserRank userRank = userRankRepository.findByRankName(Rank.GENERAL);
         if (userRank == null) {
-            throw new RuntimeException("해당 등급을 찾을 수 없습니다.");
+            throw new NoSuchElementException("해당 등급을 찾을 수 없습니다.");
         }
         UserRankHistory userRankHistory = new UserRankHistory();
         userRankHistory.setUserRank(userRank);
@@ -126,7 +128,11 @@ public class UserServiceImpl implements UserService {
 
         userRankHistoryRepository.save(userRankHistory);
 
+        // 권한 저장
         Role role = roleRepository.findByRoleName("ROLE_USER");
+        if (role == null) {
+            throw new NoSuchElementException("해당 권한을 찾을 수 없습니다.");
+        }
         UserRole userRole = new UserRole();
         userRole.setRole(role);
         userRole.setUser(user);
@@ -138,7 +144,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(String userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundUserException("사용자를 찾을 수 없습니다."));
 
         user.setStatus(UserStatus.DELETED);
         userRepository.save(user);
@@ -162,14 +168,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUser(String userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NotFoundUserException("사용자를 찾을 수 없습니다."));
     }
 
     // 휴면 해제 처리
     @Override
     public void reactivateUser(String userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+                .orElseThrow(() -> new NotFoundUserException("사용자가 존재하지 않습니다."));
 
         // 인증 api에서 비밀번호 확인 인증 처리
 
@@ -177,7 +183,7 @@ public class UserServiceImpl implements UserService {
             user.setStatus(UserStatus.ACTIVE);
             userRepository.save(user);
         } else {
-            throw new IllegalArgumentException("이미 휴면해제된 계정입니다.");
+            throw new AlreadyActiveUserException("이미 휴면해제된 계정입니다.");
         }
     }
 

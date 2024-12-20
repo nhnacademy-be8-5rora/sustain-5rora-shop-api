@@ -15,7 +15,6 @@ import store.aurora.book.repository.BookRepository;
 import store.aurora.book.repository.category.CategoryRepository;
 import store.aurora.book.service.category.BookCategoryService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -29,18 +28,20 @@ public class BookCategoryServiceImpl implements BookCategoryService {
     public void addCategoriesToBook(Long bookId, List<Long> categoryIds) {
         Book book = findBookById(bookId);
 
-        validateCategoryIds(categoryIds); // ID 검증만 수행
+        // 유효한 카테고리 검증 및 조회
+        List<Category> categories = validateAndGetCategories(categoryIds);
 
-        List<Long> existingCategoryIds = book.getBookCategories()
-                .stream()
-                .map(bookCategory -> bookCategory.getCategory().getId())
+        // 이미 추가된 카테고리를 필터링
+        List<Category> existingCategories = book.getBookCategories().stream()
+                .map(BookCategory::getCategory)
                 .toList();
 
-        List<BookCategory> newBookCategories = categoryIds.stream()
-                .filter(categoryId -> !existingCategoryIds.contains(categoryId))
-                .map(categoryId -> createBookCategory(book, categoryId))
+        List<BookCategory> newBookCategories = categories.stream()
+                .filter(category -> !existingCategories.contains(category))
+                .map(category -> createBookCategory(book, category))
                 .toList();
 
+        // 새로운 카테고리가 있을 경우 저장
         if (!newBookCategories.isEmpty()) {
             bookCategoryRepository.saveAll(newBookCategories);
         }
@@ -50,27 +51,35 @@ public class BookCategoryServiceImpl implements BookCategoryService {
     public void removeCategoriesFromBook(Long bookId, List<Long> categoryIds) {
         Book book = findBookById(bookId);
 
-        List<BookCategory> bookCategoriesToDelete = bookCategoryRepository.findByBookIdAndCategoryIdIn(bookId, categoryIds);
+        // 삭제할 `BookCategory` 찾기
+        List<BookCategory> bookCategoriesToDelete = book.getBookCategories().stream()
+                .filter(bookCategory -> categoryIds.contains(bookCategory.getCategory().getId()))
+                .toList();
+
         if (bookCategoriesToDelete.isEmpty()) {
             throw new CategoryNotFoundException("삭제할 카테고리가 존재하지 않습니다.");
         }
 
-        long currentCategoryCount = book.getBookCategories().size();
-        if (currentCategoryCount - bookCategoriesToDelete.size() <= 0) {
+        // 최소 하나의 카테고리는 유지해야 함
+        long remainingCategories = book.getBookCategories().size() - bookCategoriesToDelete.size();
+        if (remainingCategories <= 0) {
             throw new CategoryLimitException();
         }
 
-        bookCategoriesToDelete.forEach(book::removeBookCategory); // 양방향 동기화
+        // 양방향 동기화를 통해 제거
+        for (BookCategory bookCategory : bookCategoriesToDelete) {
+            book.removeBookCategory(bookCategory);
+            bookCategory.getCategory().removeBookCategory(bookCategory);
+        }
 
         bookCategoryRepository.deleteAll(bookCategoriesToDelete);
     }
-
-
 
     @Transactional(readOnly = true)
     public List<Category> getCategoriesByBookId(Long bookId) {
         Book book = findBookById(bookId);
 
+        // 책에 연결된 카테고리 리스트 반환
         return book.getBookCategories().stream()
                 .map(BookCategory::getCategory)
                 .toList();
@@ -81,11 +90,12 @@ public class BookCategoryServiceImpl implements BookCategoryService {
                 .orElseThrow(() -> new NotFoundBookException(bookId));
     }
 
-    private void validateCategoryIds(List<Long> categoryIds) {
-        long validCount = categoryRepository.countByIdIn(categoryIds);
-        if (validCount != categoryIds.size()) {
+    private List<Category> validateAndGetCategories(List<Long> categoryIds) {
+        List<Category> categories = categoryRepository.findAllById(categoryIds);
+        if (categories.size() != categoryIds.size()) {
             throw new InvalidCategoryException("유효하지 않은 카테고리 ID가 포함되어 있습니다.");
         }
+        return categories;
     }
 
     private BookCategory createBookCategory(Book book, Category category) {
@@ -93,7 +103,8 @@ public class BookCategoryServiceImpl implements BookCategoryService {
         bookCategory.setBook(book);
         bookCategory.setCategory(category);
 
-        book.addBookCategory(bookCategory); // 양방향 동기화
+        // 양방향 동기화
+        book.addBookCategory(bookCategory);
         category.addBookCategory(bookCategory);
 
         return bookCategory;

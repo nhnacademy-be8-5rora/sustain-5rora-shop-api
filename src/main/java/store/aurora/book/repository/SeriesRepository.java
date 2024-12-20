@@ -6,6 +6,5 @@ import store.aurora.book.entity.Series;
 import java.util.Optional;
 
 public interface SeriesRepository extends JpaRepository<Series, Long> {
-    Optional<Series> findByName(String name);
 }
 

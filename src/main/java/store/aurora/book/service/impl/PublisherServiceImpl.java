@@ -12,17 +12,29 @@ import java.util.List;
 @Service
 @Transactional
 @RequiredArgsConstructor
-//todo interface 분리하기
 public class PublisherServiceImpl implements PublisherService {
     private final PublisherRepository publisherRepository;
 
-    public Publisher findOrCreatePublisher(String publisherName) {
-        return publisherRepository.findByName(publisherName)
-                .orElseGet(() -> {
-                    Publisher newPublisher = new Publisher();
-                    newPublisher.setName(publisherName);
-                    return publisherRepository.save(newPublisher);
-                });
+    public List<Publisher> getAllPublishers() {
+        return publisherRepository.findAll();
+    }
+
+    public Publisher getPublisherById(Long id) {
+        return publisherRepository.findById(id).orElseThrow(() -> new RuntimeException("Publisher not found"));
+    }
+
+    public Publisher createPublisher(Publisher publisher) {
+        return publisherRepository.save(publisher);
+    }
+
+    public Publisher updatePublisher(Long id, Publisher updatedPublisher) {
+        Publisher existingPublisher = getPublisherById(id);
+        existingPublisher.setName(updatedPublisher.getName());
+        return publisherRepository.save(existingPublisher);
+    }
+
+    public void deletePublisher(Long id) {
+        publisherRepository.deleteById(id);
     }
 
 }

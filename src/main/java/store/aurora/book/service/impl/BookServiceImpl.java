@@ -49,14 +49,13 @@ public class BookServiceImpl implements BookService {
 
     @Transactional
     public void saveBookWithPublisherAndSeries(BookRequestDTO requestDTO) {
-        Publisher publisher = publisherService.findOrCreatePublisher(requestDTO.getPublisherName());
-        Series series = seriesService.findOrCreateSeries(requestDTO.getSeriesName());
+
 
         if (bookRepository.existsByIsbn(requestDTO.getIsbn())) {
             throw new ISBNAlreadyExistsException(requestDTO.getIsbn());
         }
 
-        Book book = BookMapper.toEntity(requestDTO, publisher, series);
+        Book book = BookMapper.toEntity(requestDTO);
         Book savedBook = bookRepository.save(book);
 
         // 이미지 저장
@@ -88,9 +87,7 @@ public class BookServiceImpl implements BookService {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new NotFoundBookException(bookId));
 
-        // 출판사 및 시리즈 정보 업데이트
-        Publisher publisher = publisherService.findOrCreatePublisher(detailsDTO.getPublisherName());
-        Series series = seriesService.findOrCreateSeries(detailsDTO.getSeriesName());
+
 
         // 중복 ISBN 체크
         Optional<Book> existingBook = bookRepository.findByIsbn(detailsDTO.getIsbn());

@@ -52,11 +52,11 @@ public class Book {
     @Column(nullable = false)
     private LocalDate publishDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "publisher_id", nullable = false)
     private Publisher publisher;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "series_id")
     private Series series;
 

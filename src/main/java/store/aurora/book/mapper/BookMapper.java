@@ -8,7 +8,7 @@ import java.util.List;
 
 public class BookMapper {
 
-    public static Book toEntity(BookRequestDTO dto, Publisher publisher, Series series) {
+    public static Book toEntity(BookRequestDTO dto) {
         Book book = new Book();
         book.setTitle(dto.getTitle());
         book.setRegularPrice(dto.getRegularPrice());

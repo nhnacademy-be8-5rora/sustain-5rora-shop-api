@@ -61,7 +61,7 @@ public class Book {
     @JoinColumn(name = "series_id")
     private Series series;
 
-    @OneToMany(mappedBy = "book_tag")
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookTag> bookTags;
 
 }

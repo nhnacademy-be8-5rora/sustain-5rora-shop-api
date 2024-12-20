@@ -83,3 +83,8 @@ management:
   info:
     env:
       enabled: true
+
+nhncloud:
+  storage:
+    url: fill
+    token: fill

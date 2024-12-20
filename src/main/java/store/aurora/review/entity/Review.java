@@ -11,6 +11,7 @@ import store.aurora.book.entity.Book;
 import store.aurora.user.entity.User;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "reviews")
@@ -48,7 +49,7 @@ public class Review {
     @OneToOne(optional = false)
     private User user;
 
-//    @Setter
-//    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<ReviewImage> reviewImages;
+    @Setter
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReviewImage> reviewImages;
 }

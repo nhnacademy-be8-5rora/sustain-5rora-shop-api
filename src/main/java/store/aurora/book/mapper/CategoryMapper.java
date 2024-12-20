@@ -14,7 +14,8 @@ public class CategoryMapper {
                 category.getName(),
                 parentId,
                 parentName,
-                category.getDepth()
+                category.getDepth(),
+                category.getDisplayOrder()
         );
     }
 }

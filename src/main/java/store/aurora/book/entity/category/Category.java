@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import store.aurora.book.entity.Book;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,4 +33,28 @@ public class Category {
 
     @Column(name = "display_order", nullable = false)
     private Integer displayOrder;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookCategory> bookCategories = new ArrayList<>();
+
+    public void addBookCategory(BookCategory bookCategory) {
+        if (!bookCategories.contains(bookCategory)) {
+            bookCategories.add(bookCategory);
+            bookCategory.setCategory(this);
+        }
+    }
+
+    public void removeBookCategory(BookCategory bookCategory) {
+        if (bookCategories.contains(bookCategory)) {
+            bookCategories.remove(bookCategory);
+            bookCategory.setCategory(null);
+        }
+    }
+
+    // 카테고리에서 직접 책 리스트 조회
+    public List<Book> getBooks() {
+        return bookCategories.stream()
+                .map(BookCategory::getBook)
+                .toList();
+    }
 }

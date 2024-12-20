@@ -1,14 +1,18 @@
 package store.aurora.book.mapper;
 
 import store.aurora.book.dto.BookRequestDTO;
-import store.aurora.book.entity.*;
+import store.aurora.book.dto.response.BookResponseDTO;
+import store.aurora.book.entity.Book;
+import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
+import store.aurora.book.entity.tag.BookTag;
 
-import java.util.List;
+import java.util.stream.Collectors;
 
 public class BookMapper {
 
-    public static Book toEntity(BookRequestDTO dto, Publisher publisher, Series series) {
+    // BookRequestDTO -> Book 엔티티 변환
+    public static Book toEntity(BookRequestDTO dto) {
         Book book = new Book();
         book.setTitle(dto.getTitle());
         book.setRegularPrice(dto.getRegularPrice());
@@ -20,29 +24,33 @@ public class BookMapper {
         book.setIsbn(dto.getIsbn());
         book.setPublishDate(dto.getPublishDate());
         book.setSale(dto.isSale());
-        book.setPublisher(publisher);
-        book.setSeries(series);
         return book;
     }
 
-//    public static BookResponseDTO toDTO(Book book) {
-//        BookResponseDTO dto = new BookResponseDTO();
-//        dto.setId(book.getId());
-//        dto.setTitle(book.getTitle());
-//        dto.setRegularPrice(book.getRegularPrice());
-//        dto.setSalePrice(book.getSalePrice());
-//        dto.setPackaging(book.isPackaging());
-//        dto.setStock(book.getStock());
-//        dto.setExplanation(book.getExplanation());
-//        dto.setContents(book.getContents());
-//        dto.setIsbn(book.getIsbn());
-//        dto.setPublishDate(book.getPublishDate());
-//        dto.setSale(book.isSale());
-//        dto.setPublisherName(book.getPublisher().getName());
-//        if (book.getSeries() != null) {
-//            dto.setSeriesName(book.getSeries().getName());
-//        }
-//
-//        return dto;
-//    }
+    // Book 엔티티 -> BookResponseDTO 변환
+    public static BookResponseDTO toDTO(Book book) {
+        return BookResponseDTO.builder()
+                .id(book.getId())
+                .title(book.getTitle())
+                .regularPrice(book.getRegularPrice())
+                .salePrice(book.getSalePrice())
+                .packaging(book.isPackaging())
+                .stock(book.getStock())
+                .explanation(book.getExplanation())
+                .contents(book.getContents())
+                .isbn(book.getIsbn())
+                .publishDate(book.getPublishDate())
+                .isSale(book.isSale())
+                .publisherName(book.getPublisher() != null ? book.getPublisher().getName() : null)
+                .seriesName(book.getSeries() != null ? book.getSeries().getName() : null)
+                .categories(book.getBookCategories().stream()
+                        .map(BookCategory::getCategory)
+                        .map(Category::getName)
+                        .collect(Collectors.toList()))
+//                .tags(book.getBookTags().stream()
+//                        .map(BookTag::getTag)
+//                        .map(tag -> tag.getName())
+//                        .collect(Collectors.toList()))
+                .build();
+    }
 }

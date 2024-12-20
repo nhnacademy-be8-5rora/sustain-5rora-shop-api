@@ -7,23 +7,40 @@ import store.aurora.book.entity.Series;
 import store.aurora.book.repository.SeriesRepository;
 import store.aurora.book.service.SeriesService;
 
+import java.util.List;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
-//todo interface 분리하기
 public class SeriesServiceImpl implements SeriesService {
     private final SeriesRepository seriesRepository;
 
-    public Series findOrCreateSeries(String seriesName) {
-        if (seriesName == null || seriesName.isEmpty()) {
-            return null;
-        }
+    public List<Series> getAllSeries() {
+        return seriesRepository.findAll();
+    }
 
-        return seriesRepository.findByName(seriesName)
-                .orElseGet(() -> {
-                    Series newSeries = new Series();
-                    newSeries.setName(seriesName);
-                    return seriesRepository.save(newSeries);
-                });
+    public Series getSeriesById(Long id) {
+        return seriesRepository.findById(id).orElseThrow(() -> new RuntimeException("Series not found"));
+    }
+
+    public Series createSeries(Series series) {
+        return seriesRepository.save(series);
+    }
+
+    public Series updateSeries(Long id, Series updatedSeries) {
+        Series existingSeries = getSeriesById(id);
+        existingSeries.setName(updatedSeries.getName());
+        return seriesRepository.save(existingSeries);
+    }
+
+    public void deleteSeries(Long id) {
+        seriesRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public Series findOrCreateSeries(String name) {
+        return seriesRepository.findByName(name)
+                .orElseGet(() -> seriesRepository.save(new Series(null, name)));
     }
 }

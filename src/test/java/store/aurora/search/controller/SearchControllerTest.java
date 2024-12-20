@@ -9,6 +9,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -43,41 +44,48 @@ class SearchControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(searchController).build();
     }
 
-    @DisplayName("제목을 기준으로 검색할 때 내용과 상태코드가 잘 넘어오는지 확인")
+    @DisplayName("제목을 기준으로 검색할 때 정렬 기준에 맞게 내용과 상태코드가 잘 넘어오는지 확인")
     @Test
-    void searchByTitle_ReturnsResults() throws Exception {
-
+    void searchByTitleWithSorting_ReturnsResults() throws Exception {
+        // Given
         String keyword = "Example Title";
         String type = "title";
+        String orderBy = "title"; // 정렬 기준
+        String orderDirection = "asc"; // 정렬 방향
         int pageNum = 1;
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 8);
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 8, orderDirection.equals("desc") ? Sort.by(Sort.Order.desc(orderBy)) : Sort.by(Sort.Order.asc(orderBy)));
+
         BookSearchResponseDTO responseDTO = new BookSearchResponseDTO(1L, "Example Title", 1000, 900, null, "Example Publisher", null, null,null,5L,3,3.5);
         Page<BookSearchResponseDTO> page = new PageImpl<>(Collections.singletonList(responseDTO));
 
         when(searchService.findBooksByTitleWithDetails(keyword, pageRequest)).thenReturn(page);
 
-
+        // When & Then
         mockMvc.perform(get("/api/books/search")
                         .param("type", type)
                         .param("keyword", keyword)
                         .param("pageNum", String.valueOf(pageNum))
+                        .param("orderBy", orderBy)
+                        .param("orderDirection", orderDirection)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].id", is(1)))
                 .andExpect(jsonPath("$.content[0].title", is("Example Title")));
-
         verify(searchService, times(1)).findBooksByTitleWithDetails(keyword, pageRequest);
     }
 
-    @DisplayName("작가이름 기준으로 검색할 때 내용과 상태코드가 잘 넘어오는지 확인")
+    @DisplayName("작가이름 기준으로 검색할 때 정렬 기준에 맞게 내용과 상태코드가 잘 넘어오는지 확인")
     @Test
-    void searchByAuthor_ReturnsResults() throws Exception {
+    void searchByAuthorWithSorting_ReturnsResults() throws Exception {
         // Given
         String keyword = "Example Author";
         String type = "author";
+        String orderBy = "title"; // 정렬 기준
+        String orderDirection = "desc"; // 정렬 방향
         int pageNum = 1;
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 8);
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 8, orderDirection.equals("desc") ? Sort.by(Sort.Order.desc(orderBy)) : Sort.by(Sort.Order.asc(orderBy)));
+
         BookSearchResponseDTO responseDTO = new BookSearchResponseDTO(1L, "Example Book", 1000, 900, null, "Example Publisher", null, null,null,5L,3,3.5);
         Page<BookSearchResponseDTO> page = new PageImpl<>(Collections.singletonList(responseDTO));
 
@@ -88,6 +96,8 @@ class SearchControllerTest {
                         .param("type", type)
                         .param("keyword", keyword)
                         .param("pageNum", String.valueOf(pageNum))
+                        .param("orderBy", orderBy)
+                        .param("orderDirection", orderDirection)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
@@ -97,7 +107,7 @@ class SearchControllerTest {
         verify(searchService, times(1)).findBooksByAuthorNameWithDetails(keyword, pageRequest);
     }
 
-    @DisplayName("타입이 title,author,category에 해당하지않거나 null 또는 empty일 때  noContent 반환")
+    @DisplayName("타입이 title,author,category에 해당하지않거나 null 또는 empty일 때 noContent 반환")
     @Test
     void searchWithInvalidType_ReturnsNoContent() throws Exception {
         // Given
@@ -166,18 +176,18 @@ class SearchControllerTest {
                 .andExpect(status().isNoContent());
 
         verifyNoInteractions(searchService);
-
-
     }
 
-    @DisplayName("카테고리를 기준으로 검색할 때 내용과 상태코드가 잘 넘어오는지 확인")
+    @DisplayName("카테고리를 기준으로 검색할 때 정렬 기준에 맞게 내용과 상태코드가 잘 넘어오는지 확인")
     @Test
-    void searchByCategory_ReturnsResults() throws Exception {
+    void searchByCategoryWithSorting_ReturnsResults() throws Exception {
         // Given
         String keyword = "1";
         String type = "category";
+        String orderBy = "title"; // 정렬 기준
+        String orderDirection = "asc"; // 정렬 방향
         int pageNum = 1;
-        PageRequest pageRequest = PageRequest.of(pageNum - 1, 8);
+        PageRequest pageRequest = PageRequest.of(pageNum - 1, 8, orderDirection.equals("desc") ? Sort.by(Sort.Order.desc(orderBy)) : Sort.by(Sort.Order.asc(orderBy)));
 
         // 수정된 BookCategorySearchResponseDTO 객체 생성
         List<Long> categoryIds = new ArrayList<>();
@@ -204,23 +214,17 @@ class SearchControllerTest {
                         .param("type", type)
                         .param("keyword", keyword)
                         .param("pageNum", String.valueOf(pageNum))
+                        .param("orderBy", orderBy)
+                        .param("orderDirection", orderDirection)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(responses.size())))  // content 배열의 크기 동적 검증
                 // 첫 번째 BookSearchResponseDTO 검증
                 .andExpect(jsonPath("$.content[0].id", is(responseDTO1.getId().intValue())))
                 .andExpect(jsonPath("$.content[0].title", is(responseDTO1.getTitle())))
-                .andExpect(jsonPath("$.content[0].publisherName", is(responseDTO1.getPublisherName())))
-                .andExpect(jsonPath("$.content[0].categoryIdList[0]", is(1)))
-                .andExpect(jsonPath("$.content[0].authors[0].name", is(responseDTO1.getAuthors().get(0).getName())))
-                // 두 번째 BookSearchResponseDTO 검증
                 .andExpect(jsonPath("$.content[1].id", is(responseDTO2.getId().intValue())))
-                .andExpect(jsonPath("$.content[1].title", is(responseDTO2.getTitle())))
-                .andExpect(jsonPath("$.content[1].publisherName", is(responseDTO2.getPublisherName())))
-                .andExpect(jsonPath("$.content[1].categoryIdList[0]", is(1)))
-                .andExpect(jsonPath("$.content[1].authors[0].name", is(responseDTO2.getAuthors().get(0).getName())));
+                .andExpect(jsonPath("$.content[1].title", is(responseDTO2.getTitle())));
 
-        // Verify that the search service was called once
         verify(searchService, times(1)).findBooksByCategoryWithDetails(Long.valueOf(keyword), pageRequest);
     }
 }

@@ -69,11 +69,12 @@ public class BookServiceImpl implements BookService {
 //                bookImageRepository.save(bookImage);
 //            }
 //        }
-
+        // todo : entity 의 add 메서드로 처리
+        // todo 카테고리가 비어있을 때 처리
         if (requestDTO.getCategoryIds() != null && !requestDTO.getCategoryIds().isEmpty()) {
             bookCategoryService.addCategoriesToBook(savedBook.getId(), requestDTO.getCategoryIds());
         }
-
+        // todo : null, empty 체크 메서드
         if (requestDTO.getTagIds() != null && !requestDTO.getTagIds().isEmpty()) {
             for (Long tagId : requestDTO.getTagIds()) {
                 BookTagRequestDto bookTagRequestDto = new BookTagRequestDto(savedBook.getId(), tagId);

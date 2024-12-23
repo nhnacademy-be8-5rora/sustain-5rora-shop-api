@@ -17,6 +17,7 @@ public class DataSourceConfig {
         dataSource.setPassword("oMyVE2dkskrCXF@t");
         dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
 
+
         // DBCP2 설정
         dataSource.setInitialSize(20); // 초기 생성되는 연결 수
         dataSource.setMaxTotal(100); // 최대 연결 수 (전체 요청 처리량 기반)

@@ -320,7 +320,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .leftJoin(bookCategory.category, category)
                 .where(bookCategory.category.id.in(categoryHierarchySubquery)) // 대소문자 관련없음, categoryId를 기반으로 처리
                 .groupBy(book.id, book.title, book.regularPrice, book.salePrice, book.publishDate, publisher.name)
-                .orderBy(orderSpecifier) // 동적 정렬 조건 추가
+                .orderBy(book.title.asc()) // 정렬 조건
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .select(Projections.constructor(
@@ -359,14 +359,12 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         long total = from(book)
                 .leftJoin(bookCategory).on(bookCategory.book.id.eq(book.id))
                 .leftJoin(bookCategory.category, category)
-                .where(bookCategory.category.id.in(categoryHierarchySubquery)) // 대소문자 관련없음, categoryId를 기반으로 처리
+                .where(bookCategory.category.id.in(categoryHierarchySubquery)) // 카테고리와 자식 카테고리 포함
                 .fetchCount();
 
         // 페이지 처리된 결과 반환
         return new PageImpl<>(content, pageable, total);
     }
-
-
 
 
     @Override
@@ -398,7 +396,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .where(like.book.id.eq(bookId))
                 .fetchCount();
 
-        List<BookCategoryDto> categoryPathByBookId = findCategoryPathByBookId(bookId);
+        List<CategoryResponseDTO> categoryPathByBookId = findCategoryPathByBookId(bookId);
 
         return new BookDetailsDto(
                 book.getId(),
@@ -461,66 +459,38 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
     }
 
     @Override
-    public List<BookCategoryDto> findCategoryPathByBookId(Long bookId) {
-        // 1. Book ID로 연관된 Category 리스트 조회
-        List<Category> categoryList = queryFactory
+    public List<CategoryResponseDTO> findCategoryPathByBookId(Long bookId) {
+        // 하위 카테고리 ID와 경로를 위한 이름 조회
+        Category leafCategory = queryFactory
                 .select(bookCategory.category)
                 .from(bookCategory)
                 .join(bookCategory.category, category)
                 .where(bookCategory.book.id.eq(bookId))
-                .fetch();
+                .fetchOne();
 
-        // 2. 각 카테고리와 상위 관계를 CategoryDto로 변환
-        Map<Long, BookCategoryDto> categoryMap = new HashMap<>();
-
-        for (Category category : categoryList) {
-            Category current = category;
-
-            while (current != null) {
-                categoryMap.putIfAbsent(
-                        current.getId(),
-                        new BookCategoryDto(
-                                current.getId(),
-                                current.getName(),
-                                current.getDepth(),
-                                current.getDisplayOrder(),
-                                new ArrayList<>()
-                        )
-                );
-                current = current.getParent();
-            }
+        if (leafCategory == null) {
+            return null;
         }
 
-        // 3. 부모-자식 관계 설정
-        List<BookCategoryDto> roots = new ArrayList<>();
-        Set<Long> processedIds = new HashSet<>();
+        Category currentCategory = leafCategory;
+        List<CategoryResponseDTO> categoryList = new ArrayList<>();
 
-        for (Category category : categoryList) {
-            Category current = category;
 
-            while (current != null) {
-                BookCategoryDto currentDto = categoryMap.get(current.getId());
-
-                if (current.getParent() != null) {
-                    BookCategoryDto parentDto = categoryMap.get(current.getParent().getId());
-                    if (!parentDto.getChildren().contains(currentDto)) {
-                        parentDto.getChildren().add(currentDto);
-                    }
-                } else if (!processedIds.contains(current.getId())) {
-                    roots.add(currentDto); // 최상위 카테고리 추가
-                    processedIds.add(current.getId());
-                }
-
-                current = current.getParent();
-            }
+        while (currentCategory != null) {
+            CategoryResponseDTO categoryResponseDTO = new CategoryResponseDTO(
+                    currentCategory.getId(),
+                    currentCategory.getName(),
+                    (currentCategory.getParent() == null ) ? null : currentCategory.getParent().getId(),
+                    (currentCategory.getParent() == null ) ? null : currentCategory.getParent().getName(),
+                    currentCategory.getDepth()
+            );
+            categoryList.add(categoryResponseDTO);
+            currentCategory = currentCategory.getParent();
         }
 
-        // 4. 최상위 카테고리 리스트 반환
-        roots.sort(Comparator.comparingInt(BookCategoryDto::getDisplayOrder)); // 정렬 기준 설정
-        return roots;
+        Collections.reverse(categoryList);
+
+        return categoryList;
     }
-
-
-
 
 }

@@ -42,6 +42,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static store.aurora.book.entity.QPublisher.publisher;
 
 @Slf4j
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -122,10 +123,8 @@ public class BookRepositoryCustomTest {
         // Category 생성
         Category category1 = new Category(1L,"Example Category", null, 0, 1,new ArrayList<>());
         Category category2 = new Category(2L,"Example Category2", null, 0, 2,new ArrayList<>());
-        Category category1 = new Category(1L,"Example Category", null, 0, 1);
-        Category category2 = new Category(2L,"Example Category2", null, 0, 2);
-        Category category3 = new Category(3L,"Science Fiction", null, 0, 3);
-        Category category4 = new Category(4L,"Fantasy", null, 0, 4);
+        Category category3 = new Category(3L,"Science Fiction", null, 0, 3,new ArrayList<>());
+        Category category4 = new Category(4L,"Fantasy", null, 0, 4,new ArrayList<>());
         categoryRepository.save(category1);
         categoryRepository.save(category2);
         categoryRepository.save(category3);
@@ -135,25 +134,23 @@ public class BookRepositoryCustomTest {
         //todo book 양방향으로 바껴서 수정해야 함
         // Book 생성 (6개 책 데이터 추가)
         Book book1 = new Book(
-                1L,
+                1L, // ID는 자동 생성되므로 null로 설정합니다.
                 "A Tale of Two Cities",
-                10000,
-                9000,
-                100,
-                true,
-                "1234567890123",
-                "sample contents",
-                "test desc",
-                false,
-                LocalDate.of(2024, 12, 12),
-                publisher,
-                series,
-                new ArrayList<>(),
-                new ArrayList<>()
-
-                publisher1,
-                series
+                10000, // 정가
+                9000, // 할인가
+                100, // 재고
+                true, // 판매 중 여부
+                "1234567890123", // ISBN
+                "sample contents", // 내용
+                "test desc", // 설명
+                false, // 포장 여부
+                LocalDate.of(2024, 12, 12), // 출판일
+                publisher1, // Publisher 엔티티 객체
+                series, // Series 엔티티 객체
+                new ArrayList<>(), // BookCategories 초기화
+                new ArrayList<>()  // BookTags 초기화
         );
+
 
         Book book2 = new Book(
                 2L,
@@ -167,13 +164,10 @@ public class BookRepositoryCustomTest {
                 "test desc2",
                 false,
                 LocalDate.of(2024, 12, 12),
-                publisher,
+                publisher2,
                 series,
                 new ArrayList<>(),
                 new ArrayList<>()
-
-                publisher2,
-                series
         );
 
         Book book3 = new Book(
@@ -189,7 +183,9 @@ public class BookRepositoryCustomTest {
                 false,
                 LocalDate.of(2024, 12, 12),
                 publisher3,
-                series2
+                series,
+                new ArrayList<>(),
+                new ArrayList<>()
         );
 
         Book book4 = new Book(
@@ -205,7 +201,9 @@ public class BookRepositoryCustomTest {
                 false,
                 LocalDate.of(2024, 12, 12),
                 publisher1,
-                series
+                series,
+                new ArrayList<>(),
+                new ArrayList<>()
         );
 
         Book book5 = new Book(
@@ -221,7 +219,9 @@ public class BookRepositoryCustomTest {
                 false,
                 LocalDate.of(2024, 12, 12),
                 publisher2,
-                series2
+                series2,
+                new ArrayList<>(),
+                new ArrayList<>()
         );
 
         Book book6 = new Book(
@@ -237,7 +237,9 @@ public class BookRepositoryCustomTest {
                 false,
                 LocalDate.of(2024, 12, 12),
                 publisher3,
-                series
+                series,
+                new ArrayList<>(),
+                new ArrayList<>()
         );
 
         bookRepository.save(book1);
@@ -342,8 +344,8 @@ public class BookRepositoryCustomTest {
 
         // Then
         assertThat(result).isNotNull();
-       log.debug( "testFindBooksByTitleWithDetails 메서드 결과 값 확인 %s", result.getContent());
-
+        log.debug( "testFindBooksByTitleWithDetails 메서드 결과 값 확인 {}", result.getContent());
+        System.out.println("testFindBooksByTitleWithDetails 메서드 결과 값 확인"+result.getContent());
         assertThat(result.getContent()).isNotEmpty();  // 결과가 비어 있지 않아야 함
         assertThat(result.getTotalElements()).isGreaterThan(0);  // 결과가 하나 이상이어야 함
 
@@ -411,7 +413,6 @@ public class BookRepositoryCustomTest {
         // When
         Page<BookSearchEntityDTO> result = bookRepository.findBooksByAuthorNameWithDetails(authorName, pageable);
         log.debug("testFindBooksByAuthorNameWithDetails (책 존재하는 경우 )메서드 결과 값 확인 {}", result.getContent());
-
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getContent()).isNotEmpty(); // 결과가 비어 있지 않아야 함
@@ -434,7 +435,7 @@ public class BookRepositoryCustomTest {
             assertThat(book.getPublishDate()).isBeforeOrEqualTo(LocalDate.now()); // 출판일이 오늘 날짜 이전이어야 함
 
             // 리뷰 및 조회수 검증
-            assertThat(book.getReviewCount()).isGreaterThanOrEqualTo(0); // 리뷰 개수가 음수가 아니어야 함
+            assertThat(book.getReviewSummary().getReviewCount()).isGreaterThanOrEqualTo(0); // 리뷰 개수가 음수가 아니어야 함
             assertThat(book.getViewCount()).isGreaterThanOrEqualTo(0); // 조회수가 음수가 아니어야 함
 
             assertThat(book.getAuthors()).allMatch(author -> {
@@ -526,7 +527,7 @@ public class BookRepositoryCustomTest {
             });
 
             // 리뷰 개수와 조회수 검증 (음수일 수 없음)
-            assertThat(book.getReviewCount()).isGreaterThanOrEqualTo(0);
+            assertThat(book.getReviewSummary().getReviewCount()).isGreaterThanOrEqualTo(0);
             assertThat(book.getViewCount()).isGreaterThanOrEqualTo(0);
 
         });

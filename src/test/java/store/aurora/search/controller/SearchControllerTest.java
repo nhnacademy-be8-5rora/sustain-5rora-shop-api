@@ -15,6 +15,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import store.aurora.book.dto.AuthorDTO;
+import store.aurora.review.dto.ReviewSummaryDTO;
 import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.search.service.SearchService;
 
@@ -55,7 +56,7 @@ class SearchControllerTest {
         int pageNum = 1;
         PageRequest pageRequest = PageRequest.of(pageNum - 1, 8, orderDirection.equals("desc") ? Sort.by(Sort.Order.desc(orderBy)) : Sort.by(Sort.Order.asc(orderBy)));
 
-        BookSearchResponseDTO responseDTO = new BookSearchResponseDTO(1L, "Example Title", 1000, 900, null, "Example Publisher", null, null,null,5L,3,3.5);
+        BookSearchResponseDTO responseDTO = new BookSearchResponseDTO(1L, "Example Title", 1000, 900, null, "Example Publisher", null, null,null,5L,new ReviewSummaryDTO(3,3.5));
         Page<BookSearchResponseDTO> page = new PageImpl<>(Collections.singletonList(responseDTO));
 
         when(searchService.findBooksByTitleWithDetails(keyword, pageRequest)).thenReturn(page);
@@ -86,7 +87,7 @@ class SearchControllerTest {
         int pageNum = 1;
         PageRequest pageRequest = PageRequest.of(pageNum - 1, 8, orderDirection.equals("desc") ? Sort.by(Sort.Order.desc(orderBy)) : Sort.by(Sort.Order.asc(orderBy)));
 
-        BookSearchResponseDTO responseDTO = new BookSearchResponseDTO(1L, "Example Book", 1000, 900, null, "Example Publisher", null, null,null,5L,3,3.5);
+        BookSearchResponseDTO responseDTO = new BookSearchResponseDTO(1L, "Example Book", 1000, 900, null, "Example Publisher", null, null,null,5L,new ReviewSummaryDTO(5,3.2));
         Page<BookSearchResponseDTO> page = new PageImpl<>(Collections.singletonList(responseDTO));
 
         when(searchService.findBooksByAuthorNameWithDetails(keyword, pageRequest)).thenReturn(page);
@@ -198,9 +199,9 @@ class SearchControllerTest {
 
         // 여러 개의 BookSearchResponseDTO 객체 생성
         BookSearchResponseDTO responseDTO1 = new BookSearchResponseDTO(
-                1L, "Example Book 1", 1000, 900, null, "Example Publisher", null, authors, categoryIds, 5L,3,3.5);
+                1L, "Example Book 1", 1000, 900, null, "Example Publisher", null, authors, categoryIds, 5L,new ReviewSummaryDTO(102,4.1));
         BookSearchResponseDTO responseDTO2 = new BookSearchResponseDTO(
-                2L, "Example Book 2", 1200, 1100, null, "Example Publisher", null, authors, categoryIds, 5L,3,3.5);
+                2L, "Example Book 2", 1200, 1100, null, "Example Publisher", null, authors, categoryIds, 5L,new ReviewSummaryDTO(122,3.5));
 
         // Page 객체 생성
         List<BookSearchResponseDTO> responses = Arrays.asList(responseDTO1, responseDTO2);

@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import store.aurora.book.dto.AuthorDTO;
-import store.aurora.review.dto.ReviewSummaryDTO;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -33,7 +32,8 @@ public class BookSearchResponseDTO {
 
     private List<Long> categoryIdList;
     private Long viewCount;
-    private ReviewSummaryDTO reviewSummary;
+    private int reviewCount;
+    private double reviewRating; // 리뷰 평점
 
     public BookSearchResponseDTO(BookSearchEntityDTO book) {
         this.id = book.getId();
@@ -47,7 +47,8 @@ public class BookSearchResponseDTO {
         this.authors = book.getAuthors();
         this.categoryIdList = book.getCategoryIdList();
         this.viewCount = book.getViewCount();
-        this.reviewSummary = book.getReviewSummary();
+        this.reviewCount = book.getReviewCount();
+        this.reviewRating = book.getReviewRating();
     }
 
     @Override
@@ -62,7 +63,8 @@ public class BookSearchResponseDTO {
                 ", authors=" + authors +
                 ", categoryIdList=" + categoryIdList +  // categoryNames 추가
                 ", viewCount=" + viewCount +  // viewCount 추가
-                ", reviewSummary=" + reviewSummary + "]";
+                ", reviewCount=" + reviewCount +
+                ", reviewRating=" + reviewRating + "]";
     }
 
 

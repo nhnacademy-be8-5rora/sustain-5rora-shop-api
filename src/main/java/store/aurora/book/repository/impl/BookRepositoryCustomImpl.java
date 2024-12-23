@@ -1,7 +1,9 @@
 package store.aurora.book.repository.impl;
 
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.*;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -91,8 +93,14 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
             case "saleprice" -> book.salePrice;
             case "publishdate" -> book.publishDate;
             case "title" -> book.title;
+            case "reviewrating" -> averageReviewRatingSubquery; // reviewRating에 대한 정렬 처리
             default -> book.id; // 기본값
         };
+
+        // `reviewRating` 기준으로 정렬 시, 리뷰가 100개 이상인 책만 필터링하는 조건 추가
+        BooleanExpression reviewCountCondition = (sortOrder.getProperty().equalsIgnoreCase("reviewrating"))
+                ? reviewCountSubquery.goe(100)  // 리뷰 개수가 100개 이상인 경우에만
+                : null;
 
         // 제네릭 타입 명시적 설정
         @SuppressWarnings("unchecked")
@@ -104,6 +112,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         List<BookSearchEntityDTO> content = from(book)
                 .leftJoin(book.publisher, publisher)
                 .where(book.title.like("%" + title + "%"))
+                .where(reviewCountCondition) // reviewCountCondition을 where 절에 추가
                 .groupBy(book.id, book.title, book.regularPrice, book.salePrice, book.publishDate, publisher.name)
                 .select(Projections.constructor(
                         BookSearchEntityDTO.class,
@@ -153,7 +162,6 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
     //특정 String을 포함하는 작가이름을 가진 책들을 조인해서 값들을 반환.
     @Override
     public Page<BookSearchEntityDTO> findBooksByAuthorNameWithDetails(String name, Pageable pageable) {
-
         if (Objects.isNull(name) || name.isBlank()) {
             return emptyPage(pageable);
         }
@@ -186,6 +194,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
             case "saleprice" -> book.salePrice;
             case "publishdate" -> book.publishDate;
             case "title" -> book.title;
+            case "reviewrating" -> averageReviewRatingSubquery; // 리뷰 평점으로 정렬
             default -> book.title; // 기본값
         };
 
@@ -196,12 +205,20 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 : new OrderSpecifier<>(Order.ASC, (Expression<Comparable>) orderByExpression);
 
         // 메인 쿼리: 저자 이름 검색 및 도서 정보 조회
+        BooleanBuilder whereBuilder = new BooleanBuilder();
+        whereBuilder.and(Expressions.stringTemplate("LOWER({0})", author.name).like("%" + name.toLowerCase() + "%")); // 대소문자 구분 없이 저자 이름 조건
+
+        // reviewrating으로 정렬할 때, 리뷰 개수가 100개 이상인 책만 가져오기
+        if ("reviewrating".equalsIgnoreCase(sortOrder.getProperty())) {
+            whereBuilder.and(reviewCountSubquery.goe(100)); // 리뷰 개수가 100개 이상인 책만 가져오기
+        }
+
         List<BookSearchEntityDTO> content = from(book)
                 .leftJoin(book.publisher, publisher)
                 .leftJoin(bookAuthor).on(bookAuthor.book.id.eq(book.id))
                 .leftJoin(bookAuthor.author, author)
                 .leftJoin(bookAuthor.authorRole, authorRole)
-                .where(Expressions.stringTemplate("LOWER({0})", author.name).like("%" + name.toLowerCase() + "%")) // 대소문자 구분 없이 저자 이름 조건
+                .where(whereBuilder) // 동적으로 where 조건 추가
                 .groupBy(book.id, book.title, book.regularPrice, book.salePrice, book.publishDate, publisher.name)
                 .orderBy(orderSpecifier) // 동적 정렬 조건 추가
                 .offset(pageable.getOffset())
@@ -242,7 +259,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         long total = from(book)
                 .leftJoin(bookAuthor).on(bookAuthor.book.id.eq(book.id))
                 .leftJoin(bookAuthor.author, author)
-                .where(Expressions.stringTemplate("LOWER({0})", author.name).like("%" + name.toLowerCase() + "%")) // 대소문자 구분 없이 저자 이름 조건
+                .where(whereBuilder) // 동적으로 where 조건 추가
                 .fetchCount();
 
         log.debug("BookRepositoryCustomImpl 확인:");
@@ -304,6 +321,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
             case "saleprice" -> book.salePrice;
             case "publishdate" -> book.publishDate;
             case "title" -> book.title;
+            case "reviewrating" -> review.reviewRating.avg(); // 리뷰 평점으로 정렬
             default -> book.title; // 기본값
         };
 
@@ -314,13 +332,22 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 : new OrderSpecifier<>(Order.ASC, (Expression<Comparable>) orderByExpression);
 
         // 메인 쿼리: 카테고리와 자식 카테고리들을 포함하여 책들을 검색
+        BooleanBuilder whereBuilder = new BooleanBuilder();
+        whereBuilder.and(bookCategory.category.id.in(categoryHierarchySubquery)); // 카테고리 조건
+
+        // 리뷰가 100개 이상인 책만 가져오기
+        if ("reviewrating".equalsIgnoreCase(sortOrder.getProperty())) {
+            whereBuilder.and(reviewCountSubquery.goe(100));
+        }
+
+        // 메인 쿼리: 책 검색
         List<BookSearchEntityDTO> content = from(book)
                 .leftJoin(book.publisher, publisher)
                 .leftJoin(bookCategory).on(bookCategory.book.id.eq(book.id))
                 .leftJoin(bookCategory.category, category)
-                .where(bookCategory.category.id.in(categoryHierarchySubquery)) // 대소문자 관련없음, categoryId를 기반으로 처리
+                .where(whereBuilder) // 동적으로 where 조건 추가
                 .groupBy(book.id, book.title, book.regularPrice, book.salePrice, book.publishDate, publisher.name)
-                .orderBy(book.title.asc()) // 정렬 조건
+                .orderBy(orderSpecifier) // 정렬 조건 추가
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .select(Projections.constructor(
@@ -359,7 +386,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         long total = from(book)
                 .leftJoin(bookCategory).on(bookCategory.book.id.eq(book.id))
                 .leftJoin(bookCategory.category, category)
-                .where(bookCategory.category.id.in(categoryHierarchySubquery)) // 카테고리와 자식 카테고리 포함
+                .where(whereBuilder) // 동적으로 where 조건 추가
                 .fetchCount();
 
         // 페이지 처리된 결과 반환
@@ -396,7 +423,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .where(like.book.id.eq(bookId))
                 .fetchCount();
 
-        List<CategoryResponseDTO> categoryPathByBookId = findCategoryPathByBookId(bookId);
+        List<BookCategoryDto> categoryPathByBookId = findCategoryPathByBookId(bookId);
 
         return new BookDetailsDto(
                 book.getId(),
@@ -459,38 +486,65 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
     }
 
     @Override
-    public List<CategoryResponseDTO> findCategoryPathByBookId(Long bookId) {
-        // 하위 카테고리 ID와 경로를 위한 이름 조회
-        Category leafCategory = queryFactory
+    public List<BookCategoryDto> findCategoryPathByBookId(Long bookId) {
+        // 1. Book ID로 연관된 Category 리스트 조회
+        List<Category> categoryList = queryFactory
                 .select(bookCategory.category)
                 .from(bookCategory)
                 .join(bookCategory.category, category)
                 .where(bookCategory.book.id.eq(bookId))
-                .fetchOne();
+                .fetch();
 
-        if (leafCategory == null) {
-            return null;
+        // 2. 각 카테고리와 상위 관계를 CategoryDto로 변환
+        Map<Long, BookCategoryDto> categoryMap = new HashMap<>();
+
+        for (Category category : categoryList) {
+            Category current = category;
+
+            while (current != null) {
+                categoryMap.putIfAbsent(
+                        current.getId(),
+                        new BookCategoryDto(
+                                current.getId(),
+                                current.getName(),
+                                current.getDepth(),
+                                current.getDisplayOrder(),
+                                new ArrayList<>()
+                        )
+                );
+                current = current.getParent();
+            }
         }
 
-        Category currentCategory = leafCategory;
-        List<CategoryResponseDTO> categoryList = new ArrayList<>();
+        // 3. 부모-자식 관계 설정
+        List<BookCategoryDto> roots = new ArrayList<>();
+        Set<Long> processedIds = new HashSet<>();
 
+        for (Category category : categoryList) {
+            Category current = category;
 
-        while (currentCategory != null) {
-            CategoryResponseDTO categoryResponseDTO = new CategoryResponseDTO(
-                    currentCategory.getId(),
-                    currentCategory.getName(),
-                    (currentCategory.getParent() == null ) ? null : currentCategory.getParent().getId(),
-                    (currentCategory.getParent() == null ) ? null : currentCategory.getParent().getName(),
-                    currentCategory.getDepth()
-            );
-            categoryList.add(categoryResponseDTO);
-            currentCategory = currentCategory.getParent();
+            while (current != null) {
+                BookCategoryDto currentDto = categoryMap.get(current.getId());
+
+                if (current.getParent() != null) {
+                    BookCategoryDto parentDto = categoryMap.get(current.getParent().getId());
+                    if (!parentDto.getChildren().contains(currentDto)) {
+                        parentDto.getChildren().add(currentDto);
+                    }
+                } else if (!processedIds.contains(current.getId())) {
+                    roots.add(currentDto); // 최상위 카테고리 추가
+                    processedIds.add(current.getId());
+                }
+
+                current = current.getParent();
+            }
         }
 
-        Collections.reverse(categoryList);
-
-        return categoryList;
+        // 4. 최상위 카테고리 리스트 반환
+        roots.sort(Comparator.comparingInt(BookCategoryDto::getDisplayOrder)); // 정렬 기준 설정
+        return roots;
     }
+
+
 
 }

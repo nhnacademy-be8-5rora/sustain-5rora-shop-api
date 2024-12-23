@@ -5,7 +5,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import store.aurora.book.dto.AuthorDTO;
 import store.aurora.book.entity.AuthorRole;
-import store.aurora.review.dto.ReviewSummaryDTO;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -37,11 +36,12 @@ public class BookSearchEntityDTO {
 
 
     private Long viewCount;
-    private ReviewSummaryDTO reviewSummary;
+    private int reviewCount;
+    private double reviewRating; // 리뷰 평점
 
 
 
-    public BookSearchEntityDTO(Long id, String title, int regularPrice, int salePrice, LocalDate publishDate, String publisherName, String authorsString, String imgPath,String categoryIdList, Long viewCount, ReviewSummaryDTO reviewSummary) {
+    public BookSearchEntityDTO(Long id, String title, int regularPrice, int salePrice, LocalDate publishDate, String publisherName, String authorsString, String imgPath,String categoryIdList, Long viewCount, int reviewCount, double reviewRating) {
         this.id = id;
         this.title = title;
         this.regularPrice = regularPrice;
@@ -52,7 +52,8 @@ public class BookSearchEntityDTO {
         this.imgPath = imgPath;
         this.categoryIdList = convertCategoryIdsToList(categoryIdList); // 수정된 부분
         this.viewCount = viewCount;
-        this.reviewSummary = reviewSummary;
+        this.reviewCount = reviewCount;
+        this.reviewRating = reviewRating;
     }
 
     public List<Long> convertCategoryIdsToList(String categoryIds) {
@@ -139,8 +140,11 @@ public class BookSearchEntityDTO {
     public List<Long> getCategoryIdList() {
         return categoryIdList;
     }
-    public ReviewSummaryDTO getReviewSummary() {
-        return reviewSummary;
+    public int getReviewCount() {
+        return reviewCount;
+    }
+    public double getReviewRating() {
+        return reviewRating;
     }
 
     @Override
@@ -156,7 +160,8 @@ public class BookSearchEntityDTO {
                 ", imgPath='" + imgPath + '\'' +
                 ", categoryIdList=" + categoryIdList + // 카테고리 이름 리스트 추가
                 ", viewCount=" + viewCount + // viewCount 추가
-                ", reviewSummary=" + reviewSummary +
+                ", reviewCount=" + reviewCount+
+                ", reviewRating=" + reviewRating +
                 '}';
     }
 

@@ -33,7 +33,7 @@ public class SearchServiceImpl implements SearchService {
         // EntityDTO를 가져오는 메소드 호출
         Page<BookSearchEntityDTO> bookSearchEntityDTOPage = bookRepository.findBooksByTitleWithDetails(title, pageable);
 
-        // BookSearchEntityDTO -> BookSearchResponseDTO로 변환
+        // BookSearchEntityDTO -> BookSearchResponseDTO로 변환 여기서 오류
         return bookSearchEntityDTOPage.map(BookSearchResponseDTO::new);
     }
 

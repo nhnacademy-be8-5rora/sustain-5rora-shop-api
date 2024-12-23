@@ -11,7 +11,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import store.aurora.book.repository.BookRepository;
-import store.aurora.review.dto.ReviewSummaryDTO;
 import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.search.dto.BookSearchResponseDTO;
 
@@ -44,7 +43,7 @@ class SearchServiceImplTest {
 
         BookSearchEntityDTO entityDTO = new BookSearchEntityDTO(1L, "Example Title", 20000, 18000,
                 LocalDate.of(2022, 1, 1), "Example Publisher",
-                "Author Name (AUTHOR)", "/images/example.jpg", "1,3", 5L,new ReviewSummaryDTO(100,2.1));
+                "Author Name (AUTHOR)", "/images/example.jpg", "1,3", 5L,5,3.5);
         Page<BookSearchEntityDTO> entityDTOPage = new PageImpl<>(Collections.singletonList(entityDTO));
 
         when(bookRepository.findBooksByTitleWithDetails(title, pageable)).thenReturn(entityDTOPage);
@@ -101,7 +100,7 @@ class SearchServiceImplTest {
 
         BookSearchEntityDTO entityDTO = new BookSearchEntityDTO(1L, "Example Title", 20000, 18000,
                 LocalDate.of(2022, 1, 1), "Example Publisher",
-                "Example Author (AUTHOR)", "/images/example.jpg", "1,2", 5L,new ReviewSummaryDTO(100,2.1));
+                "Example Author (AUTHOR)", "/images/example.jpg", "1,2", 5L,5,3.5);
         Page<BookSearchEntityDTO> entityDTOPage = new PageImpl<>(Collections.singletonList(entityDTO));
 
         when(bookRepository.findBooksByAuthorNameWithDetails(authorName, pageable)).thenReturn(entityDTOPage);
@@ -150,9 +149,9 @@ class SearchServiceImplTest {
 
         // Mock 데이터 준비
         BookSearchEntityDTO mockBook1 = new BookSearchEntityDTO(1L, "Book Title 1", 1000, 800, LocalDate.now(),
-                "Publisher 1", "Author1 (AUTHOR)", "imagePath1", "1,2", 5L,new ReviewSummaryDTO(10,2));
+                "Publisher 1", "Author1 (AUTHOR)", "imagePath1", "1,2", 5L,5,3.5);
         BookSearchEntityDTO mockBook2 = new BookSearchEntityDTO(2L, "Book Title 2", 1200, 1000, LocalDate.now(),
-                "Publisher 2", "Author2 (EDITOR)", "imagePath2", "1,3", 5L,new ReviewSummaryDTO(7,2.8));
+                "Publisher 2", "Author2 (EDITOR)", "imagePath2", "1,3", 5L,3,3.5);
 
         // Page 객체로 Mock 데이터 설정
         Page<BookSearchEntityDTO> mockPage = new PageImpl<>(List.of(mockBook1, mockBook2), pageable, 2);

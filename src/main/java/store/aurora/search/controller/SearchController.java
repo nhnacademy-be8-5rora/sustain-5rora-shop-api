@@ -34,6 +34,10 @@ public class SearchController {
         int page = Integer.parseInt(pageNum) - 1; // pageNum은 1부터 시작하므로 1을 빼줘야 0-based 페이지로 맞춰짐
         PageRequest pageRequest;
 
+        // orderBy가 null이면 기본값 설정
+        if (orderBy == null || orderBy.isEmpty()) {
+            orderBy = "id"; // 기본값을 "id"로 설정
+        }
         // 정렬 방향 설정 (디폴트는 오름차순)
         if ("desc".equalsIgnoreCase(orderDirection)) {
             pageRequest = PageRequest.of(page, 8, Sort.by(Sort.Order.desc(orderBy)));

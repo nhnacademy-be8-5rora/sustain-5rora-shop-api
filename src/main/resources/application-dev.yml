@@ -2,9 +2,7 @@
 #  client:
 #    enabled: false
 
-storage:
-  local:
-    base-path: ./uploads
+
 spring:
   servlet:
     multipart:

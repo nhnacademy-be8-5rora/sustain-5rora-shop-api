@@ -9,15 +9,13 @@
 #    endpoint: https://kr.object.nhncloud.com/v1/AUTH_YOUR_PROJECT_ID
 #    bucket-name: YOUR_BUCKET_NAME
 
-file:
-  upload-dir: ${user.home}/app-uploads # 각자 홈 디렉토리에 폴더 생성 후 저장됨
 
 spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 10MB      # 파일 크기 제한
-      max-request-size: 10MB
+      max-file-size: 100MB      # 파일 크기 제한
+      max-request-size: 100MB
 
 server:
   port: 9280

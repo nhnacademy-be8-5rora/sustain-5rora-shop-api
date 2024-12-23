@@ -1,15 +1,13 @@
-//TODO [ERROR] : 모든 테스트 에러
-
 package store.aurora.order.repository;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import store.aurora.book.config.QuerydslConfiguration;
 import store.aurora.order.entity.Order;
+import store.aurora.order.entity.OrderDetail;
 import store.aurora.order.entity.Payment;
 import store.aurora.order.entity.enums.OrderState;
 import store.aurora.order.entity.enums.PaymentState;
@@ -20,6 +18,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.when;
 
 @Import(QuerydslConfiguration.class)
 @DataJpaTest
@@ -28,6 +29,9 @@ class PaymentRepositoryTest {
     private PaymentRepository paymentRepository;
     @Autowired
     private OrderRepository orderRepository;
+
+    @MockBean
+    private OrderDetailRepository orderDetailRepository;
 
     @Test
     void findByOrder() {
@@ -50,6 +54,16 @@ class PaymentRepositoryTest {
         payment.setOrder(order);
         payment.setAmount(100);
 
+        OrderDetail orderDetail = new OrderDetail();
+        orderDetail.setId(1L);
+        orderDetail.setOrder(order);
+        orderDetail.setState(OrderState.CONFIRMED);
+        orderDetail.setAmountDetail(1000);
+        orderDetail.setQuantity(1);
+        orderDetail.setBook(null);
+        orderDetail.setShipment(null);
+        when(orderDetailRepository.findByOrder(any(Order.class))).thenReturn(List.of(orderDetail));
+        when(orderDetailRepository.getReferenceById(anyLong())).thenReturn(orderDetail);
         paymentRepository.save(payment);
 
         // Act

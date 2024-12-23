@@ -1,8 +1,6 @@
 package store.aurora.order.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,8 +36,7 @@ public class Shipment {
     private LocalDateTime shipmentDatetime;
 
     // 배송 상태
-    @NotNull
-    @Column(name = "state")
+    @Column(name = "state", nullable = false)
     private ShipmentState state;
 
     @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)

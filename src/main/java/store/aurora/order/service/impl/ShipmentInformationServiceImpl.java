@@ -3,7 +3,6 @@ package store.aurora.order.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import store.aurora.order.entity.ShipmentInformation;
-import store.aurora.order.repository.OrderRepository;
 import store.aurora.order.repository.ShipmentInformationRepository;
 import store.aurora.order.service.OrderService;
 import store.aurora.order.service.ShipmentInformationService;
@@ -13,7 +12,6 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-// TODO orderService 작성 후 그에 맞게 수정 해야 함
 public class ShipmentInformationServiceImpl implements ShipmentInformationService {
 
     private final ShipmentInformationRepository shipmentInformationRepository;

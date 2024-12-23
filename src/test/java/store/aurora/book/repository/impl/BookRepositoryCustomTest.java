@@ -47,133 +47,71 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class BookRepositoryCustomTest {
 
     @Autowired
-    private BookRepository bookRepository;
-
-    @Autowired
-    private CategoryRepository categoryRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private PublisherRepository publisherRepository;
-
-    @Autowired
-    private BookCategoryRepository bookCategoryRepository;
-
-    @Autowired
-    private AuthorRepository authorRepository;
-
-    @Autowired
-    private BookAuthorRepository bookAuthorRepository;
-
-    @Autowired
-    private AuthorRoleRepository authorRoleRepository;
-
-    @Autowired
-    private BookViewRepository bookViewRepository;
-
-    @Autowired
-    private SeriesRepository seriesRepository;
-
-    @Autowired
-    private ReviewRepository reviewRepository;
-
-    @Autowired
     private TestEntityManager entityManager;
+
+    @Autowired
+    private BookRepository bookRepository;
 
     private static final Logger USER_LOG = LoggerFactory.getLogger("user-logger".getClass());
 
     @BeforeEach
     public void setup() {
         // User 생성
-        User user1 = new User("user123","John Doe",LocalDate.of(1990, 1, 1),"20000101","john_doe@example.com",true);
-        User user2 = new User("user1234","John Doe2",LocalDate.of(1200, 1, 1),"20000101","john_doe@example.com",true);
+        User user1 = new User("user123", "John Doe", LocalDate.of(1990, 1, 1), "20000101", "john_doe@example.com", true);
+        User user2 = new User("user1234", "John Doe2", LocalDate.of(1200, 1, 1), "20000101", "john_doe@example.com", true);
 
-        userRepository.save(user1);
-        userRepository.save(user2);
+        entityManager.merge(user1);
+        entityManager.merge(user2);
 
         // Publisher 생성
-        Publisher publisher = new Publisher(1L,"Penguin Books");
-        publisherRepository.save(publisher);
+        Publisher publisher = new Publisher(1L, "Penguin Books");
+        entityManager.merge(publisher);  // Publisher 객체가 이미 존재하는 경우 merge() 사용
 
         // Series 생성
-        Series series = new Series(1L,"test name");
-        seriesRepository.save(series);
+        Series series = new Series(1L, "test name");
+        entityManager.merge(series);  // Series 객체가 이미 존재하는 경우 merge() 사용
 
         // Category 생성
-        Category category1 = new Category(1L,"Example Category", null, 0, 1,new ArrayList<>());
-        Category category2 = new Category(2L,"Example Category2", null, 0, 2,new ArrayList<>());
-        categoryRepository.save(category1);
-        categoryRepository.save(category2);
+        Category category1 = new Category(1L, "Example Category", null, 0, 1, new ArrayList<>());
+        Category category2 = new Category(2L, "Example Category2", null, 0, 2, new ArrayList<>());
+        entityManager.merge(category1);
+        entityManager.merge(category2);
 
         // Book 생성
-        //todo book 양방향으로 바껴서 수정해야 함
         Book book1 = new Book(
-                1L,
-                "test title",
-                10000,
-                9000,
-                100,
-                true,
-                "1234567890123",
-                "sample contents",
-                "test desc",
-                false,
-                LocalDate.of(2024, 12, 12),
-                publisher,
-                series,
-                new ArrayList<>(),
-                new ArrayList<>()
-
+                1L, "test title", 10000, 9000, 100, true, "1234567890123", "sample contents", "test desc", false,
+                LocalDate.of(2024, 12, 12), publisher, series, new ArrayList<>(), new ArrayList<>()
         );
-
         Book book2 = new Book(
-                2L,
-                "test title2",
-                10000,
-                9000,
-                100,
-                true,
-                "1234567890124",
-                "sample contents2",
-                "test desc2",
-                false,
-                LocalDate.of(2024, 12, 12),
-                publisher,
-                series,
-                new ArrayList<>(),
-                new ArrayList<>()
-
+                2L, "test title2", 10000, 9000, 100, true, "1234567890124", "sample contents2", "test desc2", false,
+                LocalDate.of(2024, 12, 12), publisher, series, new ArrayList<>(), new ArrayList<>()
         );
 
-        bookRepository.save(book1);
-        bookRepository.save(book2);
+        entityManager.merge(book1);
+        entityManager.merge(book2);
 
         // BookCategory 생성
-        bookCategoryRepository.save(new BookCategory(1L,book1, category1));
-        bookCategoryRepository.save(new BookCategory(2L,book1, category2));
+        entityManager.merge(new BookCategory(1L, book1, category1));
+        entityManager.merge(new BookCategory(2L, book1, category2));
 
         // Author 생성
-        Author author1 = new Author(1L,"example author");
-        Author author2 = new Author(2L,"example editor");
-        authorRepository.save(author1);
-        authorRepository.save(author2);
+        Author author1 = new Author(1L, "example author");
+        Author author2 = new Author(2L, "example editor");
+        entityManager.merge(author1);
+        entityManager.merge(author2);
 
         // AuthorRole 생성
-        AuthorRole roleAuthor = new AuthorRole(1L,AuthorRole.Role.AUTHOR);
-        AuthorRole roleEditor = new AuthorRole(2L,AuthorRole.Role.EDITOR);
-        authorRoleRepository.save(roleAuthor);
-        authorRoleRepository.save(roleEditor);
+        AuthorRole roleAuthor = new AuthorRole(1L, AuthorRole.Role.AUTHOR);
+        AuthorRole roleEditor = new AuthorRole(2L, AuthorRole.Role.EDITOR);
+        entityManager.merge(roleAuthor);
+        entityManager.merge(roleEditor);
 
         // BookAuthors 생성
-        bookAuthorRepository.save(new BookAuthor(1L,author1, roleAuthor, book1));
-        bookAuthorRepository.save(new BookAuthor(2L,author2, roleEditor, book1));
-        bookAuthorRepository.save(new BookAuthor(3L,author2, roleAuthor, book2));
+        entityManager.merge(new BookAuthor(1L, author1, roleAuthor, book1));
+        entityManager.merge(new BookAuthor(2L, author2, roleEditor, book1));
+        entityManager.merge(new BookAuthor(3L, author2, roleAuthor, book2));
 
+        // Review 생성
         Review review1 = new Review();
         review1.setId(1L);
         review1.setReviewRating(4); // 1~5 사이 값 설정
@@ -190,11 +128,13 @@ public class BookRepositoryCustomTest {
         review2.setBook(book1); // 동일한 book1 객체 설정
         review2.setUser(user2); // 다른 user2 객체 설정
 
-        reviewRepository.save(review1);
-        reviewRepository.save(review2);
+        entityManager.merge(review1);
+        entityManager.merge(review2);
 
 
     }
+
+
 
     @DisplayName("책 제목을 통해 책의 세부사항을 가져오는지 확인.(책이 존재하는 경우)")
     @Test

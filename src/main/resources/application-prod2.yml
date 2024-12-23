@@ -1,6 +1,0 @@
-logging:
-  level:
-    org.springframework.web: WARN
-
-server:
-  port: 9281

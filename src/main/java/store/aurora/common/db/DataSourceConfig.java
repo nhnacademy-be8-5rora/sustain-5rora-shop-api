@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
 
-@Configuration
+//@Configuration
 public class DataSourceConfig {
 
     @Bean
@@ -24,12 +24,9 @@ public class DataSourceConfig {
         dataSource.setMaxTotal(20);
         dataSource.setMaxIdle(10);
         dataSource.setMinIdle(5);
-        dataSource.setMaxWaitMillis(10000);
         dataSource.setValidationQuery("SELECT 1");
         dataSource.setTestOnBorrow(true);
         dataSource.setTestWhileIdle(true);
-        dataSource.setTimeBetweenEvictionRunsMillis(5000);
-        dataSource.setMinEvictableIdleTimeMillis(30000);
 
         // DBCP2 설정 prod
 //        dataSource.setUrl("jdbc:mysql://133.186.241.167/project_be8_5rora_db?useSSL=false&serverTimezone=UTC");

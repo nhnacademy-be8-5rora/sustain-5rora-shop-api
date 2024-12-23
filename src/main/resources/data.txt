@@ -124,3 +124,12 @@ VALUES
 -- VALUES
 --     (5, 'Great book, highly recommended!', '2024-12-12 15:00:00', 1, 'user123'),
 --     (4, 'Good read, but a bit slow in the middle.', '2024-12-12 15:05:00', 2, 'user1234');
+
+-- ///////////////////// 포인트 ///////////////////////
+INSERT INTO point_policies (point_policy_name, point_policy_type, point_policy_value) VALUES
+('결제', 'PERCENTAGE', 0.5),
+('회원가입', 'AMOUNT', 5000),
+('리뷰작성', 'AMOUNT', 200),
+('리뷰작성(사진 포함)', 'AMOUNT', 500);
+
+

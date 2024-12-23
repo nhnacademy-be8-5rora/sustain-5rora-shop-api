@@ -25,10 +25,10 @@ public class GlobalExceptionHandler {
     }
 
     // todo 유민
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleGeneralException(Exception e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "알 수 없는 오류가 발생하여 회원가입에 실패했습니다."));
-    }
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<Map<String, String>> handleGeneralException(Exception e) {
+//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                .body(Map.of("error", "알 수 없는 오류가 발생하여 회원가입에 실패했습니다."));
+//    }
     
 }

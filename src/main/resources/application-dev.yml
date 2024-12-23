@@ -3,11 +3,20 @@
 #    enabled: false
 
 spring:
-#  datasource:
-#    url: jdbc:h2:mem:bookstore;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-#    driver-class-name: org.h2.Driver
-#    username: sa
-#    password:
+  datasource:
+    url: jdbc:h2:mem:bookstore;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    dbcp2:
+      initial-size: 5                  # 초기 커넥션 수
+      max-total: 20                    # 최대 커넥션 수
+      max-idle: 10                     # 유휴 상태에서 최대 커넥션 수
+      min-idle: 5                      # 유휴 상태에서 최소 커넥션 수
+      validation-query: SELECT 1       # 연결 유효성 검사 쿼리
+      test-on-borrow: true             # 풀에서 가져올 때 유효성 검사
+      test-while-idle: true            # 유휴 상태에서 유효성 검사
+
   servlet:
     multipart:
       enabled: true

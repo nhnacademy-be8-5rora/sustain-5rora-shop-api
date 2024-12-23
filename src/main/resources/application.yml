@@ -9,11 +9,11 @@ spring:
   lifecycle:
     timeout-per-shutdown-phase: 30s
 
-  #  datasource:
-  #    url: jdbc:mysql://localhost:3306/taskapi?useSSL=false&serverTimezone=UTC
-  #    username: root
-  #    password: P@ssw0rd
-  #    driver-class-name: com.mysql.cj.jdbc.Driver
+#  datasource:
+#    url: jdbc:mysql://133.186.241.167/project_be8_5rora?useSSL=false&serverTimezone=UTC
+#    username: project_be8_5rora
+#    password: oMyVE2dkskrCXF@t
+#    driver-class-name: com.mysql.cj.jdbc.Driver
 #  datasource:
 #    url: jdbc:h2:mem:bookstore;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
 #    driver-class-name: org.h2.Driver

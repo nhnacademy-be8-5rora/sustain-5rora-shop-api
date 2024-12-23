@@ -30,7 +30,7 @@ POST http://localhost:8083/api/cart
 Content-Type: application/json
 
 {
-  "bookId": 2,
+  "bookId": 1,
   "quantity": 2
 }
 

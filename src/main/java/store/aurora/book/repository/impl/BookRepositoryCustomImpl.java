@@ -409,13 +409,14 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         List<BookImageDto> bookImages = findBookImagesByBookId(bookId);
         List<ReviewDto> reviews = findReviewsByBookId(bookId);
 
-        // 태그 이름 조회
         List<String> tagNames = queryFactory
-                .from(bookTag)
-                .join(bookTag.tag, tag)
-                .where(bookTag.book.id.eq(bookId))
                 .select(tag.name)
+                .from(QBook.book)
+                .join(QBook.book.bookTags, bookTag)
+                .join(bookTag.tag, tag)
+                .where(QBook.book.id.eq(bookId))
                 .fetch();
+
 
         // 좋아요 개수 조회
         int likeCount = (int) queryFactory

@@ -1,4 +1,4 @@
-package store.aurora.order.service.impl;
+package store.aurora.order.service;
 
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package store.aurora.order.service.impl;
+package store.aurora.order.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,8 +15,6 @@ import store.aurora.order.entity.Shipment;
 import store.aurora.order.entity.enums.OrderState;
 import store.aurora.order.entity.enums.ShipmentState;
 import store.aurora.order.repository.OrderDetailRepository;
-import store.aurora.order.service.OrderService;
-import store.aurora.order.service.ShipmentService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

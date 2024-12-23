@@ -337,13 +337,14 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         List<BookImageDto> bookImages = findBookImagesByBookId(bookId);
         List<ReviewDto> reviews = findReviewsByBookId(bookId);
 
-        // 태그 이름 조회
         List<String> tagNames = queryFactory
-                .from(bookTag)
-                .join(bookTag.tag, tag)
-                .where(bookTag.book.id.eq(bookId))
                 .select(tag.name)
+                .from(QBook.book)
+                .join(QBook.book.bookTags, bookTag)
+                .join(bookTag.tag, tag)
+                .where(QBook.book.id.eq(bookId))
                 .fetch();
+
 
         // 좋아요 개수 조회
         int likeCount = (int) queryFactory
@@ -413,63 +414,65 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .fetch();
     }
 
-    //todo 양방향 매핑으로 바뀌어서 고쳐야 함
     @Override
     public List<BookCategoryDto> findCategoryPathByBookId(Long bookId) {
-//        // 하위 카테고리 ID와 경로를 위한 이름 조회
-//
-//        List<Category> categoryList = queryFactory
-//                .select(bookCategory.category)
-//                .from(bookCategory)
-//                .join(bookCategory.category, category)
-//                .where(bookCategory.book.id.eq(bookId))
-//                .stream().toList();
-//
-//
-//        Map<Long, BookCategoryDto> categoryMap = new HashMap<>();
-//
-//        // 1. 모든 카테고리를 CategoryDto로 변환 후 저장
-//        for (Category category : categoryList) {
-//            Category current = category;
-//            while (current != null) {
-//                categoryMap.put(current.getId(),
-//                        new BookCategoryDto(current.getId(), current.getName(), current.getDepth(), category.getDisplayOrder(), new ArrayList<>()));
-//                current = current.getParent();
-//            }
-//        }
-//
-//        // 2. 부모-자식 관계를 설정
-//        List<BookCategoryDto> roots = new ArrayList<>();
-//        Set<Long> processedCategories = new HashSet<>(); // 중복 방지를 위한 Set
-//
-//        for (Category category : categoryList) {
-//            Category current = category;
-//
-//            // 상위 부모까지 거슬러 올라가며 부모-자식 관계 설정
-//            while (current != null) {
-//                BookCategoryDto categoryDto = categoryMap.get(current.getId());
-//                if (categoryDto == null) break;
-//
-//                // 부모 관계 설정
-//                if (current.getParent() != null) {
-//                    BookCategoryDto parentDto = categoryMap.get(current.getParent().getId());
-//                    if (parentDto != null && !parentDto.getChildren().contains(categoryDto)) {
-//                        parentDto.getChildren().add(categoryDto);
-//                    }
-//                } else if (!processedCategories.contains(current.getId())) {
-//                    // 최상위 카테고리는 roots에 추가
-//                    roots.add(categoryDto);
-//                    processedCategories.add(current.getId());
-//                }
-//
-//                current = current.getParent();
-//            }
-//        }
-//
-//
-//
-//        return roots; // 최상위 루트 카테고리 반환
-        return null;
+        // 1. Book ID로 연관된 Category 리스트 조회
+        List<Category> categoryList = queryFactory
+                .select(bookCategory.category)
+                .from(bookCategory)
+                .join(bookCategory.category, category)
+                .where(bookCategory.book.id.eq(bookId))
+                .fetch();
+
+        // 2. 각 카테고리와 상위 관계를 CategoryDto로 변환
+        Map<Long, BookCategoryDto> categoryMap = new HashMap<>();
+
+        for (Category category : categoryList) {
+            Category current = category;
+
+            while (current != null) {
+                categoryMap.putIfAbsent(
+                        current.getId(),
+                        new BookCategoryDto(
+                                current.getId(),
+                                current.getName(),
+                                current.getDepth(),
+                                current.getDisplayOrder(),
+                                new ArrayList<>()
+                        )
+                );
+                current = current.getParent();
+            }
+        }
+
+        // 3. 부모-자식 관계 설정
+        List<BookCategoryDto> roots = new ArrayList<>();
+        Set<Long> processedIds = new HashSet<>();
+
+        for (Category category : categoryList) {
+            Category current = category;
+
+            while (current != null) {
+                BookCategoryDto currentDto = categoryMap.get(current.getId());
+
+                if (current.getParent() != null) {
+                    BookCategoryDto parentDto = categoryMap.get(current.getParent().getId());
+                    if (!parentDto.getChildren().contains(currentDto)) {
+                        parentDto.getChildren().add(currentDto);
+                    }
+                } else if (!processedIds.contains(current.getId())) {
+                    roots.add(currentDto); // 최상위 카테고리 추가
+                    processedIds.add(current.getId());
+                }
+
+                current = current.getParent();
+            }
+        }
+
+        // 4. 최상위 카테고리 리스트 반환
+        roots.sort(Comparator.comparingInt(BookCategoryDto::getDisplayOrder)); // 정렬 기준 설정
+        return roots;
     }
+
 
 }

@@ -18,7 +18,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-class ShipmentInformationServiceImplTest {
+class ShipmentInformationServiceTest {
 
     @MockBean
     OrderRepository orderRepository;
@@ -27,7 +27,7 @@ class ShipmentInformationServiceImplTest {
     ShipmentInformationRepository repo;
 
     @Autowired
-    ShipmentInformationServiceImpl service;
+    ShipmentInformationService service;
 
     @BeforeEach
     void setUp(){

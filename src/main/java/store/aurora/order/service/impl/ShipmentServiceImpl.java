@@ -55,11 +55,11 @@ public class ShipmentServiceImpl implements ShipmentService {
         if(Objects.isNull(shipment)) {
             throw new IllegalArgumentException("shipment is null");
         }
-        if(Objects.isNull(shipment.getState())){
-            throw new IllegalArgumentException("shipment state is null");
-        }
         if(!isExist(shipment.getId())) {
             throw new IllegalArgumentException("shipment is not exist");
+        }
+        if(Objects.isNull(shipment.getState())){
+            throw new IllegalArgumentException("shipment state is null");
         }
         shipmentRepository.save(shipment);
     }

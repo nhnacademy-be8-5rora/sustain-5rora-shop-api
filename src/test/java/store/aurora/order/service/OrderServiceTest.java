@@ -20,9 +20,9 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-class OrderServiceImplTest {
+class OrderServiceTest {
     @Autowired
-    private OrderServiceImpl orderService;
+    private OrderService orderService;
 
     @MockBean
     private OrderRepository orderRepository;

@@ -10,9 +10,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
-class WrapServiceImplTest {
+class WrapServiceTest {
     @Autowired
-    private WrapServiceImpl wrapService;
+    private WrapService wrapService;
 
     @Test
     void isExist() {

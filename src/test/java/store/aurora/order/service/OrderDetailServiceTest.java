@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-class OrderDetailServiceImplTest {
+class OrderDetailServiceTest {
     @MockBean
     private OrderDetailRepository orderDetailRepository;
     @MockBean
@@ -37,7 +37,7 @@ class OrderDetailServiceImplTest {
     private ShipmentService shipmentService;
 
     @Autowired
-    private OrderDetailServiceImpl orderDetailService;
+    private OrderDetailService orderDetailService;
 
     @BeforeEach
     void setUp() {

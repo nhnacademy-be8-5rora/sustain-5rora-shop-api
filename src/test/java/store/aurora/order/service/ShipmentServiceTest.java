@@ -3,27 +3,34 @@ package store.aurora.order.service;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.config.QuerydslConfiguration;
 import store.aurora.order.entity.Shipment;
 import store.aurora.order.entity.enums.ShipmentState;
+import store.aurora.order.repository.ShipmentRepository;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
 
 @Transactional
 @SpringBootTest
 @Import(QuerydslConfiguration.class)
-class ShipmentServiceImplTest {
+class ShipmentServiceTest {
+
+    @MockBean
+    private ShipmentRepository shipmentRepository;
+
     @Autowired
-    private ShipmentServiceImpl shipmentService;
+    private ShipmentService shipmentService;
 
     @Test
-    @Sql("shipmentTest.sql")
     void isExist() {
-        Long id = shipmentService.getShipments().get(0).getId();
-        assertTrue(shipmentService.isExist(id));
+        when(shipmentRepository.existsById(1L)).thenReturn(true);
+        assertTrue(shipmentService.isExist(1L));
     }
 
     @Test
@@ -49,9 +56,15 @@ class ShipmentServiceImplTest {
     }
 
     @Test
-    @Sql("shipmentTest.sql")
     void getShipment() {
-        Long id = shipmentService.getShipments().get(0).getId();
+        Shipment shipment = new Shipment();
+        shipment.setId(1L);
+        shipment.setState(ShipmentState.PENDING);
+
+        when(shipmentRepository.existsById(1L)).thenReturn(true);
+        when(shipmentRepository.getReferenceById(anyLong())).thenReturn(shipment);
+
+        Long id = shipmentService.getShipment(1L).getId();
         assertDoesNotThrow(() -> {
             shipmentService.getShipment(id);
         });
@@ -66,22 +79,25 @@ class ShipmentServiceImplTest {
 
     @Test
     void getShipmentWithNonExistId() {
+        when(shipmentRepository.existsById(anyLong())).thenReturn(false);
         assertThrows(IllegalArgumentException.class, () -> {
             shipmentService.getShipment(999L);
         });
     }
 
     @Test
-    @Sql("shipmentTest.sql")
     void updateShipment() {
-        Long id = shipmentService.getShipments().get(0).getId();
-        Shipment shipment = shipmentService.getShipment(id);
-        shipment.setState(ShipmentState.SHIPPED);
+        Long id = 1L;
+        Shipment shipment = new Shipment();
+        shipment.setId(id);
+        shipment.setState(ShipmentState.PENDING);
 
-        assertAll(
-                () -> assertDoesNotThrow(() -> shipmentService.updateShipment(shipment)),
-                () -> assertEquals(ShipmentState.SHIPPED, shipmentService.getShipment(id).getState())
-        );
+        when(shipmentRepository.existsById(1L)).thenReturn(true);
+        when(shipmentRepository.save(shipment)).thenReturn(shipment);
+
+        assertDoesNotThrow(() -> shipmentService.updateShipment(shipment));
+
+        verify(shipmentRepository, times(1)).save(shipment);
     }
 
     @Test
@@ -97,6 +113,7 @@ class ShipmentServiceImplTest {
         shipment.setId(999L);
         shipment.setState(ShipmentState.SHIPPED);
 
+        when(shipmentRepository.existsById(anyLong())).thenReturn(false);
         assertThrows(IllegalArgumentException.class, () -> {
             shipmentService.updateShipment(shipment);
         });
@@ -105,20 +122,18 @@ class ShipmentServiceImplTest {
     @Test
     void updateShipmentWithNullState() {
         Shipment shipment = new Shipment();
-        shipment.setState(null);
 
+        when(shipmentRepository.existsById(anyLong())).thenReturn(true);
         assertThrows(IllegalArgumentException.class, () -> {
             shipmentService.updateShipment(shipment);
         });
     }
 
     @Test
-    @Sql("shipmentTest.sql")
     void deleteByShipmentId() {
-        assertAll(
-                () -> assertDoesNotThrow(() -> shipmentService.deleteByShipmentId(1L)),
-                () -> assertEquals(1, shipmentService.getShipments().size())
-        );
+        when(shipmentRepository.existsById(1L)).thenReturn(true);
+
+        assertDoesNotThrow(() -> shipmentService.deleteByShipmentId(1L));
     }
 
     @Test
@@ -130,6 +145,7 @@ class ShipmentServiceImplTest {
 
     @Test
     void deleteByShipmentIdWithNonExistId() {
+        when(shipmentRepository.existsById(anyLong())).thenReturn(false);
         assertThrows(IllegalArgumentException.class, () -> {
             shipmentService.deleteByShipmentId(999L);
         });

@@ -23,7 +23,7 @@ public class BookImage {
     private Book book;
 
     @ManyToOne
-    @JoinColumn(name = "storage_id", nullable = false)
+//    @JoinColumn(name = "storage_id", nullable = false)
     private StorageInfo storageInfo;
 
     @Column(name = "file_path", nullable = false)

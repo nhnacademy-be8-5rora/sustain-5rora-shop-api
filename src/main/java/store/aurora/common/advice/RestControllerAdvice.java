@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import store.aurora.common.dto.ErrorResponseDto;
 import store.aurora.book.exception.BookNotFoundException;
+import store.aurora.point.exception.PointPolicyNotFoundException;
 import store.aurora.user.exception.RoleNotFoundException;
 
 import java.time.LocalDateTime;
@@ -12,7 +13,8 @@ import java.time.LocalDateTime;
 public class RestControllerAdvice {
 
     @ExceptionHandler({
-            BookNotFoundException.class
+            BookNotFoundException.class,
+            PointPolicyNotFoundException.class
     })
     public ResponseEntity<ErrorResponseDto> handleNotFoundExceptions(RuntimeException e) {
         ErrorResponseDto errorResponseDto = new ErrorResponseDto(

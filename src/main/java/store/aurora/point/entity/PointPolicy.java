@@ -33,7 +33,7 @@ public class PointPolicy {
 
     @Setter
     @NotNull
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false, precision = 10, scale = 1)
     private BigDecimal pointPolicyValue;
 
     public PointPolicy(String pointPolicyName, PointPolicyType pointPolicyType, BigDecimal pointPolicyValue) {

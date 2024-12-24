@@ -84,6 +84,13 @@ values ('test title', 10000, 9000, TRUE, 'test desc', 1, 1, FALSE, '2024-12-12',
 insert into books (title, regular_price, sale_price, is_sale, explanation, publisher_id, series_id, packaging, publish_date, isbn, stock, contents)
 values ('test title2', 10000, 9000, TRUE, 'test desc2', 1, 1, FALSE, '2024-12-12', '1234567890124', 100, 'sample contents2');
 
+insert into book_images (is_thumbnail, book_id, file_path)
+values (TRUE, 1, 'https://kr1-api-object-storage.nhncloudservice.com/v1/AUTH_c20e3b10d61749a2a52346ed0261d79e/aurora/148699bf-58cb-4f68-bd04-615b57126fd0.png');
+
+insert into book_images (is_thumbnail, book_id, file_path)
+values (TRUE, 2, 'https://kr1-api-object-storage.nhncloudservice.com/v1/AUTH_c20e3b10d61749a2a52346ed0261d79e/aurora/148699bf-58cb-4f68-bd04-615b57126fd0.png');
+
+
 -- BookCategory 엔티티 삽입
 INSERT INTO book_categories (category_id, book_id) VALUES (3, 1);
 INSERT INTO book_categories (category_id, book_id) VALUES (2, 1);
@@ -117,3 +124,12 @@ VALUES
 -- VALUES
 --     (5, 'Great book, highly recommended!', '2024-12-12 15:00:00', 1, 'user123'),
 --     (4, 'Good read, but a bit slow in the middle.', '2024-12-12 15:05:00', 2, 'user1234');
+
+-- ///////////////////// 포인트 ///////////////////////
+INSERT INTO point_policies (point_policy_name, point_policy_type, point_policy_value) VALUES
+('결제', 'PERCENTAGE', 0.5),
+('회원가입', 'AMOUNT', 5000),
+('리뷰작성', 'AMOUNT', 200),
+('리뷰작성(사진 포함)', 'AMOUNT', 500);
+
+

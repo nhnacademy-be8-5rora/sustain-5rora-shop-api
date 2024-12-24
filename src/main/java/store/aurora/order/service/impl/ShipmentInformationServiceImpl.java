@@ -7,7 +7,6 @@ import store.aurora.order.repository.ShipmentInformationRepository;
 import store.aurora.order.service.OrderService;
 import store.aurora.order.service.ShipmentInformationService;
 
-import java.util.List;
 import java.util.Objects;
 
 @Service

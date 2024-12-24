@@ -1,12 +1,12 @@
 ### 회원 장바구니 조회
-GET http://localhost:8083/api/cart
+GET http://localhost:8280/api/cart
 X-USER-ID: user123
 
 ### 회원 장바구니 조회 (w/o X-USER-ID 헤더)
-GET http://localhost:8083/api/cart
+GET http://localhost:8280/api/cart
 
 ### 회원 장바구니 추가
-POST http://localhost:8083/api/cart
+POST http://localhost:8280/api/cart
 Content-Type: application/json
 X-USER-ID: user123
 
@@ -16,17 +16,17 @@ X-USER-ID: user123
 }
 
 ### 회원 장바구니 추가 (not exist book)
-POST http://localhost:8083/api/cart?bookId=10&quantity=2
+POST http://localhost:8280/api/cart?bookId=10&quantity=2
 X-USER-ID: user123
 
 ### 회원 장바구니 삭제
-DELETE http://localhost:8083/api/cart/1
+DELETE http://localhost:8280/api/cart/1
 X-USER-ID: user123
 
 #------------------------- 비인증자 -----------------------
 
 ### 비인증자 장바구니 추가
-POST http://localhost:8083/api/cart
+POST http://localhost:8280/api/cart
 Content-Type: application/json
 
 {
@@ -35,7 +35,7 @@ Content-Type: application/json
 }
 
 ### 비인증자 장바구니 추가 (not exist book)
-POST http://localhost:8083/api/cart
+POST http://localhost:8280/api/cart
 Content-Type: application/json
 
 {
@@ -44,11 +44,11 @@ Content-Type: application/json
 }
 
 ### 비인증자 장바구니 조회
-GET http://localhost:8083/api/cart
+GET http://localhost:8280/api/cart
 Cookie: CART=%5B%7B%22bookId%22%3A1%2C%22quantity%22%3A1%7D%5D
 
 ### 비인증자 장바구니 조회
-GET http://localhost:8083/api/cart
+GET http://localhost:8280/api/cart
 
 ### 비인증자 장바구니 삭제
-DELETE http://localhost:8083/api/cart/1
+DELETE http://localhost:8280/api/cart/1

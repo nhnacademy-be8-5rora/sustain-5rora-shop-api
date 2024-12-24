@@ -1,13 +1,12 @@
-#eureka:
-#  client:
-#    enabled: false
+server:
+  port: 8280
 
 spring:
   datasource:
-    url: jdbc:h2:mem:bookstore;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:mysql://localhost:3306/test?useSSL=false&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: na
+    password: na
     dbcp2:
       initial-size: 5                  # 초기 커넥션 수
       max-total: 20                    # 최대 커넥션 수
@@ -17,11 +16,12 @@ spring:
       test-on-borrow: true             # 풀에서 가져올 때 유효성 검사
       test-while-idle: true            # 유휴 상태에서 유효성 검사
 
+  sql:
+    init:
+      mode: always
+
   servlet:
     multipart:
       enabled: true
       max-file-size: 10MB      # 파일 크기 제한
       max-request-size: 10MB
-
-server:
-  port: 8280

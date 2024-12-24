@@ -45,10 +45,11 @@ public class KeyConfig {
 
     public String keyStore(String keyId) {
         try {
-            // KeyStore 설정
+            // 1. 키스토어 초기화
             KeyStore clientStore = KeyStore.getInstance("PKCS12");
-            InputStream result = new ClassPathResource("5rora.p12").getInputStream();
-            clientStore.load(result, password.toCharArray());
+            try (InputStream result = new ClassPathResource("5rora.p12").getInputStream()) {
+                clientStore.load(result, password.toCharArray());
+            }
 
             // SSLContext 설정
             SSLContext sslContext = SSLContextBuilder.create()

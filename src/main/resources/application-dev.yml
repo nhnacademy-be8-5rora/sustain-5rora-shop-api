@@ -4,10 +4,11 @@
 
 spring:
   datasource:
-    url: jdbc:h2:mem:bookstore;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:mysql://localhost:3306/test?useSSL=false&serverTimezone=UTC
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
     dbcp2:
       initial-size: 5                  # 초기 커넥션 수
       max-total: 20                    # 최대 커넥션 수

@@ -2,15 +2,17 @@ package store.aurora.point.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import store.aurora.order.entity.Order;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "point_histories")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class PointHistory {
     @Id
@@ -35,11 +37,9 @@ public class PointHistory {
     @Column(nullable = false)
     private LocalDateTime transactionDate = LocalDateTime.now();
 
-//    @Setter
-//    @ManyToOne
-//    @JoinColumn(name = "order_id")
-//    private Order order;
-    private Long orderId; // todo
+    @Setter
+    @ManyToOne
+    private Order order;
 
     @Setter
     @Enumerated(EnumType.STRING)

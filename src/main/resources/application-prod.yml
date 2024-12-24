@@ -11,9 +11,9 @@
 
 spring:
   datasource:
-    url: jdbc:mysql://133.186.241.167/project_be8_5rora_db?useSSL=false&serverTimezone=UTC
-    username: project_be8_5rora
-    password: oMyVE2dkskrCXF@t
+    url: jdbc:mysql://133.186.241.167/project_be8_5rora_db?useSSL=false&serverTimezone=UTC #0a26e1278d3d47ddaabe34348c5ad3d8
+    username: project_be8_5rora #d05aa6d9bd8e44a6b2e775b429935482
+    password: oMyVE2dkskrCXF@t #a2eaad61880140b7a53cd7f48856f26c
     driver-class-name: com.mysql.cj.jdbc.Driver
     dbcp2:
       initial-size: 20                  # 초기 커넥션 수

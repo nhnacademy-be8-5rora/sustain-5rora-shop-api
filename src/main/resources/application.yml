@@ -69,3 +69,12 @@ nhncloud:
   storage:
     url: fill
     token: fill
+
+
+### key manager
+key:
+  manager:
+    url: https://api-keymanager.nhncloudservice.com
+    path: /keymanager/v1.0/appkey/{app-key}/secrets/{key-id}
+    app-key: qTQNj7LyHhdAazH3
+    password: 5555

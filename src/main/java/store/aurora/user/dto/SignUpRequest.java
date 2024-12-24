@@ -28,7 +28,7 @@ public class SignUpRequest {
     private String birth;
 
     @NotBlank(message = "전화번호는 필수 항목입니다.")
-    @Pattern(regexp = "^[0-9]{11}$", message = "전화번호는 숫자만 11자리로 입력해야 합니다.")
+    @Pattern(regexp = "^[0-9]{10,11}$", message = "전화번호는 숫자만 입력해주세요.")
     private String phoneNumber;
 
     @NotBlank(message = "이메일은 필수 항목입니다.")
@@ -36,4 +36,7 @@ public class SignUpRequest {
     private String email;
 
     private String verificationCode;    // 인증번호 입력
+
 }
+
+

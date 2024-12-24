@@ -38,7 +38,11 @@ jobs:
           -Dpackaging=jar
 
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn -B package --file  pom.xml \
+          -Dspring.profiles.active=prod \
+          -Dspring.datasource.url=${{ secrets.DATASOURCE_URL }} \
+          -Dspring.datasource.username=${{ secrets.DATASOURCE_USERNAME }} \
+          -Dspring.datasource.password=${{ secrets.DATASOURCE_PASSWORD }}
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     # - name: Update dependency graph

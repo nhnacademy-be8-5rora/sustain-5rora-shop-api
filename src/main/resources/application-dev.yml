@@ -18,6 +18,10 @@ spring:
       test-on-borrow: true             # 풀에서 가져올 때 유효성 검사
       test-while-idle: true            # 유휴 상태에서 유효성 검사
 
+#  sql:
+#    init:
+#      mode: always
+
   servlet:
     multipart:
       enabled: true

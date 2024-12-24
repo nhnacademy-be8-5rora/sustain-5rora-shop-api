@@ -1,17 +1,15 @@
 package store.aurora.order.repository;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import store.aurora.book.config.QuerydslConfiguration;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.OrderDetail;
+import store.aurora.order.entity.Shipment;
 import store.aurora.order.entity.enums.OrderState;
-import store.aurora.order.repository.OrderDetailRepository;
-import store.aurora.order.repository.OrderRepository;
+import store.aurora.order.entity.enums.ShipmentState;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,6 +26,9 @@ class OrderDetailRepositoryTest {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private ShipmentRepository shipmentRepository;
+
     @Test
     void findByOrder() {
         // Arrange
@@ -43,11 +44,17 @@ class OrderDetailRepositoryTest {
         order.setOrderEmail("johndoe@example.com");
         orderRepository.save(order);
 
+        Shipment shipment = new Shipment();
+        shipment.setState(ShipmentState.PENDING);
+        shipmentRepository.save(shipment);
+
         OrderDetail orderDetail = new OrderDetail();
         orderDetail.setOrder(order);
         orderDetail.setState(OrderState.CONFIRMED);
         orderDetail.setAmountDetail(100);
         orderDetail.setAmountDetail(1);
+        orderDetail.setQuantity(1);
+        orderDetail.setShipment(shipment);
         orderDetailRepository.save(orderDetail);
 
         OrderDetail orderDetail1 = new OrderDetail();
@@ -55,6 +62,8 @@ class OrderDetailRepositoryTest {
         orderDetail1.setState(OrderState.CONFIRMED);
         orderDetail1.setAmountDetail(100);
         orderDetail1.setAmountDetail(1);
+        orderDetail1.setQuantity(1);
+        orderDetail1.setShipment(shipment);
         orderDetailRepository.save(orderDetail1);
 
         // Act

@@ -69,16 +69,6 @@ public class BookServiceImpl implements BookService {
         book.setSeries(series);
         Book savedBook = bookRepository.save(book);
 
-        // 이미지 저장
-//        if (requestDTO.getImagePaths() != null && !requestDTO.getImagePaths().isEmpty()) {
-//            for (int i = 0; i < requestDTO.getImagePaths().size(); i++) {
-//                BookImage bookImage = new BookImage();
-//                bookImage.setBook(savedBook);
-//                bookImage.setFilePath(requestDTO.getImagePaths().get(i));
-//                bookImage.setThumbnail(i == 0); // 첫 번째 이미지를 썸네일로 지정
-//                bookImageRepository.save(bookImage);
-//            }
-//        }
         // todo : entity 의 add 메서드로 처리
         // todo 카테고리가 비어있을 때 처리
 
@@ -150,68 +140,6 @@ public class BookServiceImpl implements BookService {
         book.setPackaging(packaging);
         bookRepository.save(book);
     }
-
-
-//    @Transactional
-//    public void addBookImages(Long bookId, List<MultipartFile> files) throws IOException {
-//        Book book = bookRepository.findById(bookId)
-//                .orElseThrow(() -> new NotFoundBookException(bookId));
-//
-//        // 책에 기존 썸네일이 있는지 확인
-//        boolean hasThumbnail = bookImageRepository.existsByBookAndIsThumbnailTrue(book);
-//
-//        for (int i = 0; i < files.size(); i++) {
-//            String uploadedPath = fileStorageService.uploadFile(files.get(i),"Books");
-//
-//            BookImage bookImage = new BookImage();
-//            bookImage.setBook(book);
-//            bookImage.setFilePath(uploadedPath);
-//
-//            // 썸네일이 없을 경우 첫 번째 이미지를 썸네일로 설정
-//            if (!hasThumbnail) {
-//                bookImage.setThumbnail(true);
-//                hasThumbnail = true; // 플래그 업데이트
-//            } else {
-//                bookImage.setThumbnail(false);
-//            }
-//
-//            bookImageRepository.save(bookImage);
-//        }
-//    }
-
-
-    @Transactional
-    public void deleteBookImage(Long bookId, Long imageId) throws IOException {
-        BookImage bookImage = bookImageRepository.findById(imageId)
-                .orElseThrow(() -> new NotFoundBookImageException(imageId));
-
-        if (!bookImage.getBook().getId().equals(bookId)) {
-            throw new BookImageNotBelongToBookException(bookId, imageId);
-        }
-
-        // 파일 삭제
-//        fileStorageService.deleteFile(bookImage.getFilePath());
-        bookImageRepository.delete(bookImage);
-    }
-
-    @Transactional
-    public void updateThumbnail(Long bookId, Long imageId) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new NotFoundBookException(bookId));
-
-//        bookImageRepository.updateAllThumbnailsToFalse(bookId);
-
-        BookImage bookImage = bookImageRepository.findById(imageId)
-                .orElseThrow(() -> new NotFoundBookImageException(imageId));
-        bookImage.setThumbnail(true);
-        bookImageRepository.save(bookImage);
-    }
-
-
-
-
-
-
 
 
     @Transactional(readOnly = true)

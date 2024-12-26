@@ -138,4 +138,3 @@ INSERT INTO point_policies (point_policy_name, point_policy_type, point_policy_v
 ('리뷰작성', 'AMOUNT', 200),
 ('리뷰작성(사진 포함)', 'AMOUNT', 500);
 
-

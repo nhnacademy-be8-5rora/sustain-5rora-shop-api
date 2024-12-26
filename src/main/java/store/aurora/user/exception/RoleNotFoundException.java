@@ -1,6 +1,8 @@
 package store.aurora.user.exception;
 
-public class RoleNotFoundException extends RuntimeException {
+import store.aurora.common.exception.DataNotFoundException;
+
+public class RoleNotFoundException extends DataNotFoundException {
     public RoleNotFoundException(String userId) {
         super(String.format("Role not found for user %s", userId));
     }

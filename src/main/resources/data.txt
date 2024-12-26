@@ -35,34 +35,27 @@ VALUES (
        TRUE
    );
 
--- UserRank
+-- UserRank 데이터 삽입
 INSERT INTO user_ranks (id, rank_name, rank_min_amount, rank_max_amount, point_rate)
 VALUES
-(1, 'GENERAL', 0, 100000, 0.01),  -- 10만원 이하, 1% 포인트 적립
-(2, 'ROYAL', 100000, 200000, 0.02),  -- 10만원 ~ 20만원, 2% 포인트 적립
-(3, 'GOLD', 200000, 300000, 0.03),  -- 20만원 ~ 30만원, 3% 포인트 적립
-(4, 'PLATINUM', 300000, NULL, 0.03);  -- 30만원 이상, 3% 포인트 적립
-
+    (1, 'GENERAL', 0, 100000, 0.01),  -- 10만원 이하, 1% 포인트 적립
+    (2, 'ROYAL', 100000, 200000, 0.02),  -- 10만원 ~ 20만원, 2% 포인트 적립
+    (3, 'GOLD', 200000, 300000, 0.03),  -- 20만원 ~ 30만원, 3% 포인트 적립
+    (4, 'PLATINUM', 300000, NULL, 0.03);  -- 30만원 이상, 3% 포인트 적립
 
 INSERT INTO roles (role_name) VALUES ('ROLE_ADMIN');
 INSERT INTO roles (role_name) VALUES ('ROLE_USER');
 
 INSERT INTO user_roles (user_id, role_id) VALUES ('user123', 1);
---
--- -- ///////////////////////// book ////////////////////////////
---
--- INSERT INTO publishers (name)
--- VALUES ('Penguin Books');
---
--- insert into serieses (name)
--- values ('test name');
---
--- insert into books (title, regular_price, sale_price, is_sale, explanation, publisher_id, series_id, PACKAGING, PUBLISH_DATE)
--- values ('test title', 10000, 9000, TRUE, 'test desc', 1, 1, FALSE, '2024-12-12');
---
--- insert into books (title, regular_price, sale_price, is_sale, explanation, publisher_id, series_id, PACKAGING, PUBLISH_DATE)
--- values ('test title2', 10000, 9000, TRUE, 'test desc2', 1, 1, FALSE, '2024-12-12');
 
+INSERT INTO users (
+    is_oauth, user_birthday, user_signup_date, user_last_login, id, user_name, user_email, user_phone_number, user_pwd, user_status
+) value (true, '2024-12-22', '2024-12-23', null, 'apple', '홍길동', 'email@gmail.com','01012345678',
+         '$2b$12$rrIioTXmwjsZewl2323Z8OHI0GOfak3MvIAUnISTR5Yyf3S7eRk7y', 'ACTIVE'); -- apple1234
+
+insert into user_roles(role_id, user_id) VALUE(2, 'apple');
+
+-- ///////////////////////// book ////////////////////////////
 
 insert into publishers (name) values ('Penguin Books');
 insert into series (name) values ('test name');
@@ -83,6 +76,13 @@ values ('test title', 10000, 9000, TRUE, 'test desc', 1, 1, FALSE, '2024-12-13',
 
 insert into books (title, regular_price, sale_price, is_sale, explanation, publisher_id, series_id, packaging, publish_date, isbn, stock, contents)
 values ('test title2', 10000, 3000, TRUE, 'test desc2', 1, 1, FALSE, '2024-12-12', '1234567890124', 100, 'sample contents2');
+
+insert into book_images (is_thumbnail, book_id, file_path)
+values (TRUE, 1, 'https://kr1-api-object-storage.nhncloudservice.com/v1/AUTH_c20e3b10d61749a2a52346ed0261d79e/aurora/148699bf-58cb-4f68-bd04-615b57126fd0.png');
+
+insert into book_images (is_thumbnail, book_id, file_path)
+values (TRUE, 2, 'https://kr1-api-object-storage.nhncloudservice.com/v1/AUTH_c20e3b10d61749a2a52346ed0261d79e/aurora/148699bf-58cb-4f68-bd04-615b57126fd0.png');
+
 
 -- BookCategory 엔티티 삽입
 INSERT INTO book_categories (category_id, book_id) VALUES (3, 1);
@@ -117,3 +117,11 @@ INSERT INTO reviews (review_rating, review_content, review_create_at, book_id, u
 VALUES
     (5, 'Great book, highly recommended!', '2024-12-12 15:00:00', 1, 'user123'),
     (4, 'Good read, but a bit slow in the middle.', '2024-12-12 15:05:00', 1, 'user1234');
+
+-- ///////////////////// 포인트 ///////////////////////
+INSERT INTO point_policies (point_policy_name, point_policy_type, point_policy_value) VALUES
+('결제', 'PERCENTAGE', 0.5),
+('회원가입', 'AMOUNT', 5000),
+('리뷰작성', 'AMOUNT', 200),
+('리뷰작성(사진 포함)', 'AMOUNT', 500);
+

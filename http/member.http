@@ -6,13 +6,13 @@ Content-Type: application/json
   "id": "payco:testId2",
   "name": "홍길동",
   "birth": "19000101",
-  "phoneNumber": "01012345678",
+  "phoneNumber": "821012345678",
   "email": "test@test.com"
 }
 
 ### 멤버 조회 (password, role)
-GET http://localhost:8083/api/users/auth/details
-UserId: user123
+GET http://localhost:8280/api/users/auth/details
+UserId: apple
 
 ### 멤버 조회 (username, role)
 GET http://localhost:8083/api/users/auth/me
@@ -23,8 +23,8 @@ GET http://localhost:8083/api/users/auth/details
 UserId: user1234
 
 ### 멤버 존재 하는지
-GET http://localhost:8083/api/users/auth/exists
-UserId: user1234
+GET http://localhost:8280/api/users/auth/exists
+UserId: apple
 
 ### 멤버 존재 하는지 (not exist)
 GET http://localhost:8083/api/users/auth/exists

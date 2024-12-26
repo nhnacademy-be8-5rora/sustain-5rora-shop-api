@@ -3,35 +3,52 @@ package store.aurora.order.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import store.aurora.order.entity.ShipmentInformation;
-import store.aurora.order.repository.OrderRepository;
 import store.aurora.order.repository.ShipmentInformationRepository;
 import store.aurora.order.service.OrderService;
 import store.aurora.order.service.ShipmentInformationService;
 
-import java.util.List;
 import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-// TODO orderService 작성 후 그에 맞게 수정 해야 함
 public class ShipmentInformationServiceImpl implements ShipmentInformationService {
 
     private final ShipmentInformationRepository shipmentInformationRepository;
     private final OrderService orderService;
 
     @Override
+    public boolean isExist(Long orderId) {
+        if(Objects.isNull(orderId)){
+            throw new IllegalArgumentException("OrderId is null");
+        }
+        return shipmentInformationRepository.existsById(orderId);
+    }
+
+    @Override
     public void createShipmentInformation(ShipmentInformation shipmentInformation) {
         if(!validateShipmentInformation(shipmentInformation)){
             throw new IllegalArgumentException("ShipmentInformation already exists");
+        }
+        if(!Objects.isNull(shipmentInformation.getOrder())){
+            shipmentInformation.setOrder(orderService.getOrder(shipmentInformation.getOrderId()));
         }
         shipmentInformationRepository.save(shipmentInformation);
     }
 
     @Override
     public ShipmentInformation getShipmentInformation(Long orderId) {
-        // orderId에 해당하는 ShipmentInformation이 없는 경우 null 반환
-        // orderId의 유효성 검증 필요
-        return shipmentInformationRepository.findById(orderId).orElse(null);
+        if(Objects.isNull(orderId)){
+            throw new IllegalArgumentException("OrderId is null");
+        }
+        if(!orderService.isExist(orderId)){
+            throw new IllegalArgumentException("Order does not exist");
+        }
+
+        if(!isExist(orderId)){
+            throw new IllegalArgumentException("ShipmentInformation does not exist");
+        }
+
+        return shipmentInformationRepository.getReferenceById(orderId);
     }
 
     @Override
@@ -41,13 +58,28 @@ public class ShipmentInformationServiceImpl implements ShipmentInformationServic
         if(Objects.isNull(shipmentInformation.getOrderId())){
             throw new IllegalArgumentException("OrderId is null");
         }
+        if(!orderService.isExist(shipmentInformation.getOrderId())){
+            throw new IllegalArgumentException("Order does not exist");
+        }
+        if(!isExist(shipmentInformation.getOrderId())){
+            throw new IllegalArgumentException("ShipmentInformation does not exist");
+        }
         shipmentInformationRepository.save(shipmentInformation);
 
     }
 
     @Override
-    public void deleteShipmentInformation(ShipmentInformation shipmentInformation) {
-        shipmentInformationRepository.delete(shipmentInformation);
+    public void deleteShipmentInformationById(Long orderId) {
+        if(Objects.isNull(orderId)){
+            throw new IllegalArgumentException("OrderId is null");
+        }
+        if(!orderService.isExist(orderId)){
+            throw new IllegalArgumentException("Order does not exist");
+        }
+        if(!isExist(orderId)){
+            throw new IllegalArgumentException("ShipmentInformation does not exist");
+        }
+        shipmentInformationRepository.deleteById(orderId);
     }
 
     /**
@@ -58,8 +90,7 @@ public class ShipmentInformationServiceImpl implements ShipmentInformationServic
      */
     private boolean validateShipmentInformation(ShipmentInformation info) {
         Long orderId = info.getOrderId();
-        // TODO orderService 작성 후 그에 맞게 수정 해야 함
-        if(orderService.getOrder(orderId) == null) {
+        if(!orderService.isExist(orderId)) {
             throw new IllegalArgumentException("Order does not exist");
         }
 

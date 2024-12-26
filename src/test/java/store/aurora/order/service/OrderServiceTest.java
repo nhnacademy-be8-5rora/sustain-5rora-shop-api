@@ -1,7 +1,6 @@
-package store.aurora.order.service.impl;
+package store.aurora.order.service;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -21,9 +20,9 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-class OrderServiceImplTest {
+class OrderServiceTest {
     @Autowired
-    private OrderServiceImpl orderService;
+    private OrderService orderService;
 
     @MockBean
     private OrderRepository orderRepository;

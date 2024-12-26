@@ -1,0 +1,42 @@
+### 포인트 정책 조회
+GET localhost:8280/api/point-policies
+
+### 포인트 정책 수정
+PUT localhost:8280/api/point-policies/1
+Content-Type: application/json
+
+{
+    "pointPolicyName": "결제",
+    "pointPolicyType": "PERCENTAGE",
+    "pointPolicyValue": 0.5
+}
+
+### 포인트 정책 수정 (존재하지 않는 id)
+PUT localhost:8280/api/point-policies/10
+Content-Type: application/json
+
+{
+  "pointPolicyName": "결제",
+  "pointPolicyType": "PERCENTAGE",
+  "pointPolicyValue": 0.5
+}
+
+### 포인트 정책 수정 (PointPolicyType 불일치 400 bad request)
+PUT localhost:8280/api/point-policies/2
+Content-Type: application/json
+
+{
+  "pointPolicyName": "결제",
+  "pointPolicyType": "@#$@#$",
+  "pointPolicyValue": 0.5
+}
+
+### 포인트 정책 수정 (valid error 500)
+PUT localhost:8280/api/point-policies/1
+Content-Type: application/json
+
+{
+  "pointPolicyName": "",
+  "pointPolicyType": "PERCENTAGE",
+  "pointPolicyValue": 0.5
+}

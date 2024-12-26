@@ -2,7 +2,6 @@ package store.aurora.order.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,12 +33,12 @@ public class OrderDetail {
 
     // 결제 금액 (쿠폰 적용가)
     @Column(name = "amount_detail", nullable = false)
-    private int amountDetail;
+    private Integer amountDetail;
 
     // 수량
     @Min(0)
     @Column(name = "quantity", nullable = false)
-    private int quantity;
+    private Integer quantity;
 
     // 포장지
     @ManyToOne
@@ -51,13 +50,15 @@ public class OrderDetail {
     private Long couponId;
 
     // 책
+    // TODO: NOT NULL
     @ManyToOne
     @JoinColumn(name = "book_id")
+//    @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
     // 배송
     @ManyToOne
-    @JoinColumn(name = "shipment_id")
+    @JoinColumn(name = "shipment_id", nullable = false)
     private Shipment shipment;
 
     // 환불 또는 취소 일자

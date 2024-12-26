@@ -55,8 +55,6 @@ public class BookRepositoryCustomTest {
     @Autowired
     private BookRepository bookRepository;
 
-    private static final Logger USER_LOG = LoggerFactory.getLogger("user-logger".getClass());
-
     @BeforeEach
     public void setup() {
         // User 생성

@@ -9,26 +9,32 @@
 #    endpoint: https://kr.object.nhncloud.com/v1/AUTH_YOUR_PROJECT_ID
 #    bucket-name: YOUR_BUCKET_NAME
 
-spring:
-  datasource:
-    url: jdbc:mysql://133.186.241.167/project_be8_5rora_db?useSSL=false&serverTimezone=UTC
-    username: project_be8_5rora
-    password: oMyVE2dkskrCXF@t
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    dbcp2:
-      initial-size: 20                  # 초기 커넥션 수
-      max-total: 100                    # 최대 커넥션 수
-      max-idle: 50                     # 유휴 상태에서 최대 커넥션 수
-      min-idle: 20                      # 유휴 상태에서 최소 커넥션 수
-      validation-query: SELECT 1       # 연결 유효성 검사 쿼리
-      test-on-borrow: true             # 풀에서 가져올 때 유효성 검사
-      test-while-idle: true            # 유휴 상태에서 유효성 검사
 
-  servlet:
+server:
+  port: 9280
+
+database:
+  mysql:
+    url: 0a26e1278d3d47ddaabe34348c5ad3d8
+    username: d05aa6d9bd8e44a6b2e775b429935482
+    password: a2eaad61880140b7a53cd7f48856f26c
+  # dbcp2는 DataSourceConfig 에서 설정 고려
+  #    dbcp2:
+  #      initial-size: 20                  # 초기 커넥션 수
+  #      max-total: 100                    # 최대 커넥션 수
+  #      max-idle: 50                     # 유휴 상태에서 최대 커넥션 수
+  #      min-idle: 20                      # 유휴 상태에서 최소 커넥션 수
+  #      validation-query: SELECT 1       # 연결 유효성 검사 쿼리
+  #      test-on-borrow: true             # 풀에서 가져올 때 유효성 검사
+  #      test-while-idle: true            # 유휴 상태에서 유효성 검사
+
+  sql:
+    init:
+      mode: always
+
+servlet:
     multipart:
       enabled: true
       max-file-size: 100MB      # 파일 크기 제한
       max-request-size: 100MB
 
-server:
-  port: 9280

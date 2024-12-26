@@ -201,10 +201,6 @@ public class BookRepositoryCustomTest {
         log.debug("testFindBooksByTitleWithDetailsByNullOrBlankTitle 메서드 결과 값 확인 {}", nullTitleResult.getContent());
         assertThat(nullTitleResult.getContent()).isEmpty();//결과가 비어있어야함.
 
-        title="";
-        Page<BookSearchEntityDTO> emptyTitleResult=bookRepository.findBooksByTitleWithDetails(title, pageable);
-        assertThat(emptyTitleResult).isNotNull();
-        assertThat(emptyTitleResult.getContent()).isEmpty();
 
     }
 

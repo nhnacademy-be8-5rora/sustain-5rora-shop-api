@@ -85,6 +85,7 @@ public class BookRepositoryCustomTest {
     @Autowired
     private TestEntityManager entityManager;
 
+    // todo : import 다른거 했음
     private static final Logger USER_LOG = LoggerFactory.getLogger("user-logger".getClass());
 
     @BeforeEach

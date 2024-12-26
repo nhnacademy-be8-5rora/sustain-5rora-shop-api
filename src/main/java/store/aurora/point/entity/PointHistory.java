@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import store.aurora.order.entity.Order;
+import store.aurora.user.entity.User;
 
 import java.time.LocalDateTime;
 
@@ -30,9 +31,6 @@ public class PointHistory {
     @Column(nullable = false)
     private PointType pointType;
 
-    @Setter
-    private String description;
-
     @NotNull
     @Column(nullable = false)
     private LocalDateTime transactionDate = LocalDateTime.now();
@@ -42,8 +40,16 @@ public class PointHistory {
     private Order order;
 
     @Setter
-    @Enumerated(EnumType.STRING)
-    private PointEarnStatus pointEarnStatus;
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "point_policy_id", nullable = false)
+    private PointPolicy pointPolicy; // 적립 사유 가져오려고
+
+    @Setter
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     public PointHistory(Integer pointAmount, PointType pointType) {
         this.pointAmount = pointAmount;

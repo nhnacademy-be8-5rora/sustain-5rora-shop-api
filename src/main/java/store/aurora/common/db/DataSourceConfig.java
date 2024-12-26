@@ -1,13 +1,20 @@
 package store.aurora.common.db;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import store.aurora.key.DatabaseProperties;
+import store.aurora.key.KeyConfig;
 
 import javax.sql.DataSource;
 
-//@Configuration
+@RequiredArgsConstructor
+@Configuration
 public class DataSourceConfig {
+
+    private final KeyConfig keyConfig;
+    private final DatabaseProperties databaseProperties;
 
     @Bean
     public DataSource dataSource() {
@@ -29,11 +36,11 @@ public class DataSourceConfig {
         dataSource.setTestWhileIdle(true);
 
         // DBCP2 설정 prod
-//        dataSource.setUrl("jdbc:mysql://133.186.241.167/project_be8_5rora_db?useSSL=false&serverTimezone=UTC");
-//        dataSource.setUsername("project_be8_5rora");
-//        dataSource.setPassword("oMyVE2dkskrCXF@t");
+//        dataSource.setUrl(keyConfig.keyStore(databaseProperties.getUrl()));
+//        dataSource.setUsername(keyConfig.keyStore(databaseProperties.getUsername()));
+//        dataSource.setPassword(keyConfig.keyStore(databaseProperties.getPassword()));
 //        dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
-
+//
 //        dataSource.setInitialSize(20); // 초기 생성되는 연결 수
 //        dataSource.setMaxTotal(100); // 최대 연결 수 (전체 요청 처리량 기반)
 //        dataSource.setMaxIdle(50); // 최대 유휴 연결 수 (자주 사용되지 않을 때의 최적 값)

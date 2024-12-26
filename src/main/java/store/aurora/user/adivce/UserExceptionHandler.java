@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class UserExceptionHandler {
 
     @ExceptionHandler(VerificationException.class)
     public ResponseEntity<Map<String, String>> handleVerificationException(VerificationException ex) {

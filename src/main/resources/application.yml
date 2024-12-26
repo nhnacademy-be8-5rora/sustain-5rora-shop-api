@@ -5,7 +5,7 @@ spring:
   application:
     name: shop-api
   profiles:
-    active: dev
+    active: prod
   lifecycle:
     timeout-per-shutdown-phase: 30s
 

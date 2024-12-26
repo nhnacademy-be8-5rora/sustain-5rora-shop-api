@@ -7,6 +7,7 @@ import store.aurora.user.entity.User;
 import java.time.LocalDateTime;
 
 public class OrderMapper {
+    private OrderMapper(){}
     public static Order orderMapper(Integer deliveryFee, LocalDateTime orderTime,
                                     Integer totalAmount, Integer pointAmount,
                                     OrderState state,
@@ -14,7 +15,6 @@ public class OrderMapper {
                                     String password, User user) {
 
         Order o = new Order();
-
 
         o.setDeliveryFee(deliveryFee);
         o.setOrderTime(orderTime);

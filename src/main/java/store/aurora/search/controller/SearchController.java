@@ -45,6 +45,7 @@ public class SearchController {
             pageRequest = PageRequest.of(page, 8, Sort.by(Sort.Order.asc(orderBy)));
         }
 
+        //키워드 null 허용으로 하기. 카테고리때문에.
         Page<?> bookSearchResponseDTOPage = null;
         if (type != null && keyword != null) {
             switch (type) {
@@ -52,6 +53,10 @@ public class SearchController {
                     bookSearchResponseDTOPage = searchService.findBooksByTitleWithDetails(keyword, pageRequest);
                     break;
                 case "category":
+                    if(keyword.isEmpty())
+                    {
+                        keyword = "0";
+                    }
                     bookSearchResponseDTOPage = searchService.findBooksByCategoryWithDetails(Long.valueOf(keyword), pageRequest);
                     break;
                 case "author":

@@ -17,6 +17,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.web.bind.annotation.PutMapping;
 import store.aurora.book.config.QuerydslConfiguration;
+import store.aurora.book.dto.AuthorDTO;
 import store.aurora.book.entity.*;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
@@ -38,9 +39,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Slf4j
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Import(QuerydslConfiguration.class)
 @DataJpaTest
@@ -148,13 +151,18 @@ public class BookRepositoryCustomTest {
 
         // Then
         assertThat(result).isNotNull();
-        USER_LOG.debug(() -> String.format("testFindBooksByTitleWithDetails 메서드 결과 값 확인 %s", result.getContent()));
+        log.debug( "testFindBooksByTitleWithDetails 메서드 결과 값 확인 {}", result.getContent());
         assertThat(result.getContent()).isNotEmpty();  // 결과가 비어 있지 않아야 함
         assertThat(result.getTotalElements()).isGreaterThan(0);  // 결과가 하나 이상이어야 함
 
         // 추가적인 검증 (책 제목이 검색어와 일치하는지)
         result.getContent().forEach(book -> {
-            assertThat(book.getTitle()).contains(title);
+            assertThat(book.getTitle()).contains("test title");
+            List<AuthorDTO> authorDTO = book.getAuthors();
+            authorDTO.forEach(a -> {
+                assertThat(a.getName()).isNotEmpty();
+                assertThat(a.getRole()).isNotNull();
+            });
             assertThat(book.getAuthors()).isNotEmpty();  // authors가 비어 있지 않아야 함
             assertThat(book.getAuthors()).anyMatch(author -> author.getName() != null);  // 작가 이름이 null이 아니어야 함
             assertThat(book.getSalePrice()).isGreaterThan(0);  // 책 가격이 0보다 커야 함
@@ -175,7 +183,7 @@ public class BookRepositoryCustomTest {
 
         // Then
         assertThat(result).isNotNull();
-        USER_LOG.debug(()->String.format("testFindBooksByTitleWithDetails 메서드 결과 값 확인 {}", result.getContent()));
+       log.debug("testFindBooksByTitleWithDetails 메서드 결과 값 확인 {}", result.getContent());
 
         assertThat(result.getContent()).isEmpty();//결과가 비어있어야함.
     }
@@ -192,7 +200,7 @@ public class BookRepositoryCustomTest {
 
         // Then
         assertThat(nullTitleResult).isNotNull();
-        USER_LOG.debug(()->String.format("testFindBooksByTitleWithDetailsByNullOrBlankTitle 메서드 결과 값 확인 {}", nullTitleResult.getContent()));
+        log.debug("testFindBooksByTitleWithDetailsByNullOrBlankTitle 메서드 결과 값 확인 {}", nullTitleResult.getContent());
         assertThat(nullTitleResult.getContent()).isEmpty();//결과가 비어있어야함.
 
         title="";
@@ -211,7 +219,7 @@ public class BookRepositoryCustomTest {
 
         // When
         Page<BookSearchEntityDTO> result = bookRepository.findBooksByAuthorNameWithDetails(authorName, pageable);
-        USER_LOG.debug(()-> String.format("testFindBooksByAuthorNameWithDetails (책 존재하는 경우 )메서드 결과 값 확인 {}",result.getContent()));
+        log.debug("testFindBooksByAuthorNameWithDetails (책 존재하는 경우 )메서드 결과 값 확인 {}",result.getContent());
 
         // Then
         assertThat(result).isNotNull();
@@ -248,7 +256,7 @@ public class BookRepositoryCustomTest {
 
         // When
         Page<BookSearchEntityDTO> result = bookRepository.findBooksByAuthorNameWithDetails(authorName, pageable);
-        USER_LOG.debug(()->String.format("testFindBooksByAuthorNameWithDetails (책 존재하지 않는 경우) 메서드 결과 값 확인 {}",result.getContent()));
+        log.debug("testFindBooksByAuthorNameWithDetails (책 존재하지 않는 경우) 메서드 결과 값 확인 {}",result.getContent());
 
         // Then
         assertThat(result).isNotNull(); //존재하지않아도 빈 페이지를 보여주기에 결과는 null이면 안된다
@@ -268,7 +276,7 @@ public class BookRepositoryCustomTest {
 
         // Then
         assertThat(nullNameResult).isNotNull(); // 페이지는 null이면 안 됨
-        USER_LOG.debug(()->String.format("testFindBooksByAuthorNameWithDetailsByNullOrBlankCategoryName 결과 값 확인: {}", nullNameResult.getContent()));
+        log.debug("testFindBooksByAuthorNameWithDetailsByNullOrBlankCategoryName 결과 값 확인: {}", nullNameResult.getContent());
         assertThat(nullNameResult.getContent()).isEmpty(); // 결과가 비어 있어야 함
 
         authorName = "";
@@ -290,7 +298,7 @@ public class BookRepositoryCustomTest {
 
         // Then
         assertThat(result).isNotNull();
-        USER_LOG.debug(()->String.format("testFindBooksByCategoryIdWithDetails 메서드 결과 값 확인: {}", result.getContent()));
+        log.debug("testFindBooksByCategoryIdWithDetails 메서드 결과 값 확인: {}", result.getContent());
 
         assertThat(result.getContent()).isNotNull(); // 결과가 비어 있지 않아야 함
         assertThat(result.getTotalElements()).isGreaterThan(0); // 결과가 하나 이상이어야 함
@@ -339,7 +347,7 @@ public class BookRepositoryCustomTest {
 
         // Then
         assertThat(result).isNotNull(); // 페이지는 null이면 안 됨
-        USER_LOG.debug(()-> String.format("testFindBooksByCategoryIdWithDetailsNotExists 결과 값 확인: {}", result.getContent()));
+        log.debug("testFindBooksByCategoryIdWithDetailsNotExists 결과 값 확인: {}", result.getContent());
         assertThat(result.getContent()).isEmpty(); // 결과가 비어 있어야 함
     }
 
@@ -355,7 +363,7 @@ public class BookRepositoryCustomTest {
 
         // Then
         assertThat(result).isNotNull(); // 페이지는 null이면 안 됨
-        USER_LOG.debug(()->String.format("testFindBooksByCategoryIdWithDetailsByNullOrBlankCategoryName 결과 값 확인: {}", result.getContent()));
+        log.debug("testFindBooksByCategoryIdWithDetailsByNullOrBlankCategoryName 결과 값 확인: {}", result.getContent());
         assertThat(result.getContent()).isEmpty(); // 결과가 비어 있어야 함
 
     }

@@ -61,9 +61,15 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
     //특정 String을 포함하는 제목을 가진 책들을 조인해서 값들을 반환.
     @Override
     public Page<BookSearchEntityDTO> findBooksByTitleWithDetails(String title, Pageable pageable) {
-        if (Objects.isNull(title) || title.isBlank()) {
+        // title이 null이거나 공백인 경우 빈 페이지 반환
+        if (Objects.isNull(title)) {
             return emptyPage(pageable);
         }
+
+        // 필터링 조건 정의
+        BooleanExpression titleCondition = title.isBlank()
+                ? null // 조건 없음
+                : book.title.like("%" + title + "%"); // 제목 필터링 조건
 
         // 이미지를 하나만 가져오는 쿼리
         var bookImagePathSubquery = JPAExpressions.select(bookImage.filePath)
@@ -99,7 +105,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
 
         // `reviewRating` 기준으로 정렬 시, 리뷰가 100개 이상인 책만 필터링하는 조건 추가
         BooleanExpression reviewCountCondition = (sortOrder.getProperty().equalsIgnoreCase("reviewrating"))
-                ? reviewCountSubquery.goe(100)  // 리뷰 개수가 100개 이상인 경우에만
+                ? reviewCountSubquery.goe(100) // 리뷰 개수가 100개 이상인 경우에만
                 : null;
 
         // 제네릭 타입 명시적 설정
@@ -111,7 +117,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         // bookDetail 가져오기
         List<BookSearchEntityDTO> content = from(book)
                 .leftJoin(book.publisher, publisher)
-                .where(book.title.like("%" + title + "%"))
+                .where(titleCondition) // 제목 필터링 조건 추가
                 .where(reviewCountCondition) // reviewCountCondition을 where 절에 추가
                 .groupBy(book.id, book.title, book.regularPrice, book.salePrice, book.publishDate, publisher.name)
                 .select(Projections.constructor(
@@ -151,11 +157,12 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
 
         // Count query for pagination
         long total = from(book)
-                .where(Expressions.stringTemplate("LOWER({0})", book.title).like("%" + title.toLowerCase() + "%"))
+                .where(titleCondition) // 제목 필터링 조건 추가
                 .fetchCount();
 
         return new PageImpl<>(content, pageable, total);
     }
+
 
 
 

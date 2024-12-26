@@ -26,7 +26,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public Page<BookSearchResponseDTO> findBooksByTitleWithDetails(String title, Pageable pageable) {
-        if (Objects.isNull(title) || title.isBlank()) {
+        if (Objects.isNull(title) ) {
             return emptyPage(pageable);
         }
 
@@ -53,6 +53,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public Page<BookSearchResponseDTO> findBooksByCategoryWithDetails(Long categoryId, Pageable pageable) {
+
         if(Objects.isNull(categoryId)) {
             return emptyPage(pageable);
         }

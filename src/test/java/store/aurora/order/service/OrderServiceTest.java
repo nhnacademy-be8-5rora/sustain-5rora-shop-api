@@ -6,6 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.enums.OrderState;
+import store.aurora.order.exception.exception404.OrderNotFoundException;
 import store.aurora.order.mapper.OrderMapper;
 import store.aurora.order.repository.OrderRepository;
 import store.aurora.user.entity.User;
@@ -188,7 +189,7 @@ class OrderServiceTest {
     void getOrderWithNonExistOrderId() {
         when(orderRepository.existsById(anyLong())).thenReturn(false);
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(OrderNotFoundException.class, () -> {
             orderService.getOrder(1L);
         });
     }
@@ -238,7 +239,7 @@ class OrderServiceTest {
         order.setId(1L);
         when(orderRepository.existsById(anyLong())).thenReturn(false);
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(OrderNotFoundException.class, () -> {
             orderService.updateOrder(order);
         });
     }
@@ -256,7 +257,7 @@ class OrderServiceTest {
     void deleteOrderByIdWithNonExistOrderId() {
         when(orderRepository.existsById(anyLong())).thenReturn(false);
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(OrderNotFoundException.class, () -> {
             orderService.deleteOrderById(1L);
         });
     }

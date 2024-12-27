@@ -3,6 +3,7 @@ package store.aurora.order.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import store.aurora.order.entity.Shipment;
+import store.aurora.order.exception.exception404.ShipmentNotFoundException;
 import store.aurora.order.repository.ShipmentRepository;
 import store.aurora.order.service.ShipmentService;
 
@@ -39,7 +40,7 @@ public class ShipmentServiceImpl implements ShipmentService {
             throw new IllegalArgumentException("id is null");
         }
         if(!shipmentRepository.existsById(id)) {
-            throw new IllegalArgumentException("shipment is not exist");
+            throw new ShipmentNotFoundException(id);
         }
         return shipmentRepository.getReferenceById(id);
     }
@@ -56,7 +57,7 @@ public class ShipmentServiceImpl implements ShipmentService {
             throw new IllegalArgumentException("shipment is null");
         }
         if(!isExist(shipment.getId())) {
-            throw new IllegalArgumentException("shipment is not exist");
+            throw new ShipmentNotFoundException(shipment.getId());
         }
         if(Objects.isNull(shipment.getState())){
             throw new IllegalArgumentException("shipment state is null");
@@ -70,7 +71,7 @@ public class ShipmentServiceImpl implements ShipmentService {
             throw new IllegalArgumentException("shipmentId is null");
         }
         if(!isExist(shipmentId)) {
-            throw new IllegalArgumentException("shipment is not exist");
+            throw new ShipmentNotFoundException(shipmentId);
         }
         shipmentRepository.deleteById(shipmentId);
     }

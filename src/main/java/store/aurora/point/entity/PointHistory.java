@@ -2,15 +2,18 @@ package store.aurora.point.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import store.aurora.order.entity.Order;
+import store.aurora.user.entity.User;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "point_histories")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class PointHistory {
     @Id
@@ -28,22 +31,25 @@ public class PointHistory {
     @Column(nullable = false)
     private PointType pointType;
 
-    @Setter
-    private String description;
-
     @NotNull
     @Column(nullable = false)
     private LocalDateTime transactionDate = LocalDateTime.now();
 
-//    @Setter
-//    @ManyToOne
-//    @JoinColumn(name = "order_id")
-//    private Order order;
-    private Long orderId; // todo
+    @Setter
+    @ManyToOne
+    private Order order;
 
     @Setter
-    @Enumerated(EnumType.STRING)
-    private PointEarnStatus pointEarnStatus;
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "point_policy_id", nullable = false)
+    private PointPolicy pointPolicy; // 적립 사유 가져오려고
+
+    @Setter
+    @NotNull
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     public PointHistory(Integer pointAmount, PointType pointType) {
         this.pointAmount = pointAmount;

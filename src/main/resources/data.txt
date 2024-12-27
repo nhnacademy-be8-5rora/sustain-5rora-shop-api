@@ -47,21 +47,15 @@ INSERT INTO roles (role_name) VALUES ('ROLE_ADMIN');
 INSERT INTO roles (role_name) VALUES ('ROLE_USER');
 
 INSERT INTO user_roles (user_id, role_id) VALUES ('user123', 1);
---
--- -- ///////////////////////// book ////////////////////////////
---
--- INSERT INTO publishers (name)
--- VALUES ('Penguin Books');
---
--- insert into serieses (name)
--- values ('test name');
---
--- insert into books (title, regular_price, sale_price, is_sale, explanation, publisher_id, series_id, PACKAGING, PUBLISH_DATE)
--- values ('test title', 10000, 9000, TRUE, 'test desc', 1, 1, FALSE, '2024-12-12');
---
--- insert into books (title, regular_price, sale_price, is_sale, explanation, publisher_id, series_id, PACKAGING, PUBLISH_DATE)
--- values ('test title2', 10000, 9000, TRUE, 'test desc2', 1, 1, FALSE, '2024-12-12');
 
+INSERT INTO users (
+    is_oauth, user_birthday, user_signup_date, user_last_login, id, user_name, user_email, user_phone_number, user_pwd, user_status
+) value (true, '2024-12-22', '2024-12-23', null, 'apple', '홍길동', 'email@gmail.com','01012345678',
+         '$2b$12$rrIioTXmwjsZewl2323Z8OHI0GOfak3MvIAUnISTR5Yyf3S7eRk7y', 'ACTIVE'); -- apple1234
+
+insert into user_roles(role_id, user_id) VALUE(2, 'apple');
+
+-- ///////////////////////// book ////////////////////////////
 
 insert into publishers (name) values ('Penguin Books');
 insert into series (name) values ('test name');

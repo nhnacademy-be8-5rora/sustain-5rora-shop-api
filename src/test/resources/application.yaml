@@ -1,0 +1,44 @@
+server:
+  shutdown: graceful
+
+spring:
+  application:
+    name: shop-api
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+# H2 Datasource 설정
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        highlight_sql: true
+        auto_quote_keyword: true
+    hibernate:
+      ddl-auto: create-drop
+    defer-datasource-initialization: true # ??? ?? ???? ??????. ?? JPA ???? ?????? ??? ?? ?? ?????? ?, ?????? ??? ???? ??? ?????.
+
+
+# 환경 변수로 넣어주기
+nhncloud:
+  storage:
+    url: fill
+    token: fill
+
+
+### key manager
+key:
+  manager:
+    url: https://api-keymanager.nhncloudservice.com
+    path: /keymanager/v1.0/appkey/{app-key}/secrets/{key-id}
+    app-key: qTQNj7LyHhdAazH3
+    password: 5555

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.tag.BookTagRequestDto;
 import store.aurora.book.dto.tag.TagRequestDto;
+import store.aurora.book.dto.tag.TagResponseDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.tag.BookTag;
 import store.aurora.book.entity.tag.Tag;
@@ -17,7 +18,8 @@ import store.aurora.book.repository.tag.BookTagRepository;
 import store.aurora.book.repository.tag.TagRepository;
 import store.aurora.book.service.tag.TagService;
 
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -64,5 +66,13 @@ public class TagServiceImpl implements TagService {
         }
 
         bookTagRepository.deleteById(bookTagId);
+    }
+
+    @Override
+    public List<TagResponseDto> getAllTags() {
+        return tagRepository.findAll()
+                .stream()
+                .map(tag -> new TagResponseDto(tag.getId(), tag.getName()))
+                .toList();
     }
 }

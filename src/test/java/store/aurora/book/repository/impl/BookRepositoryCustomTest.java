@@ -100,17 +100,6 @@ public class BookRepositoryCustomTest {
         book1.setPublisher(publisher); // 기존 publisher 객체
         book1.setSeries(series); // 기존 series 객체
 
-        // Book-Category 관계 설정
-        BookCategory bookCategory1 = new BookCategory();
-        bookCategory1.setBook(book1);
-        bookCategory1.setCategory(category1);
-        book1.addBookCategory(bookCategory1);
-
-        BookCategory bookCategory2 = new BookCategory();
-        bookCategory2.setBook(book1);
-        bookCategory2.setCategory(category2);
-        book1.addBookCategory(bookCategory2);
-
         entityManager.merge(book1);
 
         // Book 2 생성
@@ -127,13 +116,6 @@ public class BookRepositoryCustomTest {
         book2.setPublishDate(LocalDate.of(2024, 12, 12));
         book2.setPublisher(publisher); // 기존 publisher 객체
         book2.setSeries(series); // 기존 series 객체
-
-// Book-Category 관계 설정
-        BookCategory bookCategory3 = new BookCategory();
-        bookCategory3.setBook(book2);
-        bookCategory3.setCategory(category1);
-        book2.addBookCategory(bookCategory3);
-
 
         entityManager.merge(book2);
 

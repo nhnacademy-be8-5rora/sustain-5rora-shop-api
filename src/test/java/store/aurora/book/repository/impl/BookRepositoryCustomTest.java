@@ -73,67 +73,27 @@ public class BookRepositoryCustomTest {
         entityManager.merge(series);  // Series 객체가 이미 존재하는 경우 merge() 사용
 
         // Category 생성
-        Category category1 = new Category();
-        category1.setName("Example Category");
-        category1.setDepth(0);
-        category1.setDisplayOrder(1);
+        Category category1 = new Category(1L, "Example Category", null, new ArrayList<>(), 0, 1, new ArrayList<>());
+        Category category2 = new Category(2L, "Example Category2", null, new ArrayList<>(), 0, 2, new ArrayList<>());
         entityManager.merge(category1);
-
-        Category category2 = new Category();
-        category2.setName("Example Category2");
-        category2.setDepth(0);
-        category2.setDisplayOrder(2);
         entityManager.merge(category2);
 
         // Book 생성
-        //todo book 양방향으로 바껴서 수정해야 함
-        Book book1 = new Book();
-        book1.setTitle("test title");
-        book1.setRegularPrice(10000);
-        book1.setSalePrice(9000);
-        book1.setStock(100);
-        book1.setSale(true);
-        book1.setIsbn("1234567890123");
-        book1.setContents("sample contents");
-        book1.setExplanation("test desc");
-        book1.setPackaging(false);
-        book1.setPublishDate(LocalDate.of(2024, 12, 12));
-        book1.setPublisher(publisher); // 기존 publisher 객체
-        book1.setSeries(series); // 기존 series 객체
-
-        BookCategory bookCategory1 = new BookCategory();
-        bookCategory1.setBook(book1);
-        bookCategory1.setCategory(category1);
-        book1.addBookCategory(bookCategory1);
-
-        BookCategory bookCategory2 = new BookCategory();
-        bookCategory2.setBook(book1);
-        bookCategory2.setCategory(category2);
-        book1.addBookCategory(bookCategory2);
+        Book book1 = new Book(
+                1L, "test title", 10000, 9000, 100, true, "1234567890123", "sample contents", "test desc", false,
+                LocalDate.of(2024, 12, 12), publisher, series, new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
+        );
+        Book book2 = new Book(
+                2L, "test title2", 10000, 9000, 100, true, "1234567890124", "sample contents2", "test desc2", false,
+                LocalDate.of(2024, 12, 12), publisher, series, new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
+        );
 
         entityManager.merge(book1);
-
-        // Book 2 생성
-        Book book2 = new Book();
-        book2.setTitle("test title2");
-        book2.setRegularPrice(10000);
-        book2.setSalePrice(9000);
-        book2.setStock(100);
-        book2.setSale(true);
-        book2.setIsbn("1234567890124");
-        book2.setContents("sample contents2");
-        book2.setExplanation("test desc2");
-        book2.setPackaging(false);
-        book2.setPublishDate(LocalDate.of(2024, 12, 12));
-        book2.setPublisher(publisher); // 기존 publisher 객체
-        book2.setSeries(series); // 기존 series 객체
-
         entityManager.merge(book2);
 
-//        // BookCategory 생성
-//        entityManager.merge(new BookCategory(1L, book1, category1));
-//
-//        entityManager.merge(new BookCategory(2L, book1, category2));
+        // BookCategory 생성
+        entityManager.merge(new BookCategory(1L, book1, category1));
+        entityManager.merge(new BookCategory(2L, book1, category2));
 
         // Author 생성
         Author author1 = new Author(1L, "example author");
@@ -221,7 +181,7 @@ public class BookRepositoryCustomTest {
 
         // Then
         assertThat(result).isNotNull();
-       log.debug("testFindBooksByTitleWithDetails 메서드 결과 값 확인 {}", result.getContent());
+        log.debug("testFindBooksByTitleWithDetails 메서드 결과 값 확인 {}", result.getContent());
 
         assertThat(result.getContent()).isEmpty();//결과가 비어있어야함.
     }

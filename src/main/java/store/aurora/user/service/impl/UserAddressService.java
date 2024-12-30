@@ -23,7 +23,7 @@ public class UserAddressService {
         // Address 엔터티 저장 또는 가져오기
         Address address = addressService.saveOrGetAddress(roadAddress);
 
-        if (userAddressRepository.findDuplicateAddress(
+        if (userAddressRepository.findByUserIdAndAddressIdAndAddrDetailAndReceiver(
                 userId,
                 address.getId(),
                 addrDetail,

@@ -11,9 +11,11 @@ import java.util.Optional;
 @Repository
 public interface UserAddressRepository extends JpaRepository<UserAddress, Long> {
 
-    @Query("SELECT ua FROM UserAddress ua WHERE ua.user.id = :userId AND ua.address.id = :addressId AND ua.addrDetail = :addrDetail AND ua.receiver = :receiver")
-    Optional<UserAddress> findDuplicateAddress(@Param("userId") String userId,
-                                               @Param("addressId") Long addressId,
-                                               @Param("addrDetail") String addrDetail,
-                                               @Param("receiver") String receiver);
+    //중복된 배송지 검색
+    Optional<UserAddress> findByUserIdAndAddressIdAndAddrDetailAndReceiver(
+            String userId,
+            Long addressId,
+            String addrDetail,
+            String receiver
+    );
 }

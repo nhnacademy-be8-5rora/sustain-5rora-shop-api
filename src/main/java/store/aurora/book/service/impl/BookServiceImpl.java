@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.dto.BookDetailsDto;
 import store.aurora.book.dto.BookDetailsUpdateDTO;
 import store.aurora.book.dto.BookInfoDTO;
@@ -14,13 +15,13 @@ import store.aurora.book.dto.BookRequestDTO;
 import store.aurora.book.dto.ReviewDto;
 import store.aurora.book.dto.BookSalesInfoUpdateDTO;
 import store.aurora.book.dto.aladin.AladinApiResponse;
-import store.aurora.book.dto.aladin.BookDetailDto;
 import store.aurora.book.dto.aladin.BookDto;
-import store.aurora.book.dto.aladin.BookRequestDtoEx;
 import store.aurora.book.dto.tag.BookTagRequestDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.Publisher;
 import store.aurora.book.entity.Series;
+import store.aurora.book.entity.category.BookCategory;
+import store.aurora.book.entity.category.Category;
 import store.aurora.book.exception.book.ISBNAlreadyExistsException;
 import store.aurora.book.exception.book.NotFoundBookException;
 import store.aurora.book.entity.*;
@@ -31,6 +32,7 @@ import store.aurora.book.repository.BookImageRepository;
 import store.aurora.book.repository.BookRepository;
 import store.aurora.book.repository.PublisherRepository;
 import store.aurora.book.repository.SeriesRepository;
+import store.aurora.book.repository.category.CategoryRepository;
 import store.aurora.book.service.*;
 import store.aurora.book.service.category.BookCategoryService;
 import store.aurora.book.service.tag.TagService;
@@ -58,11 +60,11 @@ public class BookServiceImpl implements BookService {
     private final BookImageService bookImageService;
     private final PublisherRepository publisherRepository;
     private final SeriesRepository seriesRepository;
-
-
+    private final CategoryRepository categoryRepository;
 
     @Value("${aladin.api.ttb-key}")
     private String ttbKey;
+
 
     @Override
     public List<BookDto> searchBooks(String query, String queryType, String searchTarget, int start) {
@@ -84,22 +86,31 @@ public class BookServiceImpl implements BookService {
             throw new IllegalArgumentException("Failed to parse API response", e);
         }
     }
+    @Transactional
     @Override
-    public void saveBookFromApi(BookRequestDtoEx bookRequestDto) {
-        Book book = convertToEntity(bookRequestDto);
-        bookRepository.save(book);
-        bookAuthorService.parseAndSaveBookAuthors(book, bookRequestDto.getAuthor());
-        bookImageService.processApiImages(book, bookRequestDto.getCover(), bookRequestDto.getUploadedImages());
-    }
-    @Override
-    public void saveDirectBook(BookRequestDtoEx bookRequestDto) {
-        Book book = convertToEntity(bookRequestDto);
+    public void saveDirectBook(BookDto bookDto, MultipartFile coverImage, List<MultipartFile> additionalImages) {
+        Book book = convertToEntity(bookDto);
         // 책 저장
         bookRepository.save(book);
         // 작가 정보 저장
-        bookAuthorService.parseAndSaveBookAuthors(book, bookRequestDto.getAuthor());
-        // 이미지 처리
-        bookImageService.processAndSaveImages(book, bookRequestDto.getUploadedImages());
+        bookAuthorService.parseAndSaveBookAuthors(book, bookDto.getAuthor());
+        // 커버 이미지 처리
+        bookImageService.handleImageUpload(book,coverImage, true);
+        // 추가 이미지 처리
+        bookImageService.handleAdditionalImages(book, additionalImages);
+    }
+
+    @Transactional
+    @Override
+    public void saveBookFromApi(BookDto bookDto, List<MultipartFile> additionalImages) {
+        // BookDto -> Book 변환
+        Book book = convertToEntity(bookDto);
+        // 책 저장
+        bookRepository.save(book);
+        // 작가 정보 저장
+        bookAuthorService.parseAndSaveBookAuthors(book, bookDto.getAuthor());
+
+        bookImageService.processApiImages(book, bookDto.getCover(), additionalImages);
 
     }
 
@@ -111,9 +122,7 @@ public class BookServiceImpl implements BookService {
                 .orElseThrow(() -> new IllegalArgumentException("Book not found"));
     }
 
-
-    private Book convertToEntity(BookRequestDtoEx bookDto) {
-
+    private Book convertToEntity(BookDto bookDto) {
         Book book = new Book();
         book.setTitle(bookDto.getTitle());
         book.setExplanation(bookDto.getDescription());
@@ -125,8 +134,8 @@ public class BookServiceImpl implements BookService {
             book.setPublishDate(LocalDate.parse(bookDto.getPubDate(), formatter));
         }
         book.setStock(bookDto.getStock());
-        book.setSale(bookDto.isForSale());
-        book.setPackaging(bookDto.isPackaged());
+        book.setSale(bookDto.getIsForSale());
+        book.setPackaging(bookDto.getIsPackaged());
 
         Publisher publisher = publisherRepository.findByName(bookDto.getPublisher())
                 .orElseGet(() -> publisherRepository.save(new Publisher(bookDto.getPublisher())));
@@ -136,6 +145,13 @@ public class BookServiceImpl implements BookService {
             Series series = seriesRepository.findByName(bookDto.getSeriesInfo().getSeriesName())
                     .orElseGet(() -> seriesRepository.save(new Series(bookDto.getSeriesInfo().getSeriesName())));
             book.setSeries(series);
+        }
+
+        List<Category> categories = categoryRepository.findAllById(bookDto.getCategoryIds());
+        for (Category category : categories) {
+            BookCategory bookCategory = new BookCategory();
+            bookCategory.setCategory(category);
+            book.addBookCategory(bookCategory);
         }
 
         return book;

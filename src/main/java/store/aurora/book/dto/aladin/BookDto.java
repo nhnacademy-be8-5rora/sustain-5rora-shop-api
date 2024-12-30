@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
@@ -21,8 +24,9 @@ public class BookDto {
     private int priceSales;
     private int priceStandard;
     private String cover;
-
-    // SeriesInfo를 별도의 클래스에 매핑
+    private int stock;
+    private Boolean isForSale = false;
+    private Boolean isPackaged = false;
     private SeriesInfo seriesInfo;
 
     @Data
@@ -30,6 +34,8 @@ public class BookDto {
     @NoArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class SeriesInfo {
-        private String seriesName; // 시리즈 이름
+        private String seriesName;
     }
+    private List<Long> categoryIds; // 선택된 카테고리 ID 리스트
+
 }

@@ -3,16 +3,15 @@ package store.aurora.book.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.dto.BookDetailsDto;
 import store.aurora.book.dto.BookDetailsUpdateDTO;
 import store.aurora.book.dto.BookRequestDTO;
 import store.aurora.book.dto.BookSalesInfoUpdateDTO;
-import store.aurora.book.dto.aladin.BookDetailDto;
 import store.aurora.book.dto.aladin.BookDto;
-import store.aurora.book.dto.aladin.BookRequestDtoEx;
-import store.aurora.book.entity.Book;
 import store.aurora.book.service.BookAuthorService;
 import store.aurora.book.service.BookImageService;
 import store.aurora.book.service.BookService;
@@ -46,17 +45,25 @@ public class BookController {
 
     // API 도서 등록
     @PostMapping("/aladin/register")
-    public ResponseEntity<Void> registerApiBook(@ModelAttribute BookRequestDtoEx bookRequestDto) {
-        bookService.saveBookFromApi(bookRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).build(); // HTTP 201 Created 응답
+    public ResponseEntity<Void> registerApiBook(@ModelAttribute BookDto bookDto,
+                                                @RequestParam(value = "additionalImages", required = false) List<MultipartFile> additionalImages
+    ) {
+        bookService.saveBookFromApi(bookDto, additionalImages);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     // 직접 도서 등록
-    @PostMapping("/register/direct")
-    public ResponseEntity<Void> registerDirectBook(@ModelAttribute BookRequestDtoEx bookRequestDto) {
-        bookService.saveDirectBook(bookRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).build(); // HTTP 201 Created 응답
+    @PostMapping(value = "/direct/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> registerDirectBook(@ModelAttribute BookDto bookDto,
+                                                   @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
+                                                   @RequestParam(value = "additionalImages", required = false) List<MultipartFile> additionalImages
+    ) {
+        bookService.saveDirectBook(bookDto, coverImage, additionalImages);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
+
+
 
 
     @PostMapping

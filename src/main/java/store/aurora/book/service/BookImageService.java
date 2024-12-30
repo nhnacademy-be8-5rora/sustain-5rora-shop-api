@@ -9,8 +9,11 @@ import store.aurora.book.entity.Book;
 import java.util.List;
 
 public interface BookImageService {
-    void processAndSaveImages(Book book, List<MultipartFile> uploadedImages);
     void processApiImages(Book book, String coverUrl, List<MultipartFile> uploadedImages);
+
+    void handleImageUpload(Book book, MultipartFile image, boolean isThumbnail);
+
+    void handleAdditionalImages(Book book, List<MultipartFile> additionalImages);
 
     String getThumbnailPath(Book book);
 }

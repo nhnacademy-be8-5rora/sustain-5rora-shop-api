@@ -1,17 +1,16 @@
 package store.aurora.book.service;
 
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.dto.*;
-import store.aurora.book.dto.aladin.BookDetailDto;
 import store.aurora.book.dto.aladin.BookDto;
-import store.aurora.book.dto.aladin.BookRequestDtoEx;
 import store.aurora.book.entity.Book;
 
 import java.util.List;
 
 public interface BookService {
-    void saveBookFromApi(BookRequestDtoEx bookRequestDto);
-
-    void saveDirectBook(BookRequestDtoEx bookRequestDto);
+    void saveDirectBook(BookDto bookDto, MultipartFile coverImage, List<MultipartFile> additionalImages);
+    void saveBookFromApi(BookDto bookDto, List<MultipartFile> additionalImages);
 
     BookDto findBookDtoById(String isbn13);
 

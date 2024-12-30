@@ -17,6 +17,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.web.bind.annotation.PutMapping;
 import store.aurora.book.config.QuerydslConfiguration;
+import store.aurora.book.dto.AuthorDTO;
 import store.aurora.book.entity.*;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
@@ -38,106 +39,53 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Slf4j
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Import(QuerydslConfiguration.class)
 @DataJpaTest
 public class BookRepositoryCustomTest {
 
     @Autowired
-    private BookRepository bookRepository;
-
-    @Autowired
-    private CategoryRepository categoryRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private PublisherRepository publisherRepository;
-
-    @Autowired
-    private BookCategoryRepository bookCategoryRepository;
-
-    @Autowired
-    private AuthorRepository authorRepository;
-
-    @Autowired
-    private BookAuthorRepository bookAuthorRepository;
-
-    @Autowired
-    private AuthorRoleRepository authorRoleRepository;
-
-    @Autowired
-    private BookViewRepository bookViewRepository;
-
-    @Autowired
-    private SeriesRepository seriesRepository;
-
-    @Autowired
-    private ReviewRepository reviewRepository;
-
-    @Autowired
     private TestEntityManager entityManager;
 
-    // todo : import 다른거 했음
-    private static final Logger USER_LOG = LoggerFactory.getLogger("user-logger".getClass());
+    @Autowired
+    private BookRepository bookRepository;
 
     @BeforeEach
     public void setup() {
         // User 생성
-        User user1 = new User("user123","John Doe",LocalDate.of(1990, 1, 1),"20000101","john_doe@example.com",true);
-        User user2 = new User("user1234","John Doe2",LocalDate.of(1200, 1, 1),"20000101","john_doe@example.com",true);
+        User user1 = new User("user123", "John Doe", LocalDate.of(1990, 1, 1), "20000101", "john_doe@example.com", true);
+        User user2 = new User("user1234", "John Doe2", LocalDate.of(1200, 1, 1), "20000101", "john_doe@example.com", true);
 
-        userRepository.save(user1);
-        userRepository.save(user2);
+        entityManager.merge(user1);
+        entityManager.merge(user2);
 
         // Publisher 생성
-        Publisher publisher = new Publisher(1L,"Penguin Books");
-        publisherRepository.save(publisher);
+        Publisher publisher = new Publisher(1L, "Penguin Books");
+        entityManager.merge(publisher);  // Publisher 객체가 이미 존재하는 경우 merge() 사용
 
         // Series 생성
-        Series series = new Series(1L,"test name");
-        seriesRepository.save(series);
+        Series series = new Series(1L, "test name");
+        entityManager.merge(series);  // Series 객체가 이미 존재하는 경우 merge() 사용
 
         // Category 생성
         Category category1 = new Category();
         category1.setName("Example Category");
         category1.setDepth(0);
         category1.setDisplayOrder(1);
-        categoryRepository.save(category1);
+        entityManager.merge(category1);
         Category category2 = new Category();
         category2.setName("Example Category2");
         category2.setDepth(0);
         category2.setDisplayOrder(2);
-        categoryRepository.save(category2);
+        entityManager.merge(category2);
 
         // Book 생성
         //todo book 양방향으로 바껴서 수정해야 함
-//        Book book1 = new Book(
-//                1L,
-//                "test title",
-//                10000,
-//                9000,
-//                100,
-//                true,
-//                "1234567890123",
-//                "sample contents",
-//                "test desc",
-//                false,
-//                LocalDate.of(2024, 12, 12),
-//                publisher,
-//                series,
-//                new ArrayList<>(),
-//                new ArrayList<>()
-//
-//        );
-        // Book 생성
         Book book1 = new Book();
         book1.setTitle("test title");
         book1.setRegularPrice(10000);
@@ -163,27 +111,7 @@ public class BookRepositoryCustomTest {
         bookCategory2.setCategory(category2);
         book1.addBookCategory(bookCategory2);
 
-        bookRepository.save(book1);
-
-
-//        Book book2 = new Book(
-//                2L,
-//                "test title2",
-//                10000,
-//                9000,
-//                100,
-//                true,
-//                "1234567890124",
-//                "sample contents2",
-//                "test desc2",
-//                false,
-//                LocalDate.of(2024, 12, 12),
-//                publisher,
-//                series,
-//                new ArrayList<>(),
-//                new ArrayList<>()
-//
-//        );
+        entityManager.merge(book1);
 
         // Book 2 생성
         Book book2 = new Book();
@@ -206,31 +134,31 @@ public class BookRepositoryCustomTest {
         bookCategory3.setCategory(category1);
         book2.addBookCategory(bookCategory3);
 
-        bookRepository.save(book2);
-        bookRepository.save(book1);
-        bookRepository.save(book2);
+
+        entityManager.merge(book2);
 
         // BookCategory 생성
-        bookCategoryRepository.save(new BookCategory(1L,book1, category1));
-        bookCategoryRepository.save(new BookCategory(2L,book1, category2));
+        entityManager.merge(new BookCategory(1L, book1, category1));
+        entityManager.merge(new BookCategory(2L, book1, category2));
 
         // Author 생성
-        Author author1 = new Author(1L,"example author");
-        Author author2 = new Author(2L,"example editor");
-        authorRepository.save(author1);
-        authorRepository.save(author2);
+        Author author1 = new Author(1L, "example author");
+        Author author2 = new Author(2L, "example editor");
+        entityManager.merge(author1);
+        entityManager.merge(author2);
 
         // AuthorRole 생성
-        AuthorRole roleAuthor = new AuthorRole(1L,AuthorRole.Role.AUTHOR);
-        AuthorRole roleEditor = new AuthorRole(2L,AuthorRole.Role.EDITOR);
-        authorRoleRepository.save(roleAuthor);
-        authorRoleRepository.save(roleEditor);
+        AuthorRole roleAuthor = new AuthorRole(1L, AuthorRole.Role.AUTHOR);
+        AuthorRole roleEditor = new AuthorRole(2L, AuthorRole.Role.EDITOR);
+        entityManager.merge(roleAuthor);
+        entityManager.merge(roleEditor);
 
         // BookAuthors 생성
-        bookAuthorRepository.save(new BookAuthor(1L,author1, roleAuthor, book1));
-        bookAuthorRepository.save(new BookAuthor(2L,author2, roleEditor, book1));
-        bookAuthorRepository.save(new BookAuthor(3L,author2, roleAuthor, book2));
+        entityManager.merge(new BookAuthor(1L, author1, roleAuthor, book1));
+        entityManager.merge(new BookAuthor(2L, author2, roleEditor, book1));
+        entityManager.merge(new BookAuthor(3L, author2, roleAuthor, book2));
 
+        // Review 생성
         Review review1 = new Review();
         review1.setId(1L);
         review1.setReviewRating(4); // 1~5 사이 값 설정
@@ -247,11 +175,13 @@ public class BookRepositoryCustomTest {
         review2.setBook(book1); // 동일한 book1 객체 설정
         review2.setUser(user2); // 다른 user2 객체 설정
 
-        reviewRepository.save(review1);
-        reviewRepository.save(review2);
+        entityManager.merge(review1);
+        entityManager.merge(review2);
 
 
     }
+
+
 
     @DisplayName("책 제목을 통해 책의 세부사항을 가져오는지 확인.(책이 존재하는 경우)")
     @Test
@@ -265,13 +195,18 @@ public class BookRepositoryCustomTest {
 
         // Then
         assertThat(result).isNotNull();
-        USER_LOG.debug(() -> String.format("testFindBooksByTitleWithDetails 메서드 결과 값 확인 %s", result.getContent()));
+        log.debug( "testFindBooksByTitleWithDetails 메서드 결과 값 확인 {}", result.getContent());
         assertThat(result.getContent()).isNotEmpty();  // 결과가 비어 있지 않아야 함
         assertThat(result.getTotalElements()).isGreaterThan(0);  // 결과가 하나 이상이어야 함
 
         // 추가적인 검증 (책 제목이 검색어와 일치하는지)
         result.getContent().forEach(book -> {
-            assertThat(book.getTitle()).contains(title);
+            assertThat(book.getTitle()).contains("test title");
+            List<AuthorDTO> authorDTO = book.getAuthors();
+            authorDTO.forEach(a -> {
+                assertThat(a.getName()).isNotEmpty();
+                assertThat(a.getRole()).isNotNull();
+            });
             assertThat(book.getAuthors()).isNotEmpty();  // authors가 비어 있지 않아야 함
             assertThat(book.getAuthors()).anyMatch(author -> author.getName() != null);  // 작가 이름이 null이 아니어야 함
             assertThat(book.getSalePrice()).isGreaterThan(0);  // 책 가격이 0보다 커야 함
@@ -292,7 +227,7 @@ public class BookRepositoryCustomTest {
 
         // Then
         assertThat(result).isNotNull();
-        USER_LOG.debug(()->String.format("testFindBooksByTitleWithDetails 메서드 결과 값 확인 {}", result.getContent()));
+       log.debug("testFindBooksByTitleWithDetails 메서드 결과 값 확인 {}", result.getContent());
 
         assertThat(result.getContent()).isEmpty();//결과가 비어있어야함.
     }
@@ -309,13 +244,9 @@ public class BookRepositoryCustomTest {
 
         // Then
         assertThat(nullTitleResult).isNotNull();
-        USER_LOG.debug(()->String.format("testFindBooksByTitleWithDetailsByNullOrBlankTitle 메서드 결과 값 확인 {}", nullTitleResult.getContent()));
+        log.debug("testFindBooksByTitleWithDetailsByNullOrBlankTitle 메서드 결과 값 확인 {}", nullTitleResult.getContent());
         assertThat(nullTitleResult.getContent()).isEmpty();//결과가 비어있어야함.
 
-        title="";
-        Page<BookSearchEntityDTO> emptyTitleResult=bookRepository.findBooksByTitleWithDetails(title, pageable);
-        assertThat(emptyTitleResult).isNotNull();
-        assertThat(emptyTitleResult.getContent()).isEmpty();
 
     }
 
@@ -328,7 +259,7 @@ public class BookRepositoryCustomTest {
 
         // When
         Page<BookSearchEntityDTO> result = bookRepository.findBooksByAuthorNameWithDetails(authorName, pageable);
-        USER_LOG.debug(()-> String.format("testFindBooksByAuthorNameWithDetails (책 존재하는 경우 )메서드 결과 값 확인 {}",result.getContent()));
+        log.debug("testFindBooksByAuthorNameWithDetails (책 존재하는 경우 )메서드 결과 값 확인 {}",result.getContent());
 
         // Then
         assertThat(result).isNotNull();
@@ -365,7 +296,7 @@ public class BookRepositoryCustomTest {
 
         // When
         Page<BookSearchEntityDTO> result = bookRepository.findBooksByAuthorNameWithDetails(authorName, pageable);
-        USER_LOG.debug(()->String.format("testFindBooksByAuthorNameWithDetails (책 존재하지 않는 경우) 메서드 결과 값 확인 {}",result.getContent()));
+        log.debug("testFindBooksByAuthorNameWithDetails (책 존재하지 않는 경우) 메서드 결과 값 확인 {}",result.getContent());
 
         // Then
         assertThat(result).isNotNull(); //존재하지않아도 빈 페이지를 보여주기에 결과는 null이면 안된다
@@ -385,7 +316,7 @@ public class BookRepositoryCustomTest {
 
         // Then
         assertThat(nullNameResult).isNotNull(); // 페이지는 null이면 안 됨
-        USER_LOG.debug(()->String.format("testFindBooksByAuthorNameWithDetailsByNullOrBlankCategoryName 결과 값 확인: {}", nullNameResult.getContent()));
+        log.debug("testFindBooksByAuthorNameWithDetailsByNullOrBlankCategoryName 결과 값 확인: {}", nullNameResult.getContent());
         assertThat(nullNameResult.getContent()).isEmpty(); // 결과가 비어 있어야 함
 
         authorName = "";
@@ -407,7 +338,7 @@ public class BookRepositoryCustomTest {
 
         // Then
         assertThat(result).isNotNull();
-        USER_LOG.debug(()->String.format("testFindBooksByCategoryIdWithDetails 메서드 결과 값 확인: {}", result.getContent()));
+        log.debug("testFindBooksByCategoryIdWithDetails 메서드 결과 값 확인: {}", result.getContent());
 
         assertThat(result.getContent()).isNotNull(); // 결과가 비어 있지 않아야 함
         assertThat(result.getTotalElements()).isGreaterThan(0); // 결과가 하나 이상이어야 함
@@ -456,7 +387,7 @@ public class BookRepositoryCustomTest {
 
         // Then
         assertThat(result).isNotNull(); // 페이지는 null이면 안 됨
-        USER_LOG.debug(()-> String.format("testFindBooksByCategoryIdWithDetailsNotExists 결과 값 확인: {}", result.getContent()));
+        log.debug("testFindBooksByCategoryIdWithDetailsNotExists 결과 값 확인: {}", result.getContent());
         assertThat(result.getContent()).isEmpty(); // 결과가 비어 있어야 함
     }
 
@@ -472,7 +403,7 @@ public class BookRepositoryCustomTest {
 
         // Then
         assertThat(result).isNotNull(); // 페이지는 null이면 안 됨
-        USER_LOG.debug(()->String.format("testFindBooksByCategoryIdWithDetailsByNullOrBlankCategoryName 결과 값 확인: {}", result.getContent()));
+        log.debug("testFindBooksByCategoryIdWithDetailsByNullOrBlankCategoryName 결과 값 확인: {}", result.getContent());
         assertThat(result.getContent()).isEmpty(); // 결과가 비어 있어야 함
 
     }

@@ -72,10 +72,10 @@ INSERT INTO categories (name, parent_id, depth, display_order) VALUES ('Ex Cate 
 
 
 insert into books (title, regular_price, sale_price, is_sale, explanation, publisher_id, series_id, packaging, publish_date, isbn, stock, contents)
-values ('test title', 10000, 9000, TRUE, 'test desc', 1, 1, FALSE, '2024-12-12', '1234567890123', 100, 'sample contents');
+values ('test title', 10000, 9000, TRUE, 'test desc', 1, 1, FALSE, '2024-12-13', '1234567890123', 100, 'sample contents');
 
 insert into books (title, regular_price, sale_price, is_sale, explanation, publisher_id, series_id, packaging, publish_date, isbn, stock, contents)
-values ('test title2', 10000, 9000, TRUE, 'test desc2', 1, 1, FALSE, '2024-12-12', '1234567890124', 100, 'sample contents2');
+values ('test title2', 10000, 3000, TRUE, 'test desc2', 1, 1, FALSE, '2024-12-12', '1234567890124', 100, 'sample contents2');
 
 insert into book_images (is_thumbnail, book_id, file_path)
 values (TRUE, 1, 'https://kr1-api-object-storage.nhncloudservice.com/v1/AUTH_c20e3b10d61749a2a52346ed0261d79e/aurora/148699bf-58cb-4f68-bd04-615b57126fd0.png');
@@ -113,10 +113,10 @@ VALUES
     (2, '192.168.1.3', 'user123');  -- Book ID 2 viewed by user123 with IP 192.168.1.3
 
 -- -- Review 데이터 삽입
--- INSERT INTO reviews (review_rating, review_content, review_create_at, book_id, user_id)
--- VALUES
---     (5, 'Great book, highly recommended!', '2024-12-12 15:00:00', 1, 'user123'),
---     (4, 'Good read, but a bit slow in the middle.', '2024-12-12 15:05:00', 2, 'user1234');
+INSERT INTO reviews (review_rating, review_content, review_create_at, book_id, user_id)
+VALUES
+    (5, 'Great book, highly recommended!', '2024-12-12 15:00:00', 1, 'user123'),
+    (4, 'Good read, but a bit slow in the middle.', '2024-12-12 15:05:00', 1, 'user1234');
 
 -- ///////////////////// 포인트 ///////////////////////
 INSERT INTO point_policies (point_policy_name, point_policy_type, point_policy_value) VALUES

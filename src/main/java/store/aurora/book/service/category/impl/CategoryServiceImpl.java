@@ -3,6 +3,7 @@ package store.aurora.book.service.category.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store.aurora.book.dto.category.CategoryDTO;
 import store.aurora.book.dto.category.CategoryRequestDTO;
 import store.aurora.book.dto.category.CategoryResponseDTO;
 import store.aurora.book.entity.Book;
@@ -116,6 +117,25 @@ public class CategoryServiceImpl implements CategoryService {
                 .map(BookCategory::getBook)
                 .toList();
     }
+
+    @Override
+    public List<CategoryDTO> findCategoryByParentId(Long categoryId) {
+        List<Category> categories;
+
+        if (categoryId == null || categoryId == 0L) {
+            // categoryId가 null이거나 0인 경우 부모가 없는 카테고리 조회 (최상위 카테고리)
+            categories = categoryRepository.findByParentIsNull();
+        } else {
+            // 주어진 categoryId로 카테고리 조회
+            categories = categoryRepository.findByParentId(categoryId);
+        }
+
+        // Category 엔티티를 CategoryDTO로 변환
+        return categories.stream()
+                .map(category -> new CategoryDTO(category.getId(), category.getName()))
+                .collect(Collectors.toList());
+    }
+
 
 
 

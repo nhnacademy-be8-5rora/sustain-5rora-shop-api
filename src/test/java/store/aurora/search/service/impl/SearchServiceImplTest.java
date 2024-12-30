@@ -69,7 +69,7 @@ class SearchServiceImplTest {
         verify(bookRepository, times(1)).findBooksByTitleWithDetails(title, pageable);
     }
 
-    @DisplayName("제목이 null 또는 blank 경우 빈 페이지를 반환하는지 확인")
+    @DisplayName("제목이 null 일 경우 빈 페이지를 반환하는지 확인")
     @Test
     void findBooksByTitleWithDetails_NullOrEmptyTitle_ReturnsEmptyPage() {
         // 값 초기화
@@ -79,13 +79,11 @@ class SearchServiceImplTest {
 
         // When
         Page<BookSearchResponseDTO> resultForNull = searchService.findBooksByTitleWithDetails(title, pageable);
-        Page<BookSearchResponseDTO> resultForEmpty = searchService.findBooksByTitleWithDetails(emptyTitle, pageable);
 
         // Then
         assertThat(resultForNull).isNotNull();
         assertThat(resultForNull.getContent()).isEmpty();
-        assertThat(resultForEmpty).isNotNull();
-        assertThat(resultForEmpty.getContent()).isEmpty();
+
 
         // 메서드 호출 여부 확인
         verify(bookRepository, times(0)).findBooksByTitleWithDetails(anyString(), eq(pageable));

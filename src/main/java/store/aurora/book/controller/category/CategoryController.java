@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import store.aurora.book.dto.category.CategoryDTO;
 import store.aurora.book.dto.category.CategoryRequestDTO;
 import store.aurora.book.dto.category.CategoryResponseDTO;
 import store.aurora.book.dto.response.BookResponseDTO;
@@ -14,6 +15,7 @@ import store.aurora.book.entity.category.Category;
 import store.aurora.book.service.category.CategoryService;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -61,4 +63,11 @@ public class CategoryController {
                 .toList();
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/{categoryId}")
+    public ResponseEntity<List<CategoryDTO>> getCategoriesByParentId(@PathVariable Long categoryId) {
+        List<CategoryDTO> categoryList = categoryService.findCategoryByParentId(Objects.requireNonNullElse(categoryId, 0L));
+        return ResponseEntity.ok(categoryList);
+    }
+
 }

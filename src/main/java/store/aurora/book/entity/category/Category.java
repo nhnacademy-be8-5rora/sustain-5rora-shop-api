@@ -1,5 +1,7 @@
 package store.aurora.book.entity.category;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,9 +26,14 @@ public class Category {
     @Column(nullable = false, length = 20)
     private String name;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
+    @JsonBackReference // 관계의 "inverse"
     private Category parent;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonManagedReference // 관계의 "owner"
+    private List<Category> children = new ArrayList<>();
 
     @Column(nullable = false)
     private Integer depth;
@@ -36,6 +43,11 @@ public class Category {
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookCategory> bookCategories = new ArrayList<>();
+
+    public void addChild(Category child) {
+        children.add(child);
+        child.setParent(this);
+    }
 
     public void addBookCategory(BookCategory bookCategory) {
         if (!bookCategories.contains(bookCategory)) {

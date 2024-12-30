@@ -8,6 +8,9 @@ import store.aurora.book.entity.Book;
 import java.util.List;
 
 public interface CategoryService {
+    // 최적화된 계층형 데이터 가져오기
+    List<CategoryResponseDTO> getCategoryHierarchy();
+
     void createCategory(CategoryRequestDTO requestDTO);
     void updateCategoryName(Long categoryId, String newName);
     void deleteCategory(Long categoryId);

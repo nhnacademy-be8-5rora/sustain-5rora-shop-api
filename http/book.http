@@ -50,7 +50,7 @@ Content-Type: application/json
 PATCH localhost:8083/api/books/1/packaging?packaging=false
 
 ### 카테고리 생성1
-POST localhost:8083/api/categories
+POST localhost:8280/api/categories
 Content-Type: application/json
 
 {
@@ -58,7 +58,7 @@ Content-Type: application/json
   "parentId": null
 }
 ### 카테고리 생성2
-POST localhost:8083/api/categories
+POST localhost:8280/api/categories
 Content-Type: application/json
 
 {
@@ -118,7 +118,7 @@ Content-Type: application/json
 }
 
 ### 태그 등록1
-POST http://localhost:8083/api/tags
+POST http://localhost:8280/api/tags
 Content-Type: application/json
 
 {

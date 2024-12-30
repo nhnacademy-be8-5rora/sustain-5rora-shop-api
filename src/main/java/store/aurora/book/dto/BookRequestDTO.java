@@ -19,6 +19,9 @@ public class BookRequestDTO {
     @NotBlank
     private String title;
 
+    @NotBlank
+    private String author;
+
     @NotNull
     @Positive
     private int regularPrice;

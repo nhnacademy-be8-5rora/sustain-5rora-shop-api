@@ -26,6 +26,33 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final BookCategoryRepository bookCategoryRepository;
 
+
+    @Override
+    public List<CategoryResponseDTO> getCategoryHierarchy() {
+        // 루트 카테고리를 한 번의 쿼리로 가져옵니다.
+        List<Category> rootCategories = categoryRepository.findAllRootCategoriesWithChildren();
+
+        // 트리 구조 생성
+        return rootCategories.stream()
+                .map(this::buildCategoryHierarchy)
+                .toList();
+    }
+
+    private CategoryResponseDTO buildCategoryHierarchy(Category category) {
+        // 현재 카테고리를 DTO로 변환
+        CategoryResponseDTO dto = new CategoryResponseDTO();
+        dto.setId(category.getId());
+        dto.setName(category.getName());
+        dto.setDepth(category.getDepth());
+
+        // 하위 카테고리 처리 (재귀 호출)
+        dto.setChildren(category.getChildren().stream()
+                .map(this::buildCategoryHierarchy)
+                .toList());
+
+        return dto;
+    }
+
     @Transactional
     public void createCategory(CategoryRequestDTO requestDTO) {
         validateCategoryName(requestDTO.getName());
@@ -151,14 +178,20 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     private CategoryResponseDTO mapToResponseDTO(Category category) {
-        return new CategoryResponseDTO(
-                category.getId(),
-                category.getName(),
-                category.getParent() != null ? category.getParent().getId() : null,
-                category.getParent() != null ? category.getParent().getName() : null,
-                category.getDepth(),
-                category.getDisplayOrder()
-        );
+        CategoryResponseDTO dto = new CategoryResponseDTO();
+        dto.setId(category.getId());
+        dto.setName(category.getName());
+        dto.setParentId(category.getParent() != null ? category.getParent().getId() : null);
+        dto.setDepth(category.getDepth());
+        dto.setDisplayOrder(category.getDisplayOrder());
+
+        // 자식 카테고리를 재귀적으로 매핑
+        List<CategoryResponseDTO> childDTOs = category.getChildren().stream()
+                .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
+        dto.setChildren(childDTOs);
+
+        return dto;
     }
 
 }

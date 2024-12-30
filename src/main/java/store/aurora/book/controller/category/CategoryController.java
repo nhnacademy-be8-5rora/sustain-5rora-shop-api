@@ -26,8 +26,14 @@ public class CategoryController {
 
     @GetMapping
     public ResponseEntity<List<CategoryResponseDTO>> getAllCategories() {
-        List<CategoryResponseDTO> categories = categoryService.getAllCategories();
-        return ResponseEntity.ok(categories);
+        return ResponseEntity.ok(categoryService.getAllCategories());
+    }
+
+    // 계층형 카테고리 데이터 반환
+    @GetMapping("/hierarchy")
+    public ResponseEntity<List<CategoryResponseDTO>> getCategoryHierarchy() {
+        List<CategoryResponseDTO> hierarchy = categoryService.getCategoryHierarchy();
+        return ResponseEntity.ok(hierarchy);
     }
 
     @PostMapping

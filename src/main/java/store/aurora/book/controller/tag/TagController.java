@@ -9,7 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import store.aurora.book.dto.tag.BookTagRequestDto;
 import store.aurora.book.dto.tag.TagRequestDto;
+import store.aurora.book.dto.tag.TagResponseDto;
 import store.aurora.book.service.tag.TagService;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -42,5 +45,9 @@ public class TagController {
         return ResponseEntity.ok().build();
     }
 
-
+    @GetMapping
+    public ResponseEntity<List<TagResponseDto>> getAllTags() {
+        List<TagResponseDto> tags = tagService.getAllTags();
+        return ResponseEntity.ok(tags);
+    }
 }

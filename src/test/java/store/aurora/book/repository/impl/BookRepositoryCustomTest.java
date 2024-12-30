@@ -73,19 +73,19 @@ public class BookRepositoryCustomTest {
         entityManager.merge(series);  // Series 객체가 이미 존재하는 경우 merge() 사용
 
         // Category 생성
-        Category category1 = new Category(1L, "Example Category", null, 0, 1, new ArrayList<>());
-        Category category2 = new Category(2L, "Example Category2", null, 0, 2, new ArrayList<>());
+        Category category1 = new Category(1L, "Example Category", null, new ArrayList<>(), 0, 1, new ArrayList<>());
+        Category category2 = new Category(2L, "Example Category2", null, new ArrayList<>(), 0, 2, new ArrayList<>());
         entityManager.merge(category1);
         entityManager.merge(category2);
 
         // Book 생성
         Book book1 = new Book(
                 1L, "test title", 10000, 9000, 100, true, "1234567890123", "sample contents", "test desc", false,
-                LocalDate.of(2024, 12, 12), publisher, series, new ArrayList<>(), new ArrayList<>()
+                LocalDate.of(2024, 12, 12), publisher, series, new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
         );
         Book book2 = new Book(
                 2L, "test title2", 10000, 9000, 100, true, "1234567890124", "sample contents2", "test desc2", false,
-                LocalDate.of(2024, 12, 12), publisher, series, new ArrayList<>(), new ArrayList<>()
+                LocalDate.of(2024, 12, 12), publisher, series, new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
         );
 
         entityManager.merge(book1);
@@ -181,7 +181,7 @@ public class BookRepositoryCustomTest {
 
         // Then
         assertThat(result).isNotNull();
-       log.debug("testFindBooksByTitleWithDetails 메서드 결과 값 확인 {}", result.getContent());
+        log.debug("testFindBooksByTitleWithDetails 메서드 결과 값 확인 {}", result.getContent());
 
         assertThat(result.getContent()).isEmpty();//결과가 비어있어야함.
     }

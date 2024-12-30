@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import store.aurora.book.dto.category.CategoryDTO;
 import store.aurora.book.dto.category.CategoryResponseDTO;
 import store.aurora.book.entity.category.Category;
 
@@ -25,5 +26,9 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     @EntityGraph(attributePaths = {"bookCategories.book"})
     Optional<Category> findCategoryWithBooksById(Long id);
+
+    List<Category> findByParentId(Long parentId);
+    List<Category> findByParentIsNull();
+
 }
 

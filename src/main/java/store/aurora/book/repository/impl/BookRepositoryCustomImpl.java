@@ -74,9 +74,8 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         // 이미지를 하나만 가져오는 쿼리
         var bookImagePathSubquery = JPAExpressions.select(bookImage.filePath)
                 .from(bookImage)
-                .where(bookImage.book.id.eq(book.id))
-                .orderBy(bookImage.id.asc())
-                .limit(1);
+                .where(bookImage.book.id.eq(book.id)
+                        .and(bookImage.isThumbnail.isTrue()));
 
         // 조회수를 가져오는 서브쿼리
         var viewCountSubquery = JPAExpressions.select(bookView.count())
@@ -176,9 +175,9 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         // 서브쿼리: 첫 번째 이미지 경로 가져오기
         var bookImagePathSubquery = JPAExpressions.select(bookImage.filePath)
                 .from(bookImage)
-                .where(bookImage.book.id.eq(book.id))
-                .orderBy(bookImage.id.asc())
-                .limit(1);
+                .where(bookImage.book.id.eq(book.id)
+                        .and(bookImage.isThumbnail.isTrue()));
+
 
         // 조회수를 가져오는 서브쿼리
         var viewCountSubquery = JPAExpressions.select(bookView.count())
@@ -313,9 +312,10 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         // 서브쿼리: 첫 번째 이미지 경로 가져오기
         var bookImagePathSubquery = JPAExpressions.select(bookImage.filePath)
                 .from(bookImage)
-                .where(bookImage.book.id.eq(book.id))
-                .orderBy(bookImage.id.asc())
-                .limit(1);
+                .where(bookImage.book.id.eq(book.id)
+                        .and(bookImage.isThumbnail.isTrue()));
+
+
 
         // 조회수를 가져오는 서브쿼리
         var viewCountSubquery = JPAExpressions.select(bookView.count())

@@ -8,8 +8,11 @@ import store.aurora.user.entity.Address;
 import store.aurora.user.entity.User;
 import store.aurora.user.entity.UserAddress;
 import store.aurora.user.exception.UserAddressAlreadyExistsException;
+import store.aurora.user.exception.UserAddressNotFoundException;
 import store.aurora.user.repository.UserAddressRepository;
 import store.aurora.user.service.UserService;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -34,5 +37,34 @@ public class UserAddressService {
 
         userAddressRepository.save(
                 new UserAddress(addrDetail, address, receiver, userService.getUser(userId)));
+    }
+
+    public List<UserAddress> getUserAddresses(String userId) {
+        return userAddressRepository.findByUserId(userId);
+    }
+
+    @Transactional
+    public void updateUserAddress(Long userAddressId, String receiver, String addrDetail, String roadAddress, String userId) {
+        UserAddress userAddress = getUserAddressByIdAndUserId(userAddressId, userId);
+
+        // Address 수정: 도로명 주소가 변경되었을 경우 새로운 Address 생성 또는 조회
+        Address address = addressService.saveOrGetAddress(roadAddress);
+
+        // UserAddress 필드 업데이트
+        userAddress.setReceiver(receiver);
+        userAddress.setAddrDetail(addrDetail);
+        userAddress.setAddress(address);
+    }
+
+    @Transactional
+    public void deleteUserAddress(Long userAddressId, String userId) {
+        UserAddress userAddress = getUserAddressByIdAndUserId(userAddressId, userId);
+        userAddressRepository.delete(userAddress);
+    }
+
+    // 특정 사용자의 배송지 조회
+    private UserAddress getUserAddressByIdAndUserId(Long userAddressId, String userId) {
+        return userAddressRepository.findByIdAndUserId(userAddressId, userId)
+                .orElseThrow(() -> new UserAddressNotFoundException(userAddressId));
     }
 }

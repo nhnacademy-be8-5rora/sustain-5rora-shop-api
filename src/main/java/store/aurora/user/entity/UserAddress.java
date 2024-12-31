@@ -13,10 +13,12 @@ public class UserAddress {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Setter
     @NotNull
     @Column(name = "user_addr_receiver", length = 30, nullable = false)
     private String receiver;
 
+    @Setter
     @NotNull
     @Column(name = "user_addr_detail", nullable = false)
     private String addrDetail;
@@ -28,6 +30,7 @@ public class UserAddress {
     private User user;
 
     // 주소 엔터티와 다대일 연결
+    @Setter
     @NotNull
     @ManyToOne
     @JoinColumn(name = "addr_id", nullable = false)

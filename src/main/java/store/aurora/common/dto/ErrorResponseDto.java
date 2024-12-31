@@ -13,9 +13,9 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class ErrorResponseDto {
-    private String title;
+    private String errorMsg;
     @JsonSerialize(using = ToStringSerializer.class)
-    private Integer status;
+    private Integer httpStatus;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime timestamp;
 }

@@ -328,7 +328,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
             case "saleprice" -> book.salePrice;
             case "publishdate" -> book.publishDate;
             case "title" -> book.title;
-            case "reviewrating" -> review.reviewRating.avg(); // 리뷰 평점으로 정렬
+            case "reviewrating" -> averageReviewRatingSubquery;
             default -> book.title; // 기본값
         };
 

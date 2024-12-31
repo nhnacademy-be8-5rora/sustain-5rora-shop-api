@@ -18,6 +18,7 @@ import store.aurora.book.repository.category.CategoryRepository;
 import store.aurora.book.service.category.CategoryService;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -119,20 +120,19 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<CategoryDTO> findCategoryByParentId(Long categoryId) {
-        List<Category> categories;
-
-        if (categoryId == null || categoryId == 0L) {
-            // categoryId가 null이거나 0인 경우 부모가 없는 카테고리 조회 (최상위 카테고리)
-            categories = categoryRepository.findByParentIsNull();
-        } else {
-            // 주어진 categoryId로 카테고리 조회
-            categories = categoryRepository.findByParentId(categoryId);
+    public CategoryDTO findById(Long categoryId) {
+        Optional<Category> category = categoryRepository.findById(categoryId);
+        CategoryDTO categoryDTO = null;
+        if(category.isPresent()) {
+            categoryDTO= new CategoryDTO(category.get().getId(), category.get().getName(), convertChildrenToDTO(category.get().getChildren()));
         }
+        return categoryDTO;
+    }
 
-        // Category 엔티티를 CategoryDTO로 변환
-        return categories.stream()
-                .map(category -> new CategoryDTO(category.getId(), category.getName()))
+    // 자식 카테고리를 CategoryDTO로 변환하는 메서드
+    private List<CategoryDTO> convertChildrenToDTO(List<Category> children) {
+        return children.stream()
+                .map(child -> new CategoryDTO(child.getId(), child.getName(), convertChildrenToDTO(child.getChildren())))
                 .collect(Collectors.toList());
     }
 

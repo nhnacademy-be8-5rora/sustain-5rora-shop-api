@@ -64,10 +64,10 @@ public class CategoryController {
         return ResponseEntity.ok(response);
     }
 
+
     @GetMapping("/{categoryId}")
-    public ResponseEntity<List<CategoryDTO>> getCategoriesByParentId(@PathVariable Long categoryId) {
-        List<CategoryDTO> categoryList = categoryService.findCategoryByParentId(Objects.requireNonNullElse(categoryId, 0L));
+    public ResponseEntity<CategoryDTO> getCategoriesByParentId(@PathVariable Long categoryId) {
+        CategoryDTO categoryList = categoryService.findById(Objects.requireNonNullElse(categoryId, 0L));
         return ResponseEntity.ok(categoryList);
     }
-
 }

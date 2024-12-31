@@ -24,7 +24,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void createOrder(Order order) {
+    public Order createOrder(Order order) {
         // Order 유효성 검증
         String error = validateOrder(order);
         if(!Objects.isNull(error)){
@@ -32,6 +32,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         orderRepository.save(order);
+        return order;
     }
 
     @Override

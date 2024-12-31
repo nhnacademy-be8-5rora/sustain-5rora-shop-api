@@ -17,5 +17,5 @@ public interface CategoryService {
     List<CategoryResponseDTO> getAllCategories(); // 새로 추가
     List<Book> getBooksByCategoryId(Long categoryId);
 
-    List<CategoryDTO> findCategoryByParentId(Long categoryId);
+    CategoryDTO findById(Long categoryId);
 }

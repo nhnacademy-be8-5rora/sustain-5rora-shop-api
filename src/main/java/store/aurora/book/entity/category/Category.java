@@ -26,7 +26,7 @@ public class Category {
     @Column(nullable = false, length = 20)
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "parent_id")
     @JsonBackReference // 관계의 "inverse"
     private Category parent;
@@ -50,17 +50,8 @@ public class Category {
     }
 
     public void addBookCategory(BookCategory bookCategory) {
-        if (!bookCategories.contains(bookCategory)) {
             bookCategories.add(bookCategory);
             bookCategory.setCategory(this);
-        }
-    }
-
-    public void removeBookCategory(BookCategory bookCategory) {
-        if (bookCategories.contains(bookCategory)) {
-            bookCategories.remove(bookCategory);
-            bookCategory.setCategory(null);
-        }
     }
 
     // 카테고리에서 직접 책 리스트 조회

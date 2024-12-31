@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -14,10 +13,11 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class BookDto {
+public class BookRequestDto {
     private String title;
     private String author;
     private String description;
+    private String contents;
     private String publisher;
     private String pubDate;
     private String isbn13;
@@ -25,8 +25,9 @@ public class BookDto {
     private int priceStandard;
     private String cover;
     private int stock;
-    private Boolean isForSale = false;
-    private Boolean isPackaged = false;
+    private Boolean isForSale = false;  // 기본값 설정
+    private Boolean isPackaged = false; // 기본값 설정
+    // SeriesInfo를 별도의 클래스에 매핑
     private SeriesInfo seriesInfo;
 
     @Data
@@ -34,7 +35,7 @@ public class BookDto {
     @NoArgsConstructor
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class SeriesInfo {
-        private String seriesName;
+        private String seriesName; // 시리즈 이름
     }
     private List<Long> categoryIds; // 선택된 카테고리 ID 리스트
     private List<Long> tagIds; // 선택된 태그 ID 리스트

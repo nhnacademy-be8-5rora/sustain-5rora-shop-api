@@ -63,6 +63,27 @@ public class ObjectStorageService {
         return generatePublicUrl(uniqueFileName);
     }
 
+    public void deleteObject(String objectUrl) {
+        if (objectUrl == null || objectUrl.isEmpty()) {
+            throw new IllegalArgumentException("Object URL is empty or null");
+        }
+
+        // 삭제 URL 생성
+        URI uri = URI.create(objectUrl);
+
+        // REST 요청 실행
+        restTemplate.execute(uri, HttpMethod.DELETE, request -> {
+            request.getHeaders().add("X-Auth-Token", tokenId);
+        }, response -> {
+            if (response.getStatusCode() != HttpStatus.NO_CONTENT) {
+                String error = StreamUtils.copyToString(response.getBody(), StandardCharsets.UTF_8);
+                throw new IOException("Failed to delete object: " + error);
+            }
+            return null;
+        });
+    }
+
+
     public String generateUniqueFileName(String originalFilename) {
         String extension = FilenameUtils.getExtension(originalFilename);
         String baseName = UUID.randomUUID().toString();

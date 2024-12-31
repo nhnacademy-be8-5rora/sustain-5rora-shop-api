@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import store.aurora.user.entity.UserAddress;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -18,4 +19,8 @@ public interface UserAddressRepository extends JpaRepository<UserAddress, Long> 
             String addrDetail,
             String receiver
     );
+
+    List<UserAddress> findByUserId(String userId);
+    Optional<UserAddress> findByIdAndUserId(Long id, String userId);
+    void deleteByIdAndUserId(Long id, String userId);
 }

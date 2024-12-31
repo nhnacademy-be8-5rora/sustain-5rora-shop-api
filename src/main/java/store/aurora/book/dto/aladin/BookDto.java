@@ -37,5 +37,6 @@ public class BookDto {
         private String seriesName;
     }
     private List<Long> categoryIds; // 선택된 카테고리 ID 리스트
+    private List<Long> tagIds; // 선택된 태그 ID 리스트
 
 }

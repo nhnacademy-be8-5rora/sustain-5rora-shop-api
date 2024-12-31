@@ -14,10 +14,8 @@ public interface BookService {
 
     BookDto findBookDtoById(String isbn13);
 
-    void saveBook(BookRequestDTO requestDTO);
-    void updateBookDetails(Long bookId, BookDetailsUpdateDTO detailsDTO);
-    void updateBookSalesInfo(Long bookId, BookSalesInfoUpdateDTO salesInfoDTO);
-    void updateBookPackaging(Long bookId, boolean packaging);
+    List<BookDto> getAllBooks();
+
     Book getBookById(Long bookId);
     BookDetailsDto getBookDetails(Long bookId);
     List<BookInfoDTO> getBookInfo(List<Long> bookIds);

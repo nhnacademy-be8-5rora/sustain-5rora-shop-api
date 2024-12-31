@@ -73,25 +73,17 @@ public class Book {
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookCategory> bookCategories = new ArrayList<>();
 
-    public List<Category> getCategories() {
-        return bookCategories.stream()
-                .map(BookCategory::getCategory)
-                .toList();
-    }
-
     public void addBookCategory(BookCategory bookCategory) {
-        if (!bookCategories.contains(bookCategory)) {
-            bookCategories.add(bookCategory);
-            bookCategory.setBook(this);
-        }
-    }
-    public void removeBookCategory(BookCategory bookCategory) {
-        if (bookCategories.contains(bookCategory)) {
-            bookCategories.remove(bookCategory);
-            bookCategory.setBook(null);
-        }
+        bookCategories.add(bookCategory);
+        bookCategory.setBook(this);
+
     }
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BookTag> bookTags;
+    private List<BookTag> bookTags = new ArrayList<>();
+
+    public void addBookTag(BookTag bookTag) {
+        bookTags.add(bookTag);
+        bookTag.setBook(this);
+    }
 
 }

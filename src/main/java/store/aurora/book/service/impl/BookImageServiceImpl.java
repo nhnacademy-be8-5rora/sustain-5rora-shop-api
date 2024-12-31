@@ -7,7 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.BookImage;
 import store.aurora.book.service.BookImageService;
-import store.aurora.book.service.ImageService;
+import store.aurora.file.ObjectStorageService;
 
 import java.util.List;
 
@@ -15,9 +15,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BookImageServiceImpl implements BookImageService {
 
-    private final ImageService imageService;
-    @Transactional
+    private final ObjectStorageService objectStorageService;
     @Override
+    @Transactional
     public void processApiImages(Book book, String coverUrl, List<MultipartFile> uploadedImages) {
         if (coverUrl != null) {
             String modifiedCoverUrl = modifyCoverUrl(coverUrl);
@@ -29,15 +29,13 @@ public class BookImageServiceImpl implements BookImageService {
         }
         handleAdditionalImages(book, uploadedImages);
     }
-
     @Override
-    public void handleImageUpload(Book book, MultipartFile image, boolean isThumbnail) {
-        if (image != null && !image.isEmpty()) {
-            String filePath = imageService.storeImage(image);
-            addBookImage(book, filePath, isThumbnail);
+    public void handleImageUpload(Book book, MultipartFile file, boolean isThumbnail) {
+        if (file != null && !file.isEmpty()) {
+            String uploadedFileUrl = objectStorageService.uploadObject(file);
+            addBookImage(book, uploadedFileUrl, isThumbnail);
         }
     }
-
     @Override
     public void handleAdditionalImages(Book book, List<MultipartFile> additionalImages) {
         if (additionalImages != null && !additionalImages.isEmpty()) {
@@ -47,21 +45,20 @@ public class BookImageServiceImpl implements BookImageService {
         }
     }
 
+    private void addBookImage(Book book, String filePath, boolean isThumbnail) {
+        BookImage bookImage = new BookImage(book,filePath,isThumbnail);
+        book.addBookImage(bookImage);
+    }
     @Override
     public String getThumbnailPath(Book book) {
         if (book == null || book.getBookImages() == null) {
-            return imageService.getDefaultCoverImagePath(); // 명시적 경로 반환
+            return null;
         }
         return book.getBookImages().stream()
                 .filter(BookImage::isThumbnail)
                 .map(BookImage::getFilePath)
                 .findFirst()
-                .orElse(imageService.getDefaultCoverImagePath());
-    }
-
-    private void addBookImage(Book book, String filePath, boolean isThumbnail) {
-        BookImage bookImage = new BookImage(book,filePath,isThumbnail);
-        book.addBookImage(bookImage);
+                .orElse(null);
     }
 
     private String modifyCoverUrl(String coverUrl) {

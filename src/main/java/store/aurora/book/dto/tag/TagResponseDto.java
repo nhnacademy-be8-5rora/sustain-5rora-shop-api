@@ -1,15 +1,13 @@
 package store.aurora.book.dto.tag;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class TagResponseDto {
-    private Long id;
-    private String name;
+    private Long id;   // 태그 ID
+    private String name; // 태그 이름
 }

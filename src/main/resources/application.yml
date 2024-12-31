@@ -67,8 +67,9 @@ management:
 # 환경 변수로 넣어주기
 nhncloud:
   storage:
-    url: fill
-    token: fill
+    url: https://kr1-api-object-storage.nhncloudservice.com/v1/AUTH_c20e3b10d61749a2a52346ed0261d79e
+    token: gAAAAABncmfGvi_pGv8CsEIFkLKJMDuzeSZqycOVD2hKr4U7c_UvHUXYMWolr0lB_pdZ2Fkg7gq2f9zhH71vbH-UcsoACaiRx0JdbdTxVdGOjN-xDi6uUjpCDxNwhQDKDhaerkWNHT5IniJWkLaR_xe7yrD7srfR_AsoGcbIOljf1iYsyIhdZQw
+    container: aurora # 컨테이너 이름
 
 
 ### key manager

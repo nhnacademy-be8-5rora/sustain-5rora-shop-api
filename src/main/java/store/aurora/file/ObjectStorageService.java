@@ -24,16 +24,28 @@ public class ObjectStorageService {
     @Value("${nhncloud.storage.token}")
     private String tokenId;
 
+    @Value("${nhncloud.storage.container}")
+    private String containerName;
+
     private final RestTemplate restTemplate;
 
     public ObjectStorageService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
-    public String uploadObject(String containerName, String objectName, MultipartFile file) throws IOException {
-        String url = String.format("%s/%s/%s", storageUrl, containerName, objectName);
+    public String uploadObject(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty or null");
+        }
+
+        // 고유한 파일 이름 생성
+        String uniqueFileName = generateUniqueFileName(file.getOriginalFilename());
+
+        // 업로드 URL 생성
+        String url = String.format("%s/%s/%s", storageUrl, containerName, uniqueFileName);
         URI uri = URI.create(url);
 
+        // REST 요청 실행
         restTemplate.execute(uri, HttpMethod.PUT, request -> {
             request.getHeaders().add("X-Auth-Token", tokenId);
             try (InputStream inputStream = file.getInputStream()) {
@@ -42,17 +54,22 @@ public class ObjectStorageService {
         }, response -> {
             if (response.getStatusCode() != HttpStatus.CREATED) {
                 String error = StreamUtils.copyToString(response.getBody(), StandardCharsets.UTF_8);
-                throw new IOException("Failed to upload object: " + error); // response.getStatusCode()
+                throw new IOException("Failed to upload object: " + error);
             }
             return null;
         });
 
-        return url;
+        // 업로드된 파일의 URL 반환
+        return generatePublicUrl(uniqueFileName);
     }
 
     public String generateUniqueFileName(String originalFilename) {
         String extension = FilenameUtils.getExtension(originalFilename);
         String baseName = UUID.randomUUID().toString();
         return baseName + "." + extension;
+    }
+
+    public String generatePublicUrl(String objectName) {
+        return String.format("%s/%s/%s", storageUrl, containerName, objectName);
     }
 }

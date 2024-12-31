@@ -122,6 +122,13 @@ public class BookServiceImpl implements BookService {
                 .orElseThrow(() -> new IllegalArgumentException("Book not found"));
     }
 
+    @Override
+    public List<BookDto> getAllBooks() {
+        return bookRepository.findAll().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
     private Book convertToEntity(BookDto bookDto) {
         Book book = new Book();
         book.setTitle(bookDto.getTitle());
@@ -157,93 +164,37 @@ public class BookServiceImpl implements BookService {
         return book;
     }
 
-
-    @Transactional
-    public void saveBook(BookRequestDTO requestDTO) {
-        if (bookRepository.existsByIsbn(requestDTO.getIsbn())) {
-            throw new ISBNAlreadyExistsException(requestDTO.getIsbn());
+    private BookDto convertToDto(Book book) {
+        BookDto bookDto = new BookDto();
+        bookDto.setTitle(book.getTitle());
+        bookDto.setAuthor(bookAuthorService.getFormattedAuthors(book));
+        bookDto.setCover(bookImageService.getThumbnailPath(book));
+        bookDto.setDescription(book.getExplanation());
+        bookDto.setIsbn13(book.getIsbn());
+        bookDto.setPriceSales(book.getSalePrice());
+        bookDto.setPriceStandard(book.getRegularPrice());
+        bookDto.setPubDate(book.getPublishDate() != null ? book.getPublishDate().toString() : null);
+        bookDto.setStock(book.getStock());
+        bookDto.setIsForSale(book.isSale());
+        bookDto.setIsPackaged(book.isPackaging());
+        bookDto.setPublisher(book.getPublisher().getName());
+        if (book.getSeries() != null) {
+            bookDto.setSeriesInfo(new BookDto.SeriesInfo(book.getSeries().getName()));
         }
 
-        Publisher publisher = publisherService.findOrCreatePublisher(requestDTO.getPublisherName());
-
-        Series series = null;
-        if (requestDTO.getSeriesName() != null) {
-            series = seriesService.findOrCreateSeries(requestDTO.getSeriesName());
-        }
-
-        Book book = BookMapper.toEntity(requestDTO);
-        book.setPublisher(publisher);
-        book.setSeries(series);
-        Book savedBook = bookRepository.save(book);
-        bookAuthorService.parseAndSaveBookAuthors(savedBook, requestDTO.getAuthor());
-
-        if (!CollectionUtils.isEmpty(requestDTO.getCategoryIds())) {
-            bookCategoryService.addCategoriesToBook(savedBook.getId(), requestDTO.getCategoryIds());
-        }else {
-            throw new CategoryLimitException();
-
-        }
-        if (!CollectionUtils.isEmpty(requestDTO.getTagIds())) {
-            for (Long tagId : requestDTO.getTagIds()) {
-                BookTagRequestDto bookTagRequestDto = new BookTagRequestDto(savedBook.getId(), tagId);
-                tagService.addBookTag(bookTagRequestDto);
-            }
-        }
+        bookDto.setCategoryIds(
+                book.getBookCategories().stream()
+                        .map(bookCategory -> bookCategory.getCategory().getId())
+                        .collect(Collectors.toList())
+        );
+        bookDto.setTagIds(
+                book.getBookTags().stream()
+                        .map(bookTag -> bookTag.getTag().getId())
+                        .collect(Collectors.toList())
+        );
+        return bookDto;
     }
 
-    @Transactional
-    public void updateBookDetails(Long bookId, BookDetailsUpdateDTO detailsDTO) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new NotFoundBookException(bookId));
-
-        // 중복 ISBN 체크
-        Optional<Book> existingBook = bookRepository.findByIsbn(detailsDTO.getIsbn());
-        if (existingBook.isPresent() && !existingBook.get().getId().equals(bookId)) {
-            throw new ISBNAlreadyExistsException(detailsDTO.getIsbn());
-        }
-
-        book.setTitle(detailsDTO.getTitle());
-        book.setExplanation(detailsDTO.getExplanation());
-        book.setContents(detailsDTO.getContents());
-        book.setIsbn(detailsDTO.getIsbn());
-        book.setPublishDate(detailsDTO.getPublishDate());
-        book.setSale(detailsDTO.isSale());
-
-        // 출판사 업데이트
-        if (StringUtils.hasText(detailsDTO.getPublisherName())) {
-            Publisher publisher = publisherService.findOrCreatePublisher(detailsDTO.getPublisherName());
-            book.setPublisher(publisher);
-        }
-
-        // 시리즈 업데이트
-        if (StringUtils.hasText(detailsDTO.getSeriesName())) {
-            Series series = seriesService.findOrCreateSeries(detailsDTO.getSeriesName());
-            book.setSeries(series);
-        } else {
-            book.setSeries(null); // 시리즈 이름이 없으면 null로 설정
-        }
-        bookRepository.save(book);
-    }
-
-    @Transactional
-    public void updateBookSalesInfo(Long bookId, BookSalesInfoUpdateDTO salesInfoDTO) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new NotFoundBookException(bookId));
-
-        book.setSalePrice(salesInfoDTO.getSalePrice());
-        book.setStock(salesInfoDTO.getStock());
-
-        bookRepository.save(book);
-    }
-
-    @Transactional
-    public void updateBookPackaging(Long bookId, boolean packaging) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new NotFoundBookException(bookId));
-
-        book.setPackaging(packaging);
-        bookRepository.save(book);
-    }
 
 
     @Transactional(readOnly = true)

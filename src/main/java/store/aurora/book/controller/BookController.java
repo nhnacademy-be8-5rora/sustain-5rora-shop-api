@@ -62,38 +62,11 @@ public class BookController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-
-
-
-
-    @PostMapping
-    public ResponseEntity<Void> createBook(@RequestBody @Valid BookRequestDTO requestDTO) {
-        bookService.saveBook(requestDTO);
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
-
-    @PutMapping("/{bookId}/details")
-    public ResponseEntity<Void> updateBookDetails(
-            @PathVariable Long bookId,
-            @RequestBody BookDetailsUpdateDTO requestDTO) {
-        bookService.updateBookDetails(bookId, requestDTO);
-        return ResponseEntity.ok().build();
-    }
-
-    @PutMapping("/{bookId}/sales-info")
-    public ResponseEntity<Void> updateBookSalesInfo(
-            @PathVariable Long bookId,
-            @RequestBody BookSalesInfoUpdateDTO salesInfoDTO) {
-        bookService.updateBookSalesInfo(bookId, salesInfoDTO);
-        return ResponseEntity.ok().build();
-    }
-
-    @PatchMapping("/{bookId}/packaging")
-    public ResponseEntity<Void> updateBookPackaging(
-            @PathVariable Long bookId,
-            @RequestParam boolean packaging) {
-        bookService.updateBookPackaging(bookId, packaging);
-        return ResponseEntity.ok().build();
+    @GetMapping
+    public ResponseEntity<List<BookDto>> getAllBooks() {
+        List<BookDto> books = bookService.getAllBooks();
+        books.forEach(book -> System.out.println("Book Cover: " + book.getCover()));
+        return ResponseEntity.ok(books);
     }
 
 

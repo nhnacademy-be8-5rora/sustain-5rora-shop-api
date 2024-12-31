@@ -15,5 +15,11 @@ public interface BookImageService {
 
     void handleAdditionalImages(Book book, List<MultipartFile> additionalImages);
 
+    void deleteImages(List<Long> imageIds);
+
     String getThumbnailPath(Book book);
+
+    List<String> getAdditionalImages(Book book);
+
+
 }

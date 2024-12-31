@@ -66,11 +66,6 @@ public class BookCategoryServiceImpl implements BookCategoryService {
             throw new CategoryLimitException();
         }
 
-        // 양방향 동기화를 통해 제거
-        for (BookCategory bookCategory : bookCategoriesToDelete) {
-            book.removeBookCategory(bookCategory);
-            bookCategory.getCategory().removeBookCategory(bookCategory);
-        }
 
         bookCategoryRepository.deleteAll(bookCategoriesToDelete);
     }

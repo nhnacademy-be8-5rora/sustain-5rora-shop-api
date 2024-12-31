@@ -14,5 +14,5 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AladinApiResponse {
     @JsonProperty("item")
-    private List<BookDto> items;
+    private List<BookRequestDto> items;
 }

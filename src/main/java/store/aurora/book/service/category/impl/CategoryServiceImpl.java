@@ -129,13 +129,28 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryDTO;
     }
 
+    @Transactional
+    @Override
+    public List<BookCategory> createBookCategories(List<Long> categoryIds) {
+        if (categoryIds.isEmpty() || categoryIds.size() > 10) {
+            throw new IllegalArgumentException("카테고리는 최소 1개 이상, 최대 10개 이하만 선택할 수 있습니다.");
+        }
+        List<Category> categories = categoryRepository.findAllById(categoryIds);
+        return categories.stream()
+                .map(category -> {
+                    BookCategory bookCategory = new BookCategory();
+                    bookCategory.setCategory(category);
+                    return bookCategory;
+                })
+                .collect(Collectors.toList());
+    }
+
     // 자식 카테고리를 CategoryDTO로 변환하는 메서드
     private List<CategoryDTO> convertChildrenToDTO(List<Category> children) {
         return children.stream()
                 .map(child -> new CategoryDTO(child.getId(), child.getName(), convertChildrenToDTO(child.getChildren())))
                 .collect(Collectors.toList());
     }
-
 
 
 

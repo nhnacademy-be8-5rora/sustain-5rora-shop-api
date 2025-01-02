@@ -42,3 +42,8 @@ key:
     path: /keymanager/v1.0/appkey/{app-key}/secrets/{key-id}
     app-key: qTQNj7LyHhdAazH3
     password: 5555
+
+aladin:
+  api:
+    base-url: https://www.aladin.co.kr/ttb/api
+    ttb-key: ttbrkdtkscjs10916001

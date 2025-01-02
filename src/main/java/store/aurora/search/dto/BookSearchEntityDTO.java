@@ -94,18 +94,8 @@ public class BookSearchEntityDTO {
             name = authorString.trim();
         }
 
-        // 역할을 Enum으로 변환
-        AuthorRole.Role authorRole = null;
-        if (role != null && !role.isEmpty()) {
-            try {
-                authorRole = AuthorRole.Role.valueOf(role.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                System.err.println("Invalid role: " + role + ", defaulting to null.");
-                authorRole = null; // 잘못된 역할 처리
-            }
-        }
 
-        return new AuthorDTO(name, authorRole);
+        return new AuthorDTO(name, role);
     }
 
     public Long getId() {

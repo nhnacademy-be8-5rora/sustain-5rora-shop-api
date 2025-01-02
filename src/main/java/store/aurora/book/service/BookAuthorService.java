@@ -9,7 +9,9 @@ import java.util.List;
 
 public interface BookAuthorService {
     void parseAndSaveBookAuthors(Book book, String authorsString);
-    List<BookAuthor> parseAuthors(Book book, String authorsString);
-    void addAuthorToBook(List<BookAuthor> bookAuthors, Book book, String authorName, AuthorRole.Role role);
+    void addAuthorToBook(List<BookAuthor> bookAuthors, Book book, String authorName, String roleName);
+
+    void deleteAuthorsByBook(Book book);
+
     String getFormattedAuthors(Book book);
 }

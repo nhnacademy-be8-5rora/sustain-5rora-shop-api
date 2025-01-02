@@ -37,6 +37,13 @@ public class UserAddressController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{userAddressId}")
+    public ResponseEntity<UserAddressResponse> getUserAddress(@RequestHeader(value = "X-USER-ID") String userId,
+                                                              @PathVariable Long userAddressId) {
+        UserAddress userAddress = userAddressService.getUserAddressByIdAndUserId(userAddressId, userId);
+        return ResponseEntity.ok(UserAddressResponse.fromEntity(userAddress));
+    }
+
     @Operation(summary = "배송지 추가", description = "사용자가 새로운 배송지를 추가합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "배송지가 성공적으로 추가되었습니다."),

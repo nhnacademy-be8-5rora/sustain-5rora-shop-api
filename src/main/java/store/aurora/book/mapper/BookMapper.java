@@ -1,56 +1,116 @@
 package store.aurora.book.mapper;
 
-import store.aurora.book.dto.BookRequestDTO;
-import store.aurora.book.dto.response.BookResponseDTO;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import store.aurora.book.dto.aladin.BookDetailDto;
+import store.aurora.book.dto.aladin.BookRequestDto;
+import store.aurora.book.dto.aladin.BookResponseDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.category.BookCategory;
-import store.aurora.book.entity.category.Category;
 import store.aurora.book.entity.tag.BookTag;
+import store.aurora.book.service.BookAuthorService;
+import store.aurora.book.service.BookImageService;
+import store.aurora.book.service.PublisherService;
+import store.aurora.book.service.SeriesService;
+import store.aurora.book.service.category.CategoryService;
+import store.aurora.book.service.tag.TagService;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.stream.Collectors;
 
+@Component
+@RequiredArgsConstructor
 public class BookMapper {
+    private final PublisherService publisherService;
+    private final SeriesService seriesService;
+    private final CategoryService categoryService;
+    private final TagService tagService;
+    private final BookAuthorService bookAuthorService;
+    private final BookImageService bookImageService;
 
-    // BookRequestDTO -> Book 엔티티 변환
-    public static Book toEntity(BookRequestDTO dto) {
+    // BookRequestDto -> Book 변환
+    public Book toEntity(BookRequestDto bookDto) {
         Book book = new Book();
-        book.setTitle(dto.getTitle());
-        book.setRegularPrice(dto.getRegularPrice());
-        book.setSalePrice(dto.getSalePrice());
-        book.setPackaging(dto.isPackaging());
-        book.setStock(dto.getStock());
-        book.setExplanation(dto.getExplanation());
-        book.setContents(dto.getContents());
-        book.setIsbn(dto.getIsbn());
-        book.setPublishDate(dto.getPublishDate());
-        book.setSale(dto.isSale());
+        book.setTitle(bookDto.getTitle());
+        book.setExplanation(bookDto.getDescription());
+        book.setContents(bookDto.getContents());
+        book.setIsbn(bookDto.getIsbn13());
+        book.setSalePrice(bookDto.getPriceSales());
+        book.setRegularPrice(bookDto.getPriceStandard());
+        book.setPublishDate(bookDto.getPubDate() != null && !bookDto.getPubDate().isBlank()
+                ? LocalDate.parse(bookDto.getPubDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd")) : null);
+        book.setStock(bookDto.getStock());
+        book.setSale(bookDto.getIsForSale());
+        book.setPackaging(bookDto.getIsPackaged());
+
+        // Publisher
+        book.setPublisher(publisherService.getOrCreatePublisher(bookDto.getPublisher()));
+
+        // Series
+        if (bookDto.getSeriesInfo() != null && !bookDto.getSeriesInfo().getSeriesName().isBlank()) {
+            book.setSeries(seriesService.getOrCreateSeries(bookDto.getSeriesInfo().getSeriesName()));
+        }
+
+        // Categories
+        List<BookCategory> bookCategories = categoryService.createBookCategories(bookDto.getCategoryIds());
+        bookCategories.forEach(book::addBookCategory);
+
+        // Tags
+        if (bookDto.getTagIds() != null && !bookDto.getTagIds().isEmpty()) {
+            List<BookTag> bookTags = tagService.createBookTags(bookDto.getTagIds());
+            bookTags.forEach(book::addBookTag);
+        }
+
         return book;
     }
 
-    // Book 엔티티 -> BookResponseDTO 변환
-    public static BookResponseDTO toDTO(Book book) {
-        return BookResponseDTO.builder()
-                .id(book.getId())
-                .title(book.getTitle())
-                .regularPrice(book.getRegularPrice())
-                .salePrice(book.getSalePrice())
-                .packaging(book.isPackaging())
-                .stock(book.getStock())
-                .explanation(book.getExplanation())
-                .contents(book.getContents())
-                .isbn(book.getIsbn())
-                .publishDate(book.getPublishDate())
-                .isSale(book.isSale())
-                .publisherName(book.getPublisher() != null ? book.getPublisher().getName() : null)
-                .seriesName(book.getSeries() != null ? book.getSeries().getName() : null)
-                .categories(book.getBookCategories().stream()
-                        .map(BookCategory::getCategory)
-                        .map(Category::getName)
-                        .collect(Collectors.toList()))
-//                .tags(book.getBookTags().stream()
-//                        .map(BookTag::getTag)
-//                        .map(tag -> tag.getName())
-//                        .collect(Collectors.toList()))
-                .build();
+    // Book -> BookResponseDto 변환
+    public BookResponseDto toResponseDto(Book book) {
+        BookResponseDto bookDto = new BookResponseDto();
+        bookDto.setId(book.getId());
+        bookDto.setTitle(book.getTitle());
+        bookDto.setAuthor(bookAuthorService.getFormattedAuthors(book));
+        bookDto.setCover(bookImageService.getThumbnailPath(book));
+        bookDto.setDescription(book.getExplanation());
+        bookDto.setIsbn13(book.getIsbn());
+        bookDto.setPriceSales(book.getSalePrice());
+        bookDto.setPriceStandard(book.getRegularPrice());
+        bookDto.setPubDate(book.getPublishDate() != null ? book.getPublishDate().toString() : null);
+        bookDto.setStock(book.getStock());
+        bookDto.setIsForSale(book.isSale());
+        bookDto.setIsPackaged(book.isPackaging());
+        bookDto.setPublisher(book.getPublisher().getName());
+
+        return bookDto;
+    }
+
+    // Book -> BookDetailDto 변환
+    public BookDetailDto toDetailDto(Book book) {
+        BookDetailDto bookDetailDto = new BookDetailDto();
+        bookDetailDto.setId(book.getId());
+        bookDetailDto.setTitle(book.getTitle());
+        bookDetailDto.setAuthor(bookAuthorService.getFormattedAuthors(book));
+        bookDetailDto.setDescription(book.getExplanation());
+        bookDetailDto.setContents(book.getContents());
+        bookDetailDto.setIsbn13(book.getIsbn());
+        bookDetailDto.setPublisher(book.getPublisher().getName());
+        bookDetailDto.setPriceStandard(book.getRegularPrice());
+        bookDetailDto.setPriceSales(book.getSalePrice());
+        bookDetailDto.setPubDate(book.getPublishDate() != null ? book.getPublishDate().toString() : null);
+        bookDetailDto.setStock(book.getStock());
+        bookDetailDto.setIsForSale(book.isSale());
+        bookDetailDto.setIsPackaged(book.isPackaging());
+        bookDetailDto.setCategoryIds(book.getBookCategories().stream()
+                .map(category -> category.getCategory().getId())
+                .collect(Collectors.toList()));
+        bookDetailDto.setTagIds(book.getBookTags().stream()
+                .map(tag -> tag.getTag().getId())
+                .collect(Collectors.toList()));
+        bookDetailDto.setCover(bookImageService.getThumbnailPath(book));
+        bookDetailDto.setAdditionalImages(bookImageService.getAdditionalImages(book));
+
+        return bookDetailDto;
     }
 }

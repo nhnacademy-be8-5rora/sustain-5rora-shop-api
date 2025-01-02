@@ -27,4 +27,10 @@ public class Like {
     private User user;
 
     private boolean isLike;
+
+    public Like(Book book, User user, boolean isLike) {
+        this.book = book;
+        this.user = user;
+        this.isLike = isLike;
+    }
 }

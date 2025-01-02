@@ -49,7 +49,7 @@ class SearchServiceImplTest {
         when(bookRepository.findBooksByTitleWithDetails(title, pageable)).thenReturn(entityDTOPage);
 
         // 반환값 받기
-        Page<BookSearchResponseDTO> result = searchService.findBooksByTitleWithDetails(title, pageable);
+        Page<BookSearchResponseDTO> result = searchService.findBooksByTitleWithDetails(null,title, pageable);
 
         // 결과 검증
         assertThat(result).isNotNull();
@@ -78,7 +78,7 @@ class SearchServiceImplTest {
         Pageable pageable = PageRequest.of(0, 8);
 
         // When
-        Page<BookSearchResponseDTO> resultForNull = searchService.findBooksByTitleWithDetails(title, pageable);
+        Page<BookSearchResponseDTO> resultForNull = searchService.findBooksByTitleWithDetails(null,title, pageable);
 
         // Then
         assertThat(resultForNull).isNotNull();
@@ -104,7 +104,7 @@ class SearchServiceImplTest {
         when(bookRepository.findBooksByAuthorNameWithDetails(authorName, pageable)).thenReturn(entityDTOPage);
 
         // 반환값 받기
-        Page<BookSearchResponseDTO> result = searchService.findBooksByAuthorNameWithDetails(authorName, pageable);
+        Page<BookSearchResponseDTO> result = searchService.findBooksByAuthorNameWithDetails(null,authorName, pageable);
 
         // 결과 검증
         assertThat(result).isNotNull();
@@ -125,8 +125,8 @@ class SearchServiceImplTest {
         Pageable pageable = PageRequest.of(0, 8);
 
         // When
-        Page<BookSearchResponseDTO> resultForNull = searchService.findBooksByAuthorNameWithDetails(authorName, pageable);
-        Page<BookSearchResponseDTO> resultForEmpty = searchService.findBooksByAuthorNameWithDetails(emptyAuthorName, pageable);
+        Page<BookSearchResponseDTO> resultForNull = searchService.findBooksByAuthorNameWithDetails(null,authorName, pageable);
+        Page<BookSearchResponseDTO> resultForEmpty = searchService.findBooksByAuthorNameWithDetails(null,emptyAuthorName, pageable);
 
         // Then
         assertThat(resultForNull).isNotNull();
@@ -158,7 +158,7 @@ class SearchServiceImplTest {
         when(bookRepository.findBooksByCategoryWithDetails(categoryId, pageable)).thenReturn(mockPage);
 
         // When
-        Page<BookSearchResponseDTO> result = searchService.findBooksByCategoryWithDetails(categoryId, pageable);
+        Page<BookSearchResponseDTO> result = searchService.findBooksByCategoryWithDetails(null,categoryId, pageable);
 
         // Then
         assertThat(result).isNotNull();
@@ -184,7 +184,7 @@ class SearchServiceImplTest {
         Pageable pageable = PageRequest.of(0, 8);
 
         // When
-        Page<BookSearchResponseDTO> resultForNull = searchService.findBooksByCategoryWithDetails(categoryId, pageable);
+        Page<BookSearchResponseDTO> resultForNull = searchService.findBooksByCategoryWithDetails(null,categoryId, pageable);
 
         // Then
         assertThat(resultForNull).isNotNull();

@@ -3,17 +3,15 @@ package store.aurora.search.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-
-import store.aurora.book.dto.category.CategoryDTO;
-import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.search.dto.BookSearchResponseDTO;
 
-import java.util.List;
-
 public interface SearchService {
-    Page<BookSearchResponseDTO> findBooksByTitleWithDetails(String title, Pageable pageable);
+    // title로 책을 검색하며, 사용자 ID를 매개변수로 받아 좋아요 상태를 확인합니다.
+    Page<BookSearchResponseDTO> findBooksByTitleWithDetails(String userId, String title, Pageable pageable);
 
-    Page<BookSearchResponseDTO> findBooksByAuthorNameWithDetails(String name, Pageable pageable);
+    // author name으로 책을 검색하며, 사용자 ID를 매개변수로 받아 좋아요 상태를 확인합니다.
+    Page<BookSearchResponseDTO> findBooksByAuthorNameWithDetails(String userId, String name, Pageable pageable);
 
-    Page<BookSearchResponseDTO> findBooksByCategoryWithDetails(Long categoryId, Pageable pageable);
+    // category ID로 책을 검색하며, 사용자 ID를 매개변수로 받아 좋아요 상태를 확인합니다.
+    Page<BookSearchResponseDTO> findBooksByCategoryWithDetails(String userId, Long categoryId, Pageable pageable);
 }

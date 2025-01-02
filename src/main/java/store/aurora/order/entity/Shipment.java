@@ -1,10 +1,7 @@
 package store.aurora.order.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import store.aurora.order.entity.enums.ShipmentState;
 import store.aurora.order.entity.enums.ShippingCompaniesCode;
 
@@ -12,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Builder
 @Getter
 @Setter
 @NoArgsConstructor

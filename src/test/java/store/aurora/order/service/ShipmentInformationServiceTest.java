@@ -8,6 +8,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.ShipmentInformation;
 import store.aurora.order.entity.enums.OrderState;
+import store.aurora.order.exception.exception404.OrderNotFoundException;
+import store.aurora.order.exception.exception404.ShipmentInformationNotFoundException;
 import store.aurora.order.repository.OrderRepository;
 import store.aurora.order.repository.ShipmentInformationRepository;
 
@@ -83,7 +85,7 @@ class ShipmentInformationServiceTest {
         shipmentInformation.setReceiverName("");
         shipmentInformation.setReceiverPhone("");
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(OrderNotFoundException.class, () -> {
             service.createShipmentInformation(shipmentInformation);
         });
     }
@@ -150,13 +152,13 @@ class ShipmentInformationServiceTest {
     }
     @Test
     void getShipmentInformationWithNonExistOrderId(){
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(OrderNotFoundException.class, () -> {
             service.getShipmentInformation(2L);
         });
     }
     @Test
     void getShipmentInformationWithNonExistShipmentInformation(){
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(ShipmentInformationNotFoundException.class, () -> {
             service.getShipmentInformation(1L);
         });
     }
@@ -204,7 +206,7 @@ class ShipmentInformationServiceTest {
         shipmentInformation.setReceiverName("");
         shipmentInformation.setReceiverPhone("");
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(OrderNotFoundException.class, () -> {
             service.updateShipmentInformation(shipmentInformation);
         });
     }
@@ -218,7 +220,7 @@ class ShipmentInformationServiceTest {
         shipmentInformation.setReceiverName("");
         shipmentInformation.setReceiverPhone("");
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(ShipmentInformationNotFoundException.class, () -> {
             service.updateShipmentInformation(shipmentInformation);
         });
     }
@@ -234,6 +236,7 @@ class ShipmentInformationServiceTest {
 
         service.createShipmentInformation(shipmentInformation);
 
+        when(repo.existsById(shipmentInformation.getOrderId())).thenReturn(true);
         assertAll(
                 () -> {
                     shipmentInformation.setReceiverAddress(null);
@@ -283,7 +286,7 @@ class ShipmentInformationServiceTest {
     }
     @Test
     void deleteShipmentInformationByIdWithNonExistOrderId(){
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(OrderNotFoundException.class, () -> {
             service.deleteShipmentInformationById(2L);
         });
     }
@@ -291,7 +294,7 @@ class ShipmentInformationServiceTest {
     void deleteShipmentInformationByIdWithNonExistShipmentInformation(){
         when(repo.existsById(anyLong())).thenReturn(false);
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(ShipmentInformationNotFoundException.class, () -> {
             service.deleteShipmentInformationById(1L);
         });
     }

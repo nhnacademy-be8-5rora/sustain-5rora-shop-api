@@ -3,6 +3,8 @@ package store.aurora.book.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -154,10 +156,9 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<BookResponseDto> getAllBooks() {
-        return bookRepository.findAll().stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+    public Page<BookResponseDto> getAllBooks(Pageable pageable) {
+        return bookRepository.findAll(pageable)
+                .map(this::convertToDto);
     }
 
     private Book convertToEntity(BookRequestDto bookDto) {

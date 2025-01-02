@@ -10,17 +10,20 @@ import store.aurora.book.service.LikeService;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/likes")
+@RequestMapping("/api/books")
 public class LikeController {
 
     private final LikeService likeService;
 
 
     // merge
-    @PostMapping("/books/{bookId}")
+    @PostMapping("/likes/{bookId}")
     public ResponseEntity<LikeDto> doLike(@PathVariable Long bookId,
-                                          @RequestHeader(name = "X-USER-ID") String userId) {
+                                          @RequestHeader(value = "X-USER-ID") String userId) {
+        likeService.pressLike(bookId, userId);
         return ResponseEntity.ok().build();
     }
+
+
 
 }

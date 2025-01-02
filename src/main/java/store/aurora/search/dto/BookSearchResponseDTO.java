@@ -34,7 +34,7 @@ public class BookSearchResponseDTO {
     private Long viewCount;
     private int reviewCount;
     private double reviewRating; // 리뷰 평점
-
+    private boolean liked;
     public BookSearchResponseDTO(BookSearchEntityDTO book) {
         this.id = book.getId();
         this.title = book.getTitle();
@@ -49,6 +49,7 @@ public class BookSearchResponseDTO {
         this.viewCount = book.getViewCount();
         this.reviewCount = book.getReviewCount();
         this.reviewRating = book.getReviewRating();
+        this.liked=false;
     }
 
     @Override

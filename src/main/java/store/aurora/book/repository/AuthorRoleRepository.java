@@ -6,7 +6,7 @@ import store.aurora.book.entity.AuthorRole;
 import java.util.Optional;
 
 public interface AuthorRoleRepository extends JpaRepository<AuthorRole, Long> {
-    Optional<AuthorRole> findByRole(AuthorRole.Role role);
-    boolean existsByRole(AuthorRole.Role role);
+    Optional<AuthorRole> findByRole(String role);
+
 }
 

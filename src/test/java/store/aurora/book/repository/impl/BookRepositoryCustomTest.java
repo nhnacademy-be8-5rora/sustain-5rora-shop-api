@@ -102,8 +102,8 @@ public class BookRepositoryCustomTest {
         entityManager.merge(author2);
 
         // AuthorRole 생성
-        AuthorRole roleAuthor = new AuthorRole(1L, AuthorRole.Role.AUTHOR);
-        AuthorRole roleEditor = new AuthorRole(2L, AuthorRole.Role.EDITOR);
+        AuthorRole roleAuthor = new AuthorRole(1L, "지은이");
+        AuthorRole roleEditor = new AuthorRole(2L, "역은이");
         entityManager.merge(roleAuthor);
         entityManager.merge(roleEditor);
 
@@ -218,7 +218,6 @@ public class BookRepositoryCustomTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getContent()).isNotEmpty(); // 결과가 비어 있지 않아야 함
-        assertThat(result.getTotalElements()).isGreaterThan(0); // 결과가 하나 이상이어야 함
 
         // 추가적인 검증
         result.getContent().forEach(book -> {
@@ -235,7 +234,7 @@ public class BookRepositoryCustomTest {
             assertThat(book.getViewCount()).isGreaterThanOrEqualTo(0); // 조회수가 음수가 아니어야 함
 
             assertThat(book.getAuthors()).allMatch(author -> {
-                AuthorRole.Role role = author.getRole();
+                String role = author.getRole();
                 return role != null;
             });
         });

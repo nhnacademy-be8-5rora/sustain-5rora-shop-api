@@ -11,8 +11,11 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import store.aurora.book.repository.BookRepository;
+import store.aurora.book.service.LikeService;
+import store.aurora.book.service.impl.LikeServiceImpl;
 import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.search.dto.BookSearchResponseDTO;
+import store.aurora.search.service.SearchService;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -28,6 +31,9 @@ class SearchServiceImplTest {
 
     @InjectMocks
     private SearchServiceImpl searchService;
+
+    @Mock
+    private LikeService likeService;
 
     @BeforeEach
     void setUp() {

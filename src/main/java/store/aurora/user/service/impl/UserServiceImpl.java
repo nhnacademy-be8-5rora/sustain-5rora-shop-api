@@ -37,10 +37,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public void registerUser(SignUpRequest request) {
         // 인증 상태 확인
-        String verificationStatus = (String) redisTemplate.opsForValue().get(request.getPhoneNumber() + "_verified");
-        if (verificationStatus == null || !verificationStatus.equals("true")) {
-            throw new VerificationException("인증 코드가 확인되지 않았습니다. 인증을 완료한 후 회원가입을 진행해주세요.");
-        }
+//        String verificationStatus = (String) redisTemplate.opsForValue().get(request.getPhoneNumber() + "_verified");
+//        if (verificationStatus == null || !verificationStatus.equals("true")) {
+//            throw new VerificationException("인증 코드가 확인되지 않았습니다. 인증을 완료한 후 회원가입을 진행해주세요.");
+//        }
 
         // 유효성 검사
         if (userRepository.existsById(request.getId())) {

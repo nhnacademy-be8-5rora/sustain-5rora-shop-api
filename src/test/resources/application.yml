@@ -31,8 +31,9 @@ spring:
 # 환경 변수로 넣어주기
 nhncloud:
   storage:
-    url: fill
-    token: fill
+    url: https://kr1-api-object-storage.nhncloudservice.com/v1/AUTH_c20e3b10d61749a2a52346ed0261d79e
+    token: gAAAAABnc0U-kqIfK374SJuoxNAIptX16ELrdHz-WtL0EDwNO4Gha-9pHHoLTKqsu2a_yvPHkQq-SoAXkBLq_Anfoeu4Uz77uBB365-ySzOoEqdcjYtyW_hivK8h8OqRDHpMXA0Uaj02YBSzPVbIaE3dEXxzgCGeZRf9cg2O0Q3SUOXG-2-RGRo
+    container: aurora # 컨테이너 이름
 
 
 ### key manager

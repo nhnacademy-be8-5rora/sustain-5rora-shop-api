@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.config.QuerydslConfiguration;
 import store.aurora.order.entity.Shipment;
 import store.aurora.order.entity.enums.ShipmentState;
+import store.aurora.order.exception.exception404.ShipmentNotFoundException;
 import store.aurora.order.repository.ShipmentRepository;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -79,7 +80,7 @@ class ShipmentServiceTest {
     @Test
     void getShipmentWithNonExistId() {
         when(shipmentRepository.existsById(anyLong())).thenReturn(false);
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(ShipmentNotFoundException.class, () -> {
             shipmentService.getShipment(999L);
         });
     }
@@ -113,7 +114,7 @@ class ShipmentServiceTest {
         shipment.setState(ShipmentState.SHIPPED);
 
         when(shipmentRepository.existsById(anyLong())).thenReturn(false);
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(ShipmentNotFoundException.class, () -> {
             shipmentService.updateShipment(shipment);
         });
     }
@@ -145,7 +146,7 @@ class ShipmentServiceTest {
     @Test
     void deleteByShipmentIdWithNonExistId() {
         when(shipmentRepository.existsById(anyLong())).thenReturn(false);
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(ShipmentNotFoundException.class, () -> {
             shipmentService.deleteByShipmentId(999L);
         });
     }

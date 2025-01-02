@@ -23,6 +23,7 @@ import store.aurora.book.entity.tag.Tag;
 import store.aurora.book.exception.book.NotFoundBookException;
 import store.aurora.book.entity.*;
 import store.aurora.book.exception.BookNotFoundException;
+import store.aurora.book.mapper.BookMapper;
 import store.aurora.book.repository.BookImageRepository;
 import store.aurora.book.repository.BookRepository;
 import store.aurora.book.repository.PublisherRepository;
@@ -58,6 +59,7 @@ public class BookServiceImpl implements BookService {
     private final PublisherRepository publisherRepository;
     private final SeriesRepository seriesRepository;
     private final CategoryRepository categoryRepository;
+    private final BookMapper bookMapper;
 
     @Value("${aladin.api.ttb-key}")
     private String ttbKey;
@@ -159,68 +161,11 @@ public class BookServiceImpl implements BookService {
     }
 
     private Book convertToEntity(BookRequestDto bookDto) {
-        Book book = new Book();
-        book.setTitle(bookDto.getTitle());
-        book.setExplanation(bookDto.getDescription());
-        book.setContents(bookDto.getContents());
-        book.setIsbn(bookDto.getIsbn13());
-        book.setSalePrice(bookDto.getPriceSales());
-        book.setRegularPrice(bookDto.getPriceStandard());
-        if (bookDto.getPubDate() != null && !bookDto.getPubDate().isBlank()) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            book.setPublishDate(LocalDate.parse(bookDto.getPubDate(), formatter));
-        }
-        book.setStock(bookDto.getStock());
-        book.setSale(bookDto.getIsForSale());
-        book.setPackaging(bookDto.getIsPackaged());
-
-        Publisher publisher = publisherRepository.findByName(bookDto.getPublisher())
-                .orElseGet(() -> publisherRepository.save(new Publisher(bookDto.getPublisher())));
-        book.setPublisher(publisher);
-
-        if (bookDto.getSeriesInfo() != null && !bookDto.getSeriesInfo().getSeriesName().isBlank()) {
-            Series series = seriesRepository.findByName(bookDto.getSeriesInfo().getSeriesName())
-                    .orElseGet(() -> seriesRepository.save(new Series(bookDto.getSeriesInfo().getSeriesName())));
-            book.setSeries(series);
-        }
-
-        List<Category> categories = categoryRepository.findAllById(bookDto.getCategoryIds());
-        for (Category category : categories) {
-            BookCategory bookCategory = new BookCategory();
-            bookCategory.setCategory(category);
-            book.addBookCategory(bookCategory);
-        }
-
-        // 태그가 있을 경우만 처리
-        if (bookDto.getTagIds() != null && !bookDto.getTagIds().isEmpty()) {
-            List<Tag> tags = tagRepository.findAllById(bookDto.getTagIds());
-            for (Tag tag : tags) {
-                BookTag bookTag = new BookTag();
-                bookTag.setTag(tag);
-                book.addBookTag(bookTag);
-            }
-        }
-
-        return book;
+        return bookMapper.toEntity(bookDto);
     }
 
     private BookResponseDto convertToDto(Book book) {
-        BookResponseDto bookDto = new BookResponseDto();
-        bookDto.setId(book.getId());
-        bookDto.setTitle(book.getTitle());
-        bookDto.setAuthor(bookAuthorService.getFormattedAuthors(book));
-        bookDto.setCover(bookImageService.getThumbnailPath(book));
-        bookDto.setDescription(book.getExplanation());
-        bookDto.setIsbn13(book.getIsbn());
-        bookDto.setPriceSales(book.getSalePrice());
-        bookDto.setPriceStandard(book.getRegularPrice());
-        bookDto.setPubDate(book.getPublishDate() != null ? book.getPublishDate().toString() : null);
-        bookDto.setStock(book.getStock());
-        bookDto.setIsForSale(book.isSale());
-        bookDto.setIsPackaged(book.isPackaging());
-        bookDto.setPublisher(book.getPublisher().getName());
-
-        return bookDto;
+        return bookMapper.toResponseDto(book);
     }
 
     private void updateBookInfo(Book book, BookRequestDto bookDto) {
@@ -280,31 +225,11 @@ public class BookServiceImpl implements BookService {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new NotFoundBookException(bookId));
 
-        BookDetailDto bookDetailDto = new BookDetailDto();
-        bookDetailDto.setId(book.getId());
-        bookDetailDto.setTitle(book.getTitle());
-        bookDetailDto.setAuthor(bookAuthorService.getFormattedAuthors(book));
-        bookDetailDto.setDescription(book.getExplanation());
-        bookDetailDto.setContents(book.getContents());
-        bookDetailDto.setIsbn13(book.getIsbn());
-        bookDetailDto.setPublisher(book.getPublisher().getName());
-        bookDetailDto.setPriceStandard(book.getRegularPrice());
-        bookDetailDto.setPriceSales(book.getSalePrice());
-        bookDetailDto.setPubDate(book.getPublishDate() != null ? book.getPublishDate().toString() : null);
-        bookDetailDto.setStock(book.getStock());
-        bookDetailDto.setIsForSale(book.isSale());
-        bookDetailDto.setIsPackaged(book.isPackaging());
-        bookDetailDto.setCategoryIds(book.getBookCategories().stream()
-                .map(category -> category.getCategory().getId())
-                .collect(Collectors.toList()));
-        bookDetailDto.setTagIds(book.getBookTags().stream()
-                .map(tag -> tag.getTag().getId())
-                .collect(Collectors.toList()));
-        bookDetailDto.setCover(bookImageService.getThumbnailPath(book));
-        bookDetailDto.setAdditionalImages(bookImageService.getAdditionalImages(book));
-
-        return bookDetailDto;
+        return bookMapper.toDetailDto(book);
     }
+
+
+
 
     @Transactional(readOnly = true)
     public Book getBookById(Long bookId) {

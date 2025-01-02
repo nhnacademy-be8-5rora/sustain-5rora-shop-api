@@ -1,9 +1,11 @@
 package store.aurora.book.service.category;
 
+import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.category.CategoryDTO;
 import store.aurora.book.dto.category.CategoryRequestDTO;
 import store.aurora.book.dto.category.CategoryResponseDTO;
 import store.aurora.book.entity.Book;
+import store.aurora.book.entity.category.BookCategory;
 
 import java.util.List;
 
@@ -16,6 +18,6 @@ public interface CategoryService {
     void deleteCategory(Long categoryId);
     List<CategoryResponseDTO> getAllCategories(); // 새로 추가
     List<Book> getBooksByCategoryId(Long categoryId);
-
     CategoryDTO findById(Long categoryId);
+    List<BookCategory> createBookCategories(List<Long> categoryIds);
 }

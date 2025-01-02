@@ -64,6 +64,12 @@ public class BookController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @GetMapping
+    public ResponseEntity<List<BookResponseDto>> getAllBooks() {
+        List<BookResponseDto> books = bookService.getAllBooks();
+        return ResponseEntity.ok(books);
+    }
+
     @PutMapping(value = "/{bookId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> editBook(@PathVariable Long bookId,
                                          @ModelAttribute BookRequestDto bookDto,
@@ -74,16 +80,12 @@ public class BookController {
         return ResponseEntity.noContent().build(); // 수정 후 응답으로 No Content 반환
     }
 
-    @GetMapping
-    public ResponseEntity<List<BookResponseDto>> getAllBooks() {
-        List<BookResponseDto> books = bookService.getAllBooks();
-        return ResponseEntity.ok(books);
-    }
     @GetMapping("/{bookId}/edit")
     public ResponseEntity<BookDetailDto> getBookDetailsForAdmin(@PathVariable Long bookId) {
         BookDetailDto bookDetails = bookService.getBookDetailsForAdmin(bookId);
         return ResponseEntity.ok(bookDetails);
     }
+
 
     @GetMapping("/{bookId}")
     public ResponseEntity<BookDetailsDto> getBookDetails(@PathVariable Long bookId) {

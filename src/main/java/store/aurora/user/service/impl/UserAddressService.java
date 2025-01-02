@@ -63,7 +63,7 @@ public class UserAddressService {
     }
 
     // 특정 사용자의 배송지 조회
-    private UserAddress getUserAddressByIdAndUserId(Long userAddressId, String userId) {
+    public UserAddress getUserAddressByIdAndUserId(Long userAddressId, String userId) {
         return userAddressRepository.findByIdAndUserId(userAddressId, userId)
                 .orElseThrow(() -> new UserAddressNotFoundException(userAddressId));
     }

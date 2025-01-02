@@ -1,5 +1,7 @@
 package store.aurora.book.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.dto.*;
@@ -22,7 +24,7 @@ public interface BookService {
 
     BookRequestDto findBookRequestDtoById(String isbn13);
 
-    List<BookResponseDto> getAllBooks();
+    Page<BookResponseDto> getAllBooks(Pageable pageable);
 
     @Transactional(readOnly = true)
     BookDetailDto getBookDetailsForAdmin(Long bookId);

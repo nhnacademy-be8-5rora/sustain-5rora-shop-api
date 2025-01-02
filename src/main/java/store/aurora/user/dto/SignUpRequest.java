@@ -36,7 +36,4 @@ public class SignUpRequest {
     private String email;
 
     private String verificationCode;    // 인증번호 입력
-
 }
-
-

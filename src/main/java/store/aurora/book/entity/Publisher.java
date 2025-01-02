@@ -19,4 +19,8 @@ public class Publisher {
 
     @Column(nullable = false, length = 30, unique = true)
     private String name;
+
+    public Publisher(String name) {
+        this.name = name;
+    }
 }

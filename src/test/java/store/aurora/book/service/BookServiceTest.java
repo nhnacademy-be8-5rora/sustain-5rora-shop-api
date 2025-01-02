@@ -4,9 +4,11 @@ package store.aurora.book.service;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import store.aurora.book.config.QuerydslConfiguration;
 import store.aurora.book.dto.BookDetailsDto;
@@ -32,8 +34,9 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @Slf4j
-@Transactional
-@Import(QuerydslConfiguration.class)
+@Transactional // todo 지우기
+@Import(QuerydslConfiguration.class) // todo 지우기 고려
+@ExtendWith(MockitoExtension.class)
 public class BookServiceTest {
 
     //TODO book entity 바껴서 [ERROR] 수정해야 함
@@ -43,10 +46,10 @@ public class BookServiceTest {
     @InjectMocks
     private BookServiceImpl bookService;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this); // 초기화
-    }
+//    @BeforeEach
+//    void setUp() {
+//        MockitoAnnotations.openMocks(this); // 초기화
+//    }
 
     @Test
     void testGetBookDetails_Success() {

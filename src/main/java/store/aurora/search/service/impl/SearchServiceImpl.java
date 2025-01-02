@@ -26,14 +26,14 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public Page<BookSearchResponseDTO> findBooksByTitleWithDetails(String title, Pageable pageable) {
-        if (Objects.isNull(title) || title.isBlank()) {
+        if (Objects.isNull(title) ) {
             return emptyPage(pageable);
         }
 
         // EntityDTO를 가져오는 메소드 호출
         Page<BookSearchEntityDTO> bookSearchEntityDTOPage = bookRepository.findBooksByTitleWithDetails(title, pageable);
 
-        // BookSearchEntityDTO -> BookSearchResponseDTO로 변환
+        // BookSearchEntityDTO -> BookSearchResponseDTO로 변환 여기서 오류
         return bookSearchEntityDTOPage.map(BookSearchResponseDTO::new);
     }
 
@@ -53,6 +53,7 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public Page<BookSearchResponseDTO> findBooksByCategoryWithDetails(Long categoryId, Pageable pageable) {
+
         if(Objects.isNull(categoryId)) {
             return emptyPage(pageable);
         }

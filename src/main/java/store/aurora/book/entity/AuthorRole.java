@@ -1,7 +1,5 @@
 package store.aurora.book.entity;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,27 +17,6 @@ public class AuthorRole {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private Role role;
-
-    public enum Role {
-        AUTHOR,
-        EDITOR;
-
-        @JsonCreator
-        public static Role fromString(String str) {
-            for (Role value : Role.values()) {
-                if (value.name().equalsIgnoreCase(str)) {
-                    return value;
-                }
-            }
-            throw new IllegalArgumentException("Invalid role: " + str);
-        }
-
-        @JsonValue
-        public String toJson() {
-            return this.name().toLowerCase();
-        }
-    }
+    @Column(unique = true, nullable = false)
+    private String role;
 }

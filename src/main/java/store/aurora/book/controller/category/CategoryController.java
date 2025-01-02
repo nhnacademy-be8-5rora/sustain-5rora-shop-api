@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import store.aurora.book.dto.category.CategoryDTO;
 import store.aurora.book.dto.category.CategoryRequestDTO;
 import store.aurora.book.dto.category.CategoryResponseDTO;
 import store.aurora.book.dto.response.BookResponseDTO;
@@ -14,6 +15,7 @@ import store.aurora.book.entity.category.Category;
 import store.aurora.book.service.category.CategoryService;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -24,8 +26,14 @@ public class CategoryController {
 
     @GetMapping
     public ResponseEntity<List<CategoryResponseDTO>> getAllCategories() {
-        List<CategoryResponseDTO> categories = categoryService.getAllCategories();
-        return ResponseEntity.ok(categories);
+        return ResponseEntity.ok(categoryService.getAllCategories());
+    }
+
+    // 계층형 카테고리 데이터 반환
+    @GetMapping("/hierarchy")
+    public ResponseEntity<List<CategoryResponseDTO>> getCategoryHierarchy() {
+        List<CategoryResponseDTO> hierarchy = categoryService.getCategoryHierarchy();
+        return ResponseEntity.ok(hierarchy);
     }
 
     @PostMapping
@@ -54,5 +62,12 @@ public class CategoryController {
                 .map(book -> new BookResponseDTO(book.getId(), book.getTitle()))
                 .toList();
         return ResponseEntity.ok(response);
+    }
+
+
+    @GetMapping("/{categoryId}")
+    public ResponseEntity<CategoryDTO> getCategoriesByParentId(@PathVariable Long categoryId) {
+        CategoryDTO categoryList = categoryService.findById(Objects.requireNonNullElse(categoryId, 0L));
+        return ResponseEntity.ok(categoryList);
     }
 }

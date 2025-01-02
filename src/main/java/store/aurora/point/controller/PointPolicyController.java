@@ -10,7 +10,7 @@ import store.aurora.point.service.PointPolicyService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/point-policies")
+@RequestMapping("/api/points/policies")
 public class PointPolicyController {
 
     private final PointPolicyService pointPolicyService;

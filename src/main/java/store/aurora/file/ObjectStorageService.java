@@ -1,5 +1,6 @@
 package store.aurora.file;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
@@ -16,28 +17,22 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class ObjectStorageService {
 
     @Value("${nhncloud.storage.url}")
     private String storageUrl;
 
-    @Value("${nhncloud.storage.token}")
-    private String tokenId;
-
     @Value("${nhncloud.storage.container}")
     private String containerName;
 
     private final RestTemplate restTemplate;
-
-    public ObjectStorageService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
+    private final TokenManager tokenManager;
 
     public String uploadObject(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("File is empty or null");
         }
-
         // 고유한 파일 이름 생성
         String uniqueFileName = generateUniqueFileName(file.getOriginalFilename());
 
@@ -47,7 +42,7 @@ public class ObjectStorageService {
 
         // REST 요청 실행
         restTemplate.execute(uri, HttpMethod.PUT, request -> {
-            request.getHeaders().add("X-Auth-Token", tokenId);
+            request.getHeaders().add("X-Auth-Token", tokenManager.getToken());
             try (InputStream inputStream = file.getInputStream()) {
                 StreamUtils.copy(inputStream, request.getBody());
             }
@@ -73,7 +68,7 @@ public class ObjectStorageService {
 
         // REST 요청 실행
         restTemplate.execute(uri, HttpMethod.DELETE, request -> {
-            request.getHeaders().add("X-Auth-Token", tokenId);
+            request.getHeaders().add("X-Auth-Token", tokenManager.getToken());
         }, response -> {
             if (response.getStatusCode() != HttpStatus.NO_CONTENT) {
                 String error = StreamUtils.copyToString(response.getBody(), StandardCharsets.UTF_8);

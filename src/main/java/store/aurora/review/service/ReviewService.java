@@ -53,8 +53,7 @@ public class ReviewService {
 
         List<ReviewImage> images = new ArrayList<>();
         for (MultipartFile file : request.getFiles()) {
-            String objectName = objectStorageService.generateUniqueFileName(file.getOriginalFilename());
-            String url = objectStorageService.uploadObject("aurora", objectName, file);// todo
+            String url = objectStorageService.uploadObject(file);// todo
             ReviewImage image = new ReviewImage();
 //            image.setImageFilePath(storageUrl + "/your_container_name/" + objectName);
             image.setImageFilePath(url);

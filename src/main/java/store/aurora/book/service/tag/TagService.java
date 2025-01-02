@@ -1,17 +1,24 @@
 package store.aurora.book.service.tag;
 
 
-import store.aurora.book.dto.tag.BookTagRequestDto;
+import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.tag.TagRequestDto;
 import store.aurora.book.dto.tag.TagResponseDto;
+import store.aurora.book.entity.tag.BookTag;
 
 import java.util.List;
 
 public interface TagService {
-    void createTag(TagRequestDto requestDto);
-    void removeTag(Long tagId);
-    void addBookTag(BookTagRequestDto requestDto);
-    void removeBookTag(Long bookTagId);
+
+    TagResponseDto createTag(TagRequestDto requestDto);
 
     List<TagResponseDto> getAllTags();
+
+    TagResponseDto getTagById(Long id);
+
+    TagResponseDto updateTag(Long id, TagRequestDto requestDto);
+
+    void deleteTag(Long id);
+
+    List<BookTag> createBookTags(List<Long> tagIds);
 }

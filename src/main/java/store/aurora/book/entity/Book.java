@@ -54,15 +54,15 @@ public class Book {
     @Column(nullable = false)
     private LocalDate publishDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "publisher_id", nullable = false)
     private Publisher publisher;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "series_id")
     private Series series;
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<BookImage> bookImages = new ArrayList<>();
 
     public void addBookImage(BookImage bookImage) {
@@ -70,28 +70,34 @@ public class Book {
         bookImage.setBook(this);
     }
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<BookCategory> bookCategories = new ArrayList<>();
 
-    public List<Category> getCategories() {
-        return bookCategories.stream()
-                .map(BookCategory::getCategory)
-                .toList();
+    public void addBookCategory(BookCategory bookCategory) {
+        bookCategories.add(bookCategory);
+        bookCategory.setBook(this);
+    }
+    public void clearBookCategories() {
+        // 모든 BookCategory와의 관계를 제거
+        for (BookCategory bookCategory : bookCategories) {
+            bookCategory.setBook(null); // 연관 관계를 해제
+        }
+        bookCategories.clear(); // 컬렉션 비우기
     }
 
-    public void addBookCategory(BookCategory bookCategory) {
-        if (!bookCategories.contains(bookCategory)) {
-            bookCategories.add(bookCategory);
-            bookCategory.setBook(this);
-        }
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
+    private List<BookTag> bookTags = new ArrayList<>();
+
+    public void addBookTag(BookTag bookTag) {
+        bookTags.add(bookTag);
+        bookTag.setBook(this);
     }
-    public void removeBookCategory(BookCategory bookCategory) {
-        if (bookCategories.contains(bookCategory)) {
-            bookCategories.remove(bookCategory);
-            bookCategory.setBook(null);
+    // 기존 태그 제거
+    public void clearBookTags() {
+        for (BookTag bookTag : bookTags) {
+            bookTag.setBook(null); // 연관 관계 해제
         }
+        bookTags.clear();
     }
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BookTag> bookTags;
 
 }

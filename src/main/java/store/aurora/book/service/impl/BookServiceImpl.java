@@ -5,34 +5,31 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.dto.BookDetailsDto;
-import store.aurora.book.dto.BookDetailsUpdateDTO;
 import store.aurora.book.dto.BookInfoDTO;
-import store.aurora.book.dto.BookRequestDTO;
 import store.aurora.book.dto.ReviewDto;
-import store.aurora.book.dto.BookSalesInfoUpdateDTO;
 import store.aurora.book.dto.aladin.AladinApiResponse;
-import store.aurora.book.dto.aladin.BookDto;
-import store.aurora.book.dto.tag.BookTagRequestDto;
+import store.aurora.book.dto.aladin.BookDetailDto;
+import store.aurora.book.dto.aladin.BookRequestDto;
+import store.aurora.book.dto.aladin.BookResponseDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.Publisher;
 import store.aurora.book.entity.Series;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
-import store.aurora.book.exception.book.ISBNAlreadyExistsException;
+import store.aurora.book.entity.tag.BookTag;
+import store.aurora.book.entity.tag.Tag;
 import store.aurora.book.exception.book.NotFoundBookException;
 import store.aurora.book.entity.*;
 import store.aurora.book.exception.BookNotFoundException;
-import store.aurora.book.exception.category.CategoryLimitException;
 import store.aurora.book.mapper.BookMapper;
 import store.aurora.book.repository.BookImageRepository;
 import store.aurora.book.repository.BookRepository;
 import store.aurora.book.repository.PublisherRepository;
 import store.aurora.book.repository.SeriesRepository;
 import store.aurora.book.repository.category.CategoryRepository;
+import store.aurora.book.repository.tag.TagRepository;
 import store.aurora.book.service.*;
 import store.aurora.book.service.category.BookCategoryService;
 import store.aurora.book.service.tag.TagService;
@@ -52,22 +49,24 @@ public class BookServiceImpl implements BookService {
     private final SeriesService seriesService;
     private final BookCategoryService bookCategoryService;
     private final TagService tagService;
+    private final TagRepository tagRepository;
     private final BookImageRepository bookImageRepository;
     private final BookAuthorService bookAuthorService;
-    private final List<BookDto> cachedBooks = new ArrayList<>();
+    private final List<BookRequestDto> cachedBooks = new ArrayList<>();
     private final AladinBookClient aladinBookClient;
     private final ObjectMapper objectMapper;
     private final BookImageService bookImageService;
     private final PublisherRepository publisherRepository;
     private final SeriesRepository seriesRepository;
     private final CategoryRepository categoryRepository;
+    private final BookMapper bookMapper;
 
     @Value("${aladin.api.ttb-key}")
     private String ttbKey;
 
 
     @Override
-    public List<BookDto> searchBooks(String query, String queryType, String searchTarget, int start) {
+    public List<BookRequestDto> searchBooks(String query, String queryType, String searchTarget, int start) {
         try {
             // Aladin API 호출
             String response = aladinBookClient.searchBooks(
@@ -77,7 +76,7 @@ public class BookServiceImpl implements BookService {
             AladinApiResponse apiResponse = objectMapper.readValue(response, AladinApiResponse.class);
             // 캐싱에 저장
 
-            List<BookDto> books = apiResponse.getItems();
+            List<BookRequestDto> books = apiResponse.getItems();
             cachedBooks.clear();
             cachedBooks.addAll(books);
 
@@ -88,7 +87,7 @@ public class BookServiceImpl implements BookService {
     }
     @Transactional
     @Override
-    public void saveDirectBook(BookDto bookDto, MultipartFile coverImage, List<MultipartFile> additionalImages) {
+    public void saveDirectBook(BookRequestDto bookDto, MultipartFile coverImage, List<MultipartFile> additionalImages) {
         Book book = convertToEntity(bookDto);
         // 책 저장
         bookRepository.save(book);
@@ -102,8 +101,8 @@ public class BookServiceImpl implements BookService {
 
     @Transactional
     @Override
-    public void saveBookFromApi(BookDto bookDto, List<MultipartFile> additionalImages) {
-        // BookDto -> Book 변환
+    public void saveBookFromApi(BookRequestDto bookDto, List<MultipartFile> additionalImages) {
+        // BookRequestDto -> Book 변환
         Book book = convertToEntity(bookDto);
         // 책 저장
         bookRepository.save(book);
@@ -114,136 +113,122 @@ public class BookServiceImpl implements BookService {
 
     }
 
+    @Transactional
     @Override
-    public BookDto findBookDtoById(String isbn13) {
+    public void updateBook(Long bookId, BookRequestDto bookDto,
+                           MultipartFile coverImage,
+                           List<MultipartFile> additionalImages,
+                           List<Long> deleteImageIds) {
+        // 1. 기존 책 정보 조회
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new IllegalArgumentException("Book not found with ID: " + bookId));
+
+        // 2. 책 정보 업데이트
+        updateBookInfo(book, bookDto);
+
+        // 3. 이미지 삭제 처리
+        if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
+            bookImageService.deleteImages(deleteImageIds);
+        }
+
+        // 4. 커버 이미지 처리
+        if (coverImage != null && !coverImage.isEmpty()) {
+            bookImageService.handleImageUpload(book, coverImage, true); // 새로운 커버 이미지 업로드
+        }
+
+        // 5. 추가 이미지 처리
+        if (additionalImages != null && !additionalImages.isEmpty()) {
+            bookImageService.handleAdditionalImages(book, additionalImages);
+        }
+
+        // 6. 책 저장
+        bookRepository.save(book);
+    }
+
+    @Override
+    public BookRequestDto findBookRequestDtoById(String isbn13) {
         return cachedBooks.stream()
                 .filter(book -> book.getIsbn13().equals(isbn13))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Book not found"));
     }
 
-    private Book convertToEntity(BookDto bookDto) {
-        Book book = new Book();
+    @Override
+    public List<BookResponseDto> getAllBooks() {
+        return bookRepository.findAll().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    private Book convertToEntity(BookRequestDto bookDto) {
+        return bookMapper.toEntity(bookDto);
+    }
+
+    private BookResponseDto convertToDto(Book book) {
+        return bookMapper.toResponseDto(book);
+    }
+
+    private void updateBookInfo(Book book, BookRequestDto bookDto) {
         book.setTitle(bookDto.getTitle());
         book.setExplanation(bookDto.getDescription());
+        book.setContents(bookDto.getContents());
         book.setIsbn(bookDto.getIsbn13());
         book.setSalePrice(bookDto.getPriceSales());
         book.setRegularPrice(bookDto.getPriceStandard());
-        if (bookDto.getPubDate() != null && !bookDto.getPubDate().isBlank()) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            book.setPublishDate(LocalDate.parse(bookDto.getPubDate(), formatter));
-        }
+        book.setPublishDate(bookDto.getPubDate() != null ?
+                LocalDate.parse(bookDto.getPubDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd")) : null);
         book.setStock(bookDto.getStock());
         book.setSale(bookDto.getIsForSale());
         book.setPackaging(bookDto.getIsPackaged());
 
+        // Publisher 업데이트
         Publisher publisher = publisherRepository.findByName(bookDto.getPublisher())
                 .orElseGet(() -> publisherRepository.save(new Publisher(bookDto.getPublisher())));
         book.setPublisher(publisher);
 
+        // Series 업데이트
         if (bookDto.getSeriesInfo() != null && !bookDto.getSeriesInfo().getSeriesName().isBlank()) {
             Series series = seriesRepository.findByName(bookDto.getSeriesInfo().getSeriesName())
                     .orElseGet(() -> seriesRepository.save(new Series(bookDto.getSeriesInfo().getSeriesName())));
             book.setSeries(series);
         }
 
+        // Category 업데이트
         List<Category> categories = categoryRepository.findAllById(bookDto.getCategoryIds());
+        book.clearBookCategories(); // 기존 카테고리 제거
         for (Category category : categories) {
             BookCategory bookCategory = new BookCategory();
             bookCategory.setCategory(category);
             book.addBookCategory(bookCategory);
         }
 
-        return book;
-    }
-
-
-    @Transactional
-    public void saveBook(BookRequestDTO requestDTO) {
-        if (bookRepository.existsByIsbn(requestDTO.getIsbn())) {
-            throw new ISBNAlreadyExistsException(requestDTO.getIsbn());
-        }
-
-        Publisher publisher = publisherService.findOrCreatePublisher(requestDTO.getPublisherName());
-
-        Series series = null;
-        if (requestDTO.getSeriesName() != null) {
-            series = seriesService.findOrCreateSeries(requestDTO.getSeriesName());
-        }
-
-        Book book = BookMapper.toEntity(requestDTO);
-        book.setPublisher(publisher);
-        book.setSeries(series);
-        Book savedBook = bookRepository.save(book);
-        bookAuthorService.parseAndSaveBookAuthors(savedBook, requestDTO.getAuthor());
-
-        if (!CollectionUtils.isEmpty(requestDTO.getCategoryIds())) {
-            bookCategoryService.addCategoriesToBook(savedBook.getId(), requestDTO.getCategoryIds());
-        }else {
-            throw new CategoryLimitException();
-
-        }
-        if (!CollectionUtils.isEmpty(requestDTO.getTagIds())) {
-            for (Long tagId : requestDTO.getTagIds()) {
-                BookTagRequestDto bookTagRequestDto = new BookTagRequestDto(savedBook.getId(), tagId);
-                tagService.addBookTag(bookTagRequestDto);
+        // 7. 태그 업데이트
+        if (bookDto.getTagIds() != null && !bookDto.getTagIds().isEmpty()) {
+            List<Tag> tags = tagRepository.findAllById(bookDto.getTagIds());
+            book.clearBookTags();
+            for (Tag tag : tags) {
+                BookTag bookTag = new BookTag();
+                bookTag.setTag(tag);
+                book.addBookTag(bookTag);
             }
         }
     }
 
-    @Transactional
-    public void updateBookDetails(Long bookId, BookDetailsUpdateDTO detailsDTO) {
+    @Transactional(readOnly = true)
+    @Override
+    public BookDetailDto getBookDetailsForAdmin(Long bookId) {
+        if (!bookRepository.existsById(bookId)) {
+            throw new NotFoundBookException(bookId);
+        }
+
+        // 관리자용 상세정보 가져오기 (리뷰, 평점 등 제외)
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new NotFoundBookException(bookId));
 
-        // 중복 ISBN 체크
-        Optional<Book> existingBook = bookRepository.findByIsbn(detailsDTO.getIsbn());
-        if (existingBook.isPresent() && !existingBook.get().getId().equals(bookId)) {
-            throw new ISBNAlreadyExistsException(detailsDTO.getIsbn());
-        }
-
-        book.setTitle(detailsDTO.getTitle());
-        book.setExplanation(detailsDTO.getExplanation());
-        book.setContents(detailsDTO.getContents());
-        book.setIsbn(detailsDTO.getIsbn());
-        book.setPublishDate(detailsDTO.getPublishDate());
-        book.setSale(detailsDTO.isSale());
-
-        // 출판사 업데이트
-        if (StringUtils.hasText(detailsDTO.getPublisherName())) {
-            Publisher publisher = publisherService.findOrCreatePublisher(detailsDTO.getPublisherName());
-            book.setPublisher(publisher);
-        }
-
-        // 시리즈 업데이트
-        if (StringUtils.hasText(detailsDTO.getSeriesName())) {
-            Series series = seriesService.findOrCreateSeries(detailsDTO.getSeriesName());
-            book.setSeries(series);
-        } else {
-            book.setSeries(null); // 시리즈 이름이 없으면 null로 설정
-        }
-        bookRepository.save(book);
+        return bookMapper.toDetailDto(book);
     }
 
-    @Transactional
-    public void updateBookSalesInfo(Long bookId, BookSalesInfoUpdateDTO salesInfoDTO) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new NotFoundBookException(bookId));
 
-        book.setSalePrice(salesInfoDTO.getSalePrice());
-        book.setStock(salesInfoDTO.getStock());
-
-        bookRepository.save(book);
-    }
-
-    @Transactional
-    public void updateBookPackaging(Long bookId, boolean packaging) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new NotFoundBookException(bookId));
-
-        book.setPackaging(packaging);
-        bookRepository.save(book);
-    }
 
 
     @Transactional(readOnly = true)

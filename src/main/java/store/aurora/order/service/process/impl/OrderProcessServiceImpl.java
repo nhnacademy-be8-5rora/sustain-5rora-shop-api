@@ -20,7 +20,6 @@ import store.aurora.user.entity.User;
 import store.aurora.user.service.UserService;
 
 import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @Service
@@ -106,11 +105,39 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .name(orderedPersonInfo.getName())
                 .orderPhone(orderedPersonInfo.getPhone())
                 .preferredDeliveryDate(order.getPreferredDeliveryDate())
-                .password(Objects.isNull(user) ? orderedPersonInfo.getPassword() : null)
                 .user(user)
                 .build();
 
-        Order createdOrder = orderService.createOrder(newOrder);
+        orderSuccessProcess(orderService.createOrder(newOrder), orderDetailList, receiverInfo);
+    }
+
+    @Override
+    public void nonUserOrderProcess(OrderDTO order,
+                                    List<OrderDetailDTO> orderDetailList,
+                                    ReceiverInfoDTO receiverInfo,
+                                    OrderedPersonInfoDTO orderedPersonInfo){
+
+        int totalAmount = getTotalAmountFromOrderDetailList(orderDetailList);
+        Order newOrder = Order.builder()
+                .deliveryFee(getDeliveryFee(totalAmount))
+                .orderTime(order.getOrderTime())
+                .totalAmount(0)
+                .pointAmount(order.getPointAmount())
+                .state(OrderState.PENDING)
+                .name(orderedPersonInfo.getName())
+                .orderPhone(orderedPersonInfo.getPhone())
+                .preferredDeliveryDate(order.getPreferredDeliveryDate())
+                .password(orderedPersonInfo.getPassword())
+                .build();
+
+        orderSuccessProcess(orderService.createOrder(newOrder), orderDetailList, receiverInfo);
+    }
+
+    private void orderSuccessProcess(Order order,
+                                     List<OrderDetailDTO> orderDetailList,
+                                     ReceiverInfoDTO receiverInfo){
+
+        Order createdOrder = orderService.createOrder(order);
 
         Shipment shipment = Shipment.builder()
                 .state(ShipmentState.PENDING)

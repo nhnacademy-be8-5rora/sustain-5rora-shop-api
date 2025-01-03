@@ -47,10 +47,10 @@ public class ReviewService {
                 .orElseThrow(() -> new NotFoundUserException(userId));
 
         // 해당 사용자가 이 책을 주문했는지 확인
-        boolean hasPurchasedBook = orderRepository.existsByBookAndUser(book, user);
-        if (!hasPurchasedBook) {
-            throw new UnauthorizedReviewException("이 도서를 주문하지 않아 리뷰를 작성할 수 없습니다.");
-        }
+//        boolean hasPurchasedBook = orderRepository.existsByBookAndUser(book, user);
+//        if (!hasPurchasedBook) {
+//            throw new UnauthorizedReviewException("이 도서를 주문하지 않아 리뷰를 작성할 수 없습니다.");
+//        }
 
         // 이미 해당 책의 리뷰를 작성한 경우
         if (reviewRepository.existsByBookAndUser(book, user)) {

@@ -93,14 +93,18 @@ public class ShipmentInformationServiceImpl implements ShipmentInformationServic
      */
     private boolean validateShipmentInformation(ShipmentInformation info) {
         Long orderId = info.getOrderId();
+        if(Objects.isNull(orderId)){
+            throw new IllegalArgumentException("OrderId is null");
+        }
+
         if(!orderService.isExist(orderId)) {
             throw new OrderNotFoundException(orderId);
         }
 
         // 필수 속성이 null 인지 확인
         if(Objects.isNull(info.getReceiverName())
-        || Objects.isNull(info.getReceiverPhone())
-        || Objects.isNull(info.getReceiverAddress()) ){
+                || Objects.isNull(info.getReceiverPhone())
+                || Objects.isNull(info.getReceiverAddress()) ){
             throw new IllegalArgumentException("Required Column null: ReceiverName, ReceiverPhone, ReceiverAddress");
         }
 

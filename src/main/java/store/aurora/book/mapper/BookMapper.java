@@ -8,6 +8,7 @@ import store.aurora.book.dto.aladin.BookResponseDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.tag.BookTag;
+import store.aurora.book.entity.tag.Tag;
 import store.aurora.book.service.BookAuthorService;
 import store.aurora.book.service.BookImageService;
 import store.aurora.book.service.PublisherService;
@@ -58,8 +59,9 @@ public class BookMapper {
         bookCategories.forEach(book::addBookCategory);
 
         // Tags
-        if (bookDto.getTagIds() != null && !bookDto.getTagIds().isEmpty()) {
-            List<BookTag> bookTags = tagService.createBookTags(bookDto.getTagIds());
+        if (bookDto.getTagNames() != null && !bookDto.getTagNames().isEmpty()) {
+            List<Tag> tags = tagService.getOrCreateTagsByName(bookDto.getTagNames());
+            List<BookTag> bookTags = tagService.createBookTags(tags);
             bookTags.forEach(book::addBookTag);
         }
 

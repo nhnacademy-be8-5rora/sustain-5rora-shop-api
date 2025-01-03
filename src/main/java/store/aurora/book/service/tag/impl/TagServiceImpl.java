@@ -2,14 +2,17 @@ package store.aurora.book.service.tag.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.tag.TagRequestDto;
 import store.aurora.book.dto.tag.TagResponseDto;
+import store.aurora.book.entity.tag.BookTag;
 import store.aurora.book.entity.tag.Tag;
 import store.aurora.book.repository.tag.BookTagRepository;
 import store.aurora.book.repository.tag.TagRepository;
 import store.aurora.book.service.tag.TagService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +23,7 @@ public class TagServiceImpl implements TagService {
     /**
      * 태그 생성
      */
+    @Transactional
     @Override
     public TagResponseDto createTag(TagRequestDto requestDto) {
         if (tagRepository.findByName(requestDto.getName()).isPresent()) {
@@ -55,6 +59,7 @@ public class TagServiceImpl implements TagService {
     /**
      * 태그 수정
      */
+    @Transactional
     @Override
     public TagResponseDto updateTag(Long id, TagRequestDto requestDto) {
         Tag tag = tagRepository.findById(id)
@@ -67,6 +72,7 @@ public class TagServiceImpl implements TagService {
     /**
      * 태그 삭제
      */
+    @Transactional
     @Override
     public void deleteTag(Long id) {
         if (!tagRepository.existsById(id)) {
@@ -75,6 +81,18 @@ public class TagServiceImpl implements TagService {
         tagRepository.deleteById(id);
     }
 
+    @Transactional
+    @Override
+    public List<BookTag> createBookTags(List<Long> tagIds) {
+        List<Tag> tags = tagRepository.findAllById(tagIds);
+        return tags.stream()
+                .map(tag -> {
+                    BookTag bookTag = new BookTag();
+                    bookTag.setTag(tag);
+                    return bookTag;
+                })
+                .collect(Collectors.toList());
+    }
     /**
      * 엔티티를 DTO로 매핑
      */

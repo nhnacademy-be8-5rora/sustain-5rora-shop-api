@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface OrderService {
     boolean isExist(Long orderId);
-    void createOrder(Order order);
+    Order createOrder(Order order);
     Order getOrder(Long orderId);
     List<Order> getOrders();
     void updateOrder(Order order);

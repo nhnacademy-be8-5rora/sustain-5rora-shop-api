@@ -5,6 +5,9 @@ import org.springframework.stereotype.Service;
 import store.aurora.book.service.BookService;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.OrderDetail;
+import store.aurora.order.exception.exception404.OrderDetailNotFoundException;
+import store.aurora.order.exception.exception404.OrderNotFoundException;
+import store.aurora.order.exception.exception404.ShipmentNotFoundException;
 import store.aurora.order.repository.OrderDetailRepository;
 import store.aurora.order.service.OrderDetailService;
 import store.aurora.order.service.OrderService;
@@ -41,7 +44,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             throw new IllegalArgumentException("OrderDetailId is null");
         }
         if(!isExist(orderDetailId)) {
-            throw new IllegalArgumentException("OrderDetail does not exist");
+            throw new OrderDetailNotFoundException(orderDetailId);
         }
         return orderDetailRepository.getReferenceById(orderDetailId);
     }
@@ -57,7 +60,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             throw new IllegalArgumentException("Order is null");
         }
         if(!orderService.isExist(order.getId())) {
-            throw new IllegalArgumentException("Order does not exist");
+            throw new OrderNotFoundException(order.getId());
         }
 
         return orderDetailRepository.findByOrder(order);
@@ -68,7 +71,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         validate(orderDetail);
 
         if(!isExist(orderDetail.getId())) {
-            throw new IllegalArgumentException("OrderDetail does not exist");
+            throw new OrderDetailNotFoundException(orderDetail.getId());
         }
 
         orderDetailRepository.save(orderDetail);
@@ -80,7 +83,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             throw new IllegalArgumentException("OrderDetailId is null");
         }
         if(!isExist(orderDetailId)) {
-            throw new IllegalArgumentException("OrderDetail does not exist");
+            throw new OrderDetailNotFoundException(orderDetailId);
         }
         orderDetailRepository.deleteById(orderDetailId);
     }
@@ -93,7 +96,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             throw new IllegalArgumentException("Order must not be null");
         }
         if(!orderService.isExist(orderDetail.getOrder().getId())) {
-            throw new IllegalArgumentException("Order does not exist");
+            throw new OrderNotFoundException(orderDetail.getOrder().getId());
         }
 
         // Book Not Null
@@ -112,7 +115,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             throw new IllegalArgumentException("Shipment must not be null");
         }
         if(!shipmentService.isExist(orderDetail.getShipment().getId())) {
-            throw new IllegalArgumentException("Shipment does not exist");
+            throw new ShipmentNotFoundException(orderDetail.getShipment().getId());
         }
         if(Objects.isNull(orderDetail.getAmountDetail())) {
             throw new IllegalArgumentException("AmountDetail must not be null");

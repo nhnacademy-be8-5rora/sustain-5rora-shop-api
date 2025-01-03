@@ -3,6 +3,7 @@ package store.aurora.order.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import store.aurora.order.entity.Order;
+import store.aurora.order.exception.exception404.OrderNotFoundException;
 import store.aurora.order.repository.OrderRepository;
 import store.aurora.order.service.OrderService;
 
@@ -23,14 +24,15 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void createOrder(Order order) {
+    public Order createOrder(Order order) {
         // Order 유효성 검증
-        String error = isValuable(order);
+        String error = validateOrder(order);
         if(!Objects.isNull(error)){
             throw new IllegalArgumentException(error);
         }
 
         orderRepository.save(order);
+        return order;
     }
 
     @Override
@@ -39,7 +41,7 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalArgumentException("orderId is null");
         }
         if(!isExist(orderId)){
-            throw new IllegalArgumentException("주문 정보가 없음");
+            throw new OrderNotFoundException(orderId);
         }
         return orderRepository.getReferenceById(orderId);
     }
@@ -52,13 +54,13 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void updateOrder(Order order) {
         // Order 유효성 검증
-        if(!Objects.isNull(isValuable(order))){
-            throw new IllegalArgumentException(isValuable(order));
+        if(!Objects.isNull(validateOrder(order))){
+            throw new IllegalArgumentException(validateOrder(order));
         }
 
         // Order가 존재하는지 확인
         if(!isExist(order.getId())){
-            throw new IllegalArgumentException("주문 정보가 없음");
+            throw new OrderNotFoundException(order.getId());
         }
 
         orderRepository.save(order);
@@ -67,13 +69,13 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void deleteOrderById(Long orderId) {
         if(!isExist(orderId)){
-            throw new IllegalArgumentException("주문 정보가 없음");
+            throw new OrderNotFoundException(orderId);
         }
 
         orderRepository.deleteById(orderId);
     }
 
-    private String isValuable(Order order){
+    private String validateOrder(Order order){
         if(order == null){
             return "order is null";
         }

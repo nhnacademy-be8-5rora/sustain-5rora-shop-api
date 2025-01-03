@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import store.aurora.search.service.SearchService;
@@ -21,10 +22,10 @@ public class SearchController {
 
     private final SearchService searchService;
 
-
-    //디버그위한 요청 url : 5rora-test.com:9080/books/search?type=title&keyword=한강&orderBy=salePrice&orderDirection=desc&pageNum=1
+    // 디버그위한 요청 url : 5rora-test.com:9080/books/search?type=title&keyword=한강&orderBy=salePrice&orderDirection=desc&pageNum=1
     @GetMapping("/api/books/search")
     public ResponseEntity<Page<?>> search(
+            @RequestHeader(value = "X-USER-ID", required = false) String userId,  // X-USER-ID 헤더에서 userId를 받아옴
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String orderBy, // 정렬 기준
@@ -45,22 +46,21 @@ public class SearchController {
             pageRequest = PageRequest.of(page, 8, Sort.by(Sort.Order.asc(orderBy)));
         }
 
-        //키워드 null 허용으로 하기. 카테고리때문에.
+        // 키워드 null 허용
         Page<?> bookSearchResponseDTOPage = null;
         if (type != null && keyword != null) {
             switch (type) {
                 case "title":
-                    bookSearchResponseDTOPage = searchService.findBooksByTitleWithDetails(keyword, pageRequest);
+                    bookSearchResponseDTOPage = searchService.findBooksByTitleWithDetails(userId, keyword, pageRequest);
                     break;
                 case "category":
-                    if(keyword.isEmpty())
-                    {
+                    if(keyword.isEmpty()) {
                         keyword = "0";
                     }
-                    bookSearchResponseDTOPage = searchService.findBooksByCategoryWithDetails(Long.valueOf(keyword), pageRequest);
+                    bookSearchResponseDTOPage = searchService.findBooksByCategoryWithDetails(userId, Long.valueOf(keyword), pageRequest);
                     break;
                 case "author":
-                    bookSearchResponseDTOPage = searchService.findBooksByAuthorNameWithDetails(keyword, pageRequest);
+                    bookSearchResponseDTOPage = searchService.findBooksByAuthorNameWithDetails(userId, keyword, pageRequest);
                     break;
                 default:
                     break;
@@ -78,7 +78,4 @@ public class SearchController {
 
         return ResponseEntity.ok().body(pageResult);  // 결과가 있으면 200 OK 반환
     }
-
-
-
 }

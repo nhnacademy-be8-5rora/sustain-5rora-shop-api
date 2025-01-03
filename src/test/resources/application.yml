@@ -7,13 +7,6 @@ spring:
   lifecycle:
     timeout-per-shutdown-phase: 30s
 
-# H2 Datasource 설정
-  datasource:
-    url: jdbc:h2:mem:testdb
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
-
   jpa:
     open-in-view: false
     show-sql: true
@@ -23,17 +16,20 @@ spring:
         use_sql_comments: true
         highlight_sql: true
         auto_quote_keyword: true
-    hibernate:
-      ddl-auto: create-drop
     defer-datasource-initialization: true # ??? ?? ???? ??????. ?? JPA ???? ?????? ??? ?? ?? ?????? ?, ?????? ??? ???? ??? ?????.
 
 
 # 환경 변수로 넣어주기
 nhncloud:
   storage:
-    url: fill
-    token: fill
+    url: https://kr1-api-object-storage.nhncloudservice.com/v1/AUTH_c20e3b10d61749a2a52346ed0261d79e
+    container: aurora # 컨테이너 이름
 
+  identity:
+    token-url: "https://api-identity-infrastructure.nhncloudservice.com/v2.0/tokens"
+    tenant-id: "c20e3b10d61749a2a52346ed0261d79e"
+    username: "rkdtkscjs1@naver.com"
+    password: "tksrkd1!"
 
 ### key manager
 key:
@@ -42,3 +38,8 @@ key:
     path: /keymanager/v1.0/appkey/{app-key}/secrets/{key-id}
     app-key: qTQNj7LyHhdAazH3
     password: 5555
+
+aladin:
+  api:
+    base-url: https://www.aladin.co.kr/ttb/api
+    ttb-key: ttbrkdtkscjs10916001

@@ -24,6 +24,12 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
+    //최상위 카테고리 가져오기
+    @GetMapping("/root")
+    public ResponseEntity<List<CategoryResponseDTO>> getRootCategories() {
+        return ResponseEntity.ok(categoryService.getRootCategories());
+    }
+
     @GetMapping
     public ResponseEntity<List<CategoryResponseDTO>> getAllCategories() {
         return ResponseEntity.ok(categoryService.getAllCategories());

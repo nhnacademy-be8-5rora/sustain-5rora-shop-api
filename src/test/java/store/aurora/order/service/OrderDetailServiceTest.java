@@ -2,19 +2,18 @@ package store.aurora.order.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.Mockito;
 import store.aurora.book.entity.Book;
-import store.aurora.book.entity.Publisher;
-import store.aurora.book.repository.PublisherRepository;
 import store.aurora.book.service.BookService;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.OrderDetail;
 import store.aurora.order.entity.Shipment;
 import store.aurora.order.entity.enums.OrderState;
 import store.aurora.order.entity.enums.ShipmentState;
+import store.aurora.order.exception.exception404.OrderDetailNotFoundException;
+import store.aurora.order.exception.exception404.OrderNotFoundException;
 import store.aurora.order.repository.OrderDetailRepository;
+import store.aurora.order.service.impl.OrderDetailServiceImpl;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,24 +22,24 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
-class OrderDetailServiceTest {
-    @MockBean
+public class OrderDetailServiceTest {
+
     private OrderDetailRepository orderDetailRepository;
-    @MockBean
     private OrderService orderService;
-    @MockBean
     private BookService bookService;
-    @MockBean
-    private PublisherRepository publisherRepository;
-    @MockBean
     private ShipmentService shipmentService;
 
-    @Autowired
     private OrderDetailService orderDetailService;
 
     @BeforeEach
     void setUp() {
+        orderService = Mockito.mock(OrderService.class);
+        orderDetailRepository = Mockito.mock(OrderDetailRepository.class);
+        shipmentService = Mockito.mock(ShipmentService.class);
+        bookService = Mockito.mock(BookService.class);
+
+        orderDetailService = new OrderDetailServiceImpl(orderService, orderDetailRepository, shipmentService, bookService);
+
         Order order = new Order();
         order.setId(1L);
         order.setDeliveryFee(0);
@@ -55,8 +54,6 @@ class OrderDetailServiceTest {
         when(orderService.getOrder(1L)).thenReturn(order);
         when(orderService.isExist(order.getId())).thenReturn(true);
 
-        Publisher publisher = new Publisher(1L, "");
-        when(publisherRepository.findById(1L)).thenReturn(java.util.Optional.of(publisher));
 
         Book book = new Book();
         book.setId(1L);
@@ -67,7 +64,6 @@ class OrderDetailServiceTest {
         book.setIsbn("");
         book.setExplanation("");
         book.setPublishDate(LocalDate.now());
-        book.setPublisher(publisher);
         when(bookService.getBookById(anyLong())).thenReturn(book);
         doNothing().when(bookService).notExistThrow(anyLong());
 
@@ -77,6 +73,7 @@ class OrderDetailServiceTest {
         when(shipmentService.getShipment(anyLong())).thenReturn(shipment);
         when(shipmentService.isExist(anyLong())).thenReturn(true);
     }
+
     @Test
     void isExist() {
         when(orderDetailRepository.existsById(1L)).thenReturn(true);
@@ -85,6 +82,7 @@ class OrderDetailServiceTest {
         when(orderDetailRepository.existsById(2L)).thenReturn(false);
         assertFalse(orderDetailService.isExist(2L));
     }
+
     @Test
     void isExistWithNull(){
         assertThrows(IllegalArgumentException.class, () -> orderDetailService.isExist(null));
@@ -103,6 +101,7 @@ class OrderDetailServiceTest {
 
         verify(orderDetailRepository, times(1)).save(orderDetail);
     }
+
     @Test
     void createOrderDetailWithValidateAndThrows(){
         assertAll(
@@ -203,7 +202,7 @@ class OrderDetailServiceTest {
                     orderDetail.setShipment(shipmentService.getShipment(1L));
                     orderDetail.setAmountDetail(10000);
                     when(orderService.isExist(anyLong())).thenReturn(false);
-                    assertThrows(IllegalArgumentException.class,
+                    assertThrows(OrderNotFoundException.class,
                             ()->orderDetailService.createOrderDetail(orderDetail));
                 }
         );
@@ -224,6 +223,7 @@ class OrderDetailServiceTest {
 
         assertEquals(orderDetail, orderDetailService.getOrderDetail(1L));
     }
+
     @Test
     void getOrderDetailWithThrows(){
         assertAll(
@@ -236,7 +236,7 @@ class OrderDetailServiceTest {
                 // orderDetail does not exist
                 ()->{
                     when(orderDetailRepository.existsById(anyLong())).thenReturn(false);
-                    assertThrows(IllegalArgumentException.class,
+                    assertThrows(OrderDetailNotFoundException.class,
                             ()->orderDetailService.getOrderDetail(1L));
                 }
         );
@@ -260,7 +260,7 @@ class OrderDetailServiceTest {
         orderDetail1.setShipment(shipmentService.getShipment(1L));
         orderDetail1.setAmountDetail(10000);
 
-        when(orderDetailRepository.findAll()).thenReturn(java.util.List.of(orderDetail, orderDetail1));
+        when(orderDetailRepository.findAll()).thenReturn(List.of(orderDetail, orderDetail1));
 
         List<OrderDetail> details = orderDetailService.getOrderDetails();
         assertEquals(2, details.size());
@@ -272,31 +272,32 @@ class OrderDetailServiceTest {
 
     @Test
     void getOrderDetailsByOrder() {
-        OrderDetail orderDetail = new OrderDetail();
-        orderDetail.setId(1L);
-        orderDetail.setOrder(orderService.getOrder(1L));
-        orderDetail.setBook(bookService.getBookById(1L));
-        orderDetail.setQuantity(1);
-        orderDetail.setShipment(shipmentService.getShipment(1L));
-        orderDetail.setAmountDetail(10000);
-
         OrderDetail orderDetail1 = new OrderDetail();
-        orderDetail1.setId(2L);
+        orderDetail1.setId(1L);
         orderDetail1.setOrder(orderService.getOrder(1L));
         orderDetail1.setBook(bookService.getBookById(1L));
         orderDetail1.setQuantity(1);
         orderDetail1.setShipment(shipmentService.getShipment(1L));
         orderDetail1.setAmountDetail(10000);
 
-        when(orderDetailRepository.findByOrder(orderService.getOrder(1L))).thenReturn(java.util.List.of(orderDetail, orderDetail1));
+        OrderDetail orderDetail2 = new OrderDetail();
+        orderDetail2.setId(2L);
+        orderDetail2.setOrder(orderService.getOrder(1L));
+        orderDetail2.setBook(bookService.getBookById(1L));
+        orderDetail2.setQuantity(1);
+        orderDetail2.setShipment(shipmentService.getShipment(1L));
+        orderDetail2.setAmountDetail(10000);
+
+        when(orderDetailRepository.findByOrder(orderService.getOrder(1L))).thenReturn(List.of(orderDetail1, orderDetail2));
 
         List<OrderDetail> details = orderDetailService.getOrderDetailsByOrder(orderService.getOrder(1L));
         assertEquals(2, details.size());
-        assertTrue(details.contains(orderDetail));
         assertTrue(details.contains(orderDetail1));
+        assertTrue(details.contains(orderDetail2));
 
         verify(orderDetailRepository, times(1)).findByOrder(orderService.getOrder(1L));
     }
+
     @Test
     void getOrderDetailsByOrderWithThrows(){
         assertAll(
@@ -309,7 +310,7 @@ class OrderDetailServiceTest {
                 // order does not exist
                 ()->{
                     when(orderService.isExist(anyLong())).thenReturn(false);
-                    assertThrows(IllegalArgumentException.class,
+                    assertThrows(OrderNotFoundException.class,
                             ()->orderDetailService.getOrderDetailsByOrder(orderService.getOrder(1L)));
                 }
         );
@@ -331,6 +332,7 @@ class OrderDetailServiceTest {
 
         verify(orderDetailRepository, times(1)).save(orderDetail);
     }
+
     @Test
     void updateOrderDetailWithThrows(){
         assertAll(
@@ -350,7 +352,7 @@ class OrderDetailServiceTest {
                     orderDetail.setShipment(shipmentService.getShipment(1L));
                     orderDetail.setAmountDetail(10000);
                     when(orderDetailRepository.existsById(anyLong())).thenReturn(false);
-                    assertThrows(IllegalArgumentException.class,
+                    assertThrows(OrderDetailNotFoundException.class,
                             ()->orderDetailService.updateOrderDetail(orderDetail));
                 }
         );
@@ -364,6 +366,7 @@ class OrderDetailServiceTest {
 
         verify(orderDetailRepository, times(1)).deleteById(1L);
     }
+
     @Test
     void deleteOrderDetailByIdWithThrows(){
         assertAll(
@@ -376,7 +379,7 @@ class OrderDetailServiceTest {
                 // orderDetail does not exist
                 ()->{
                     when(orderDetailRepository.existsById(anyLong())).thenReturn(false);
-                    assertThrows(IllegalArgumentException.class,
+                    assertThrows(OrderDetailNotFoundException.class,
                             ()->orderDetailService.deleteOrderDetailById(1L));
                 }
         );

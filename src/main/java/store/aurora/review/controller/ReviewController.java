@@ -54,4 +54,19 @@ public class ReviewController {
         List<Review> reviews = reviewService.getReviewsByUserId(userId);
         return ResponseEntity.ok(reviews);
     }
+
+    // 리뷰 수정
+    @PutMapping("/{reviewId}/edit")
+    public ResponseEntity<String> updateReview(@PathVariable Long reviewId,
+                                               @RequestBody @Valid ReviewRequest request,
+                                               @RequestParam Long bookId,
+                                               @RequestParam String userId) {
+        try {
+            reviewService.updateReview(reviewId, request, bookId, userId);
+            return ResponseEntity.status(200).body("Review updated successfully");
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            return ResponseEntity.status(500).body("Update failed: " + e.getMessage());
+        }
+    }
 }

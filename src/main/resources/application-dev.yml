@@ -33,3 +33,11 @@ spring:
       enabled: true
       max-file-size: 10MB      # 파일 크기 제한
       max-request-size: 10MB
+
+  data:
+    redis:
+      host: localhost
+      port: 6379      #각자 쓰고있는 포트에 따라 변경
+      database: 0
+      username:
+      password:

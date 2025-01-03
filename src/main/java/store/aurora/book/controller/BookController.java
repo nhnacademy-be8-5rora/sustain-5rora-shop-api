@@ -2,6 +2,8 @@ package store.aurora.book.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import store.aurora.book.dto.BookSalesInfoUpdateDTO;
 import store.aurora.book.dto.aladin.BookDetailDto;
 import store.aurora.book.dto.aladin.BookRequestDto;
 import store.aurora.book.dto.aladin.BookResponseDto;
+import store.aurora.book.page.CustomPage;
 import store.aurora.book.service.BookAuthorService;
 import store.aurora.book.service.BookImageService;
 import store.aurora.book.service.BookService;
@@ -65,9 +68,16 @@ public class BookController {
     }
 
     @GetMapping
-    public ResponseEntity<List<BookResponseDto>> getAllBooks() {
-        List<BookResponseDto> books = bookService.getAllBooks();
-        return ResponseEntity.ok(books);
+    public ResponseEntity<CustomPage<BookResponseDto>> getAllBooks(Pageable pageable) {
+        Page<BookResponseDto> books = bookService.getAllBooks(pageable);
+        CustomPage<BookResponseDto> customPage = new CustomPage<>(
+                books.getContent(),
+                books.getNumber(),      // 현재 페이지
+                books.getTotalPages(),  // 총 페이지 수
+                books.getTotalElements(), // 총 요소 개수
+                books.getSize()         // 페이지 크기
+        );
+        return ResponseEntity.ok(customPage);
     }
 
     @PutMapping(value = "/{bookId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

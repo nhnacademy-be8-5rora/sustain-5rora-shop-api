@@ -23,7 +23,7 @@ public class LikeServiceImpl implements LikeService {
     private final UserRepository userRepository;
 
     @Override
-    public Like pressLike(Long bookId, String userId) {
+    public boolean pressLike(Long bookId, String userId) {
         Book findBook = bookRepository.findById(bookId).orElseThrow(() -> new NotFoundBookException(bookId));
         User findUser = userRepository.findById(userId).orElseThrow(() -> new NotFoundUserException(userId));
 
@@ -36,7 +36,8 @@ public class LikeServiceImpl implements LikeService {
 
         else like = new Like( findBook, findUser, true);
 
-        return likeRepository.save(like);
+        Like savedLike = likeRepository.save(like);  // 저장된 Like 엔티티 반환
+        return savedLike != null;  // 저장된 엔티티가 null이 아니면 성공
     }
 
     @Override

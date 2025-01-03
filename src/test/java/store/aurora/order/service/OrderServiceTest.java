@@ -1,13 +1,13 @@
 package store.aurora.order.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.Mockito;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.enums.OrderState;
 import store.aurora.order.exception.exception404.OrderNotFoundException;
 import store.aurora.order.repository.OrderRepository;
+import store.aurora.order.service.impl.OrderServiceImpl;
 import store.aurora.user.entity.User;
 import store.aurora.user.entity.UserStatus;
 import store.aurora.user.repository.UserRepository;
@@ -19,16 +19,19 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
 class OrderServiceTest {
-    @Autowired
+
     private OrderService orderService;
-
-    @MockBean
     private OrderRepository orderRepository;
-
-    @MockBean
     private UserRepository userRepository;
+
+    @BeforeEach
+    void setUp() {
+        orderRepository = Mockito.mock(OrderRepository.class);
+        orderService = new OrderServiceImpl(orderRepository);
+
+        userRepository = Mockito.mock(UserRepository.class);
+    }
 
     @Test
     void isExist() {

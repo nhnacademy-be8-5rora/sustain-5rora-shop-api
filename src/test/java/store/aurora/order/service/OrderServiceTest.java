@@ -6,7 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.enums.OrderState;
-import store.aurora.order.mapper.OrderMapper;
+import store.aurora.order.exception.exception404.OrderNotFoundException;
 import store.aurora.order.repository.OrderRepository;
 import store.aurora.user.entity.User;
 import store.aurora.user.entity.UserStatus;
@@ -44,9 +44,7 @@ class OrderServiceTest {
 
     @Test
     void isExistWithNullOrderId() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            orderService.isExist(null);
-        });
+        assertThrows(IllegalArgumentException.class, () -> orderService.isExist(null));
     }
 
     @Test
@@ -65,16 +63,27 @@ class OrderServiceTest {
 
         when(userRepository.getReferenceById(anyString())).thenReturn(mockUser);
 
-        Order order = OrderMapper.orderMapper(
-                0, LocalDateTime.now(),
-                0, 0,
-                OrderState.PENDING, "John Doe", "010-1234-5678",
-                null, userRepository.getReferenceById("John Doe"));
-        Order nonUserOrder = OrderMapper.orderMapper(
-                0, LocalDateTime.now(),
-                0, 0,
-                OrderState.PENDING, "John Doe", "010-1234-5678",
-                "", null);
+        Order order = Order.builder()
+                .deliveryFee(0)
+                .orderTime(LocalDateTime.now())
+                .totalAmount(0)
+                .pointAmount(0)
+                .state(OrderState.PENDING)
+                .name("John Doe")
+                .orderPhone("010-1234-5678")
+                .user(mockUser)
+                .build();
+
+        Order nonUserOrder = Order.builder()
+                .deliveryFee(0)
+                .orderTime(LocalDateTime.now())
+                .totalAmount(0)
+                .pointAmount(0)
+                .state(OrderState.PENDING)
+                .name("John Doe")
+                .orderPhone("010-1234-5678")
+                .password("non_user_password")
+                .build();
 
         orderService.createOrder(order);
         orderService.createOrder(nonUserOrder);
@@ -84,84 +93,94 @@ class OrderServiceTest {
 
     @Test
     void createOrderWithNullOrder() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            orderService.createOrder(null);
-        });
+        assertThrows(IllegalArgumentException.class, () -> orderService.createOrder(null));
     }
 
     @Test
-    void createOrderWithNullColumns(){
+    void createOrderWithNullColumns() {
         assertAll(
-                ()->{
-                    Order o = OrderMapper.orderMapper(
-                            null, LocalDateTime.now(),
-                            0, 0,
-                            OrderState.PENDING, "John Doe", "010-1234-5678",
-                            "", null);
-
+                () -> {
+                    Order o = Order.builder()
+                            .deliveryFee(null)
+                            .orderTime(LocalDateTime.now())
+                            .totalAmount(0)
+                            .pointAmount(0)
+                            .state(OrderState.PENDING)
+                            .name("John Doe")
+                            .orderPhone("010-1234-5678")
+                            .build();
                     assertThrows(IllegalArgumentException.class, () -> orderService.createOrder(o));
                 },
-                ()->{
-                    Order o = OrderMapper.orderMapper(
-                            0, null,
-                            0, 0,
-                            OrderState.PENDING, "John Doe", "010-1234-5678",
-                            "", null);
-
+                () -> {
+                    Order o = Order.builder()
+                            .deliveryFee(0)
+                            .orderTime(null)
+                            .totalAmount(0)
+                            .pointAmount(0)
+                            .state(OrderState.PENDING)
+                            .name("John Doe")
+                            .orderPhone("010-1234-5678")
+                            .build();
                     assertThrows(IllegalArgumentException.class, () -> orderService.createOrder(o));
                 },
-                ()->{
-                    Order o = OrderMapper.orderMapper(
-                            0, LocalDateTime.now(),
-                            null, 0,
-                            OrderState.PENDING, "John Doe", "010-1234-5678",
-                            "", null);
-
+                () -> {
+                    Order o = Order.builder()
+                            .deliveryFee(0)
+                            .orderTime(LocalDateTime.now())
+                            .totalAmount(null)
+                            .pointAmount(0)
+                            .state(OrderState.PENDING)
+                            .name("John Doe")
+                            .orderPhone("010-1234-5678")
+                            .build();
                     assertThrows(IllegalArgumentException.class, () -> orderService.createOrder(o));
                 },
-                ()->{
-                    Order o = OrderMapper.orderMapper(
-                            0, LocalDateTime.now(),
-                            0, null,
-                            OrderState.PENDING, "John Doe", "010-1234-5678",
-                            "", null);
-
+                () -> {
+                    Order o = Order.builder()
+                            .deliveryFee(0)
+                            .orderTime(LocalDateTime.now())
+                            .totalAmount(0)
+                            .pointAmount(null)
+                            .state(OrderState.PENDING)
+                            .name("John Doe")
+                            .orderPhone("010-1234-5678")
+                            .build();
                     assertThrows(IllegalArgumentException.class, () -> orderService.createOrder(o));
                 },
-                ()->{
-                    Order o = OrderMapper.orderMapper(
-                            0, LocalDateTime.now(),
-                            0, 0,
-                            null, "John Doe", "010-1234-5678",
-                            "", null);
-
+                () -> {
+                    Order o = Order.builder()
+                            .deliveryFee(0)
+                            .orderTime(LocalDateTime.now())
+                            .totalAmount(0)
+                            .pointAmount(0)
+                            .state(null)
+                            .name("John Doe")
+                            .orderPhone("010-1234-5678")
+                            .build();
                     assertThrows(IllegalArgumentException.class, () -> orderService.createOrder(o));
                 },
-                ()->{
-                    Order o = OrderMapper.orderMapper(
-                            0, LocalDateTime.now(),
-                            0, 0,
-                            OrderState.PENDING, null, "010-1234-5678",
-                            "", null);
-
+                () -> {
+                    Order o = Order.builder()
+                            .deliveryFee(0)
+                            .orderTime(LocalDateTime.now())
+                            .totalAmount(0)
+                            .pointAmount(0)
+                            .state(OrderState.PENDING)
+                            .name(null)
+                            .orderPhone("010-1234-5678")
+                            .build();
                     assertThrows(IllegalArgumentException.class, () -> orderService.createOrder(o));
                 },
-                ()->{
-                    Order o = OrderMapper.orderMapper(
-                            0, LocalDateTime.now(),
-                            0, 0,
-                            OrderState.PENDING, "John Doe", null,
-                            "", null);
-
-                    assertThrows(IllegalArgumentException.class, () -> orderService.createOrder(o));
-                },
-                ()->{
-                    Order o = OrderMapper.orderMapper(
-                            0, LocalDateTime.now(),
-                            0, 0,
-                            OrderState.PENDING, "John Doe", "010-1234-5678",
-                            null, null);
-
+                () -> {
+                    Order o = Order.builder()
+                            .deliveryFee(0)
+                            .orderTime(LocalDateTime.now())
+                            .totalAmount(0)
+                            .pointAmount(0)
+                            .state(OrderState.PENDING)
+                            .name("John Doe")
+                            .orderPhone(null)
+                            .build();
                     assertThrows(IllegalArgumentException.class, () -> orderService.createOrder(o));
                 }
         );
@@ -179,18 +198,14 @@ class OrderServiceTest {
 
     @Test
     void getOrderWithNullOrderId() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            orderService.getOrder(null);
-        });
+        assertThrows(IllegalArgumentException.class, () -> orderService.getOrder(null));
     }
 
     @Test
     void getOrderWithNonExistOrderId() {
         when(orderRepository.existsById(anyLong())).thenReturn(false);
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            orderService.getOrder(1L);
-        });
+        assertThrows(OrderNotFoundException.class, () -> orderService.getOrder(1L));
     }
 
     @Test
@@ -201,15 +216,17 @@ class OrderServiceTest {
 
     @Test
     void updateOrder() {
-        Order order = OrderMapper.orderMapper(
-                0, LocalDateTime.now(),
-                0, 0,
-                OrderState.PENDING, "John Doe", "010-1234-5678",
-                "", null);
-
-        // 테스트를 위해서 임의로 지정한 값
-        // 실제 코드에서 작성하면 안됨
-        order.setId(1L);
+        Order order = Order.builder()
+                .id(1L)
+                .deliveryFee(0)
+                .orderTime(LocalDateTime.now())
+                .totalAmount(0)
+                .pointAmount(0)
+                .state(OrderState.PENDING)
+                .name("John Doe")
+                .orderPhone("010-1234-5678")
+                .password("")
+                .build();
 
         when(orderRepository.existsById(anyLong())).thenReturn(true);
 
@@ -220,27 +237,26 @@ class OrderServiceTest {
 
     @Test
     void updateOrderWithNullOrder() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            orderService.updateOrder(null);
-        });
+        assertThrows(IllegalArgumentException.class, () -> orderService.updateOrder(null));
     }
 
     @Test
-    void updateOrderWithNotExist(){
-        Order order = OrderMapper.orderMapper(
-                0, LocalDateTime.now(),
-                0, 0,
-                OrderState.PENDING, "John Doe", "010-1234-5678",
-                "", null);
+    void updateOrderWithNotExist() {
+        Order order = Order.builder()
+                .id(1L)
+                .deliveryFee(0)
+                .orderTime(LocalDateTime.now())
+                .totalAmount(0)
+                .pointAmount(0)
+                .state(OrderState.PENDING)
+                .name("John Doe")
+                .orderPhone("010-1234-5678")
+                .password("")
+                .build();
 
-        // 테스트를 위해서 임의로 지정한 값
-        // 실제 코드에서 작성하면 안됨
-        order.setId(1L);
         when(orderRepository.existsById(anyLong())).thenReturn(false);
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            orderService.updateOrder(order);
-        });
+        assertThrows(OrderNotFoundException.class, () -> orderService.updateOrder(order));
     }
 
     @Test
@@ -256,8 +272,6 @@ class OrderServiceTest {
     void deleteOrderByIdWithNonExistOrderId() {
         when(orderRepository.existsById(anyLong())).thenReturn(false);
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            orderService.deleteOrderById(1L);
-        });
+        assertThrows(OrderNotFoundException.class, () -> orderService.deleteOrderById(1L));
     }
 }

@@ -14,6 +14,8 @@ import store.aurora.order.entity.OrderDetail;
 import store.aurora.order.entity.Shipment;
 import store.aurora.order.entity.enums.OrderState;
 import store.aurora.order.entity.enums.ShipmentState;
+import store.aurora.order.exception.exception404.OrderDetailNotFoundException;
+import store.aurora.order.exception.exception404.OrderNotFoundException;
 import store.aurora.order.repository.OrderDetailRepository;
 
 import java.time.LocalDate;
@@ -203,7 +205,7 @@ class OrderDetailServiceTest {
                     orderDetail.setShipment(shipmentService.getShipment(1L));
                     orderDetail.setAmountDetail(10000);
                     when(orderService.isExist(anyLong())).thenReturn(false);
-                    assertThrows(IllegalArgumentException.class,
+                    assertThrows(OrderNotFoundException.class,
                             ()->orderDetailService.createOrderDetail(orderDetail));
                 }
         );
@@ -236,7 +238,7 @@ class OrderDetailServiceTest {
                 // orderDetail does not exist
                 ()->{
                     when(orderDetailRepository.existsById(anyLong())).thenReturn(false);
-                    assertThrows(IllegalArgumentException.class,
+                    assertThrows(OrderDetailNotFoundException.class,
                             ()->orderDetailService.getOrderDetail(1L));
                 }
         );
@@ -309,7 +311,7 @@ class OrderDetailServiceTest {
                 // order does not exist
                 ()->{
                     when(orderService.isExist(anyLong())).thenReturn(false);
-                    assertThrows(IllegalArgumentException.class,
+                    assertThrows(OrderNotFoundException.class,
                             ()->orderDetailService.getOrderDetailsByOrder(orderService.getOrder(1L)));
                 }
         );
@@ -350,7 +352,7 @@ class OrderDetailServiceTest {
                     orderDetail.setShipment(shipmentService.getShipment(1L));
                     orderDetail.setAmountDetail(10000);
                     when(orderDetailRepository.existsById(anyLong())).thenReturn(false);
-                    assertThrows(IllegalArgumentException.class,
+                    assertThrows(OrderDetailNotFoundException.class,
                             ()->orderDetailService.updateOrderDetail(orderDetail));
                 }
         );
@@ -376,7 +378,7 @@ class OrderDetailServiceTest {
                 // orderDetail does not exist
                 ()->{
                     when(orderDetailRepository.existsById(anyLong())).thenReturn(false);
-                    assertThrows(IllegalArgumentException.class,
+                    assertThrows(OrderDetailNotFoundException.class,
                             ()->orderDetailService.deleteOrderDetailById(1L));
                 }
         );

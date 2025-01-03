@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import store.aurora.order.entity.Wrap;
+import store.aurora.order.exception.exception404.WrapNotFoundException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -118,7 +119,7 @@ class WrapServiceTest {
 
         assertDoesNotThrow(()->wrapService.updateWrap(wrap));
         wrapService.deleteByWrapId(wrap.getId());
-        assertThrows(IllegalArgumentException.class, ()->wrapService.updateWrap(wrap));
+        assertThrows(WrapNotFoundException.class, ()->wrapService.updateWrap(wrap));
     }
 
     @Test
@@ -135,6 +136,6 @@ class WrapServiceTest {
     @Test
     void deleteByWrapIdThrowException() {
         assertThrows(IllegalArgumentException.class, ()->wrapService.deleteByWrapId(null));
-        assertThrows(IllegalArgumentException.class, ()->wrapService.deleteByWrapId(100L));
+        assertThrows(WrapNotFoundException.class, ()->wrapService.deleteByWrapId(100L));
     }
 }

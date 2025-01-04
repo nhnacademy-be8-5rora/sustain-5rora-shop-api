@@ -1,9 +1,11 @@
 package store.aurora.book.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,16 +28,15 @@ import store.aurora.book.exception.book.NotFoundBookException;
 import store.aurora.book.entity.*;
 import store.aurora.book.exception.BookNotFoundException;
 import store.aurora.book.mapper.BookMapper;
-import store.aurora.book.repository.BookImageRepository;
-import store.aurora.book.repository.BookRepository;
-import store.aurora.book.repository.PublisherRepository;
-import store.aurora.book.repository.SeriesRepository;
+import store.aurora.book.repository.*;
 import store.aurora.book.repository.category.CategoryRepository;
 import store.aurora.book.repository.tag.TagRepository;
 import store.aurora.book.service.*;
 import store.aurora.book.service.category.BookCategoryService;
 import store.aurora.book.service.tag.TagService;
 import store.aurora.book.util.AladinBookClient;
+import store.aurora.search.dto.BookSearchEntityDTO;
+import store.aurora.search.dto.BookSearchResponseDTO;
 //import store.aurora.file.FileStorageService;
 
 import java.time.LocalDate;
@@ -43,10 +44,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.springframework.data.domain.Page.empty;
+
 @Service
 @RequiredArgsConstructor
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
+    private final LikeRepository likeRepository;
     private final PublisherService publisherService;
     private final SeriesService seriesService;
     private final BookCategoryService bookCategoryService;
@@ -294,5 +298,53 @@ public class BookServiceImpl implements BookService {
     public void notExistThrow(Long bookId) {
         if (!bookRepository.existsById(bookId))
             throw new BookNotFoundException(bookId);
+    }
+
+    @Override
+    public Page<BookSearchResponseDTO> getBooksByLike(String userId, Pageable pageable) {
+        // 1. 사용자가 좋아요를 누른 책 리스트 조회
+        List<Like> likes = likeRepository.findByUserIdAndIsLikeTrue(userId);
+        List<Long> bookIds = new ArrayList<>();
+        for (Like like : likes) {
+            Long bookId = like.getBook().getId();
+            bookIds.add(bookId);
+        }
+
+        // 2. bookIds가 비어있으면 빈 Page를 반환
+        if (bookIds.isEmpty()) {
+            return empty(pageable);  // 빈 페이지 반환
+        }
+
+        // 3. 좋아요한 책들 조회 (BookSearchEntityDTO 형태로)
+        Page<BookSearchEntityDTO> books = bookRepository.findBookByIdIn(bookIds, pageable);
+        // BookSearchEntityDTO -> BookSearchResponseDTO로 변환
+        Page<BookSearchResponseDTO> bookSearchResponseDTOPage = books.map(BookSearchResponseDTO::new);
+
+        for (BookSearchResponseDTO book : bookSearchResponseDTOPage.getContent()) {
+            book.setLiked(true); // 좋아요 상태를 DTO에 추가
+        }
+
+        // 4. BookSearchEntityDTO 리스트를 BookResponseDTO로 변환
+        return bookSearchResponseDTOPage;
+    }
+
+    @Override
+    public BookSearchResponseDTO findMostSeller() {
+
+        Tuple bookIdTuple = bookRepository.findMostSoldBook();
+        if (bookIdTuple == null) {
+            // bookIdTuple이 null일 경우 빈 페이지 반환
+            return null; // 또는 빈 BookSearchResponseDTO를 반환할 수도 있음
+        }
+        Long bookId = bookIdTuple.get(0, Long.class);  // 0번째가 bookId
+        // 책 ID를 리스트에 담기
+        List<Long> bookIds = new ArrayList<>();
+        bookIds.add(bookId);  // 하나의 bookId를 리스트에 추가
+        Pageable pageable = PageRequest.of(0, 1); // 첫 번째 페이지, 한 개의 책만 가져옴
+        Page<BookSearchEntityDTO> books = bookRepository.findBookByIdIn(bookIds, pageable);
+        // BookSearchEntityDTO -> BookSearchResponseDTO로 변환
+        Page<BookSearchResponseDTO> bookSearchResponseDTOPage = books.map(BookSearchResponseDTO::new);
+
+        return bookSearchResponseDTOPage.getContent().getFirst();
     }
 }

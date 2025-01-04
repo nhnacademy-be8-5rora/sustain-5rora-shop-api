@@ -28,7 +28,7 @@ public class CartItem {
     private Cart cart;
 
     @NotNull
-    @OneToOne(optional = false)//(fetch = FetchType.LAZY)
+    @ManyToOne(optional = false)//(fetch = FetchType.LAZY)
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 

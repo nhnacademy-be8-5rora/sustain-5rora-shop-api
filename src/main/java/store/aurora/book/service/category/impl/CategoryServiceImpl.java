@@ -18,6 +18,7 @@ import store.aurora.book.repository.category.BookCategoryRepository;
 import store.aurora.book.repository.category.CategoryRepository;
 import store.aurora.book.service.category.CategoryService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -204,6 +205,38 @@ public class CategoryServiceImpl implements CategoryService {
                     bookCategory.setCategory(category);
                     return bookCategory;
                 })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CategoryResponseDTO> getRootCategories() {
+        // parent가 null인 카테고리들을 가져옴
+        List<Category> categories = categoryRepository.findByParentIsNull();
+
+        // Category를 CategoryResponseDTO로 변환
+        return categories.stream()
+                .map(category -> new CategoryResponseDTO(
+                        category.getId(),
+                        category.getName(),
+                        category.getParent() != null ? category.getParent().getId() : null, // parent가 없을 경우 null 처리
+                        category.getDepth(),
+                        category.getDisplayOrder(),
+                        convertChildrenToResponseDTO(category.getChildren()) // 자식 카테고리들도 변환
+                ))
+                .collect(Collectors.toList());
+    }
+
+    // 재귀적으로 자식 카테고리들을 CategoryResponseDTO로 변환하는 메서드
+    private List<CategoryResponseDTO> convertChildrenToResponseDTO(List<Category> children) {
+        return children.stream()
+                .map(child -> new CategoryResponseDTO(
+                        child.getId(),
+                        child.getName(),
+                        child.getParent() != null ? child.getParent().getId() : null, // parent가 없을 경우 null 처리
+                        child.getDepth(),
+                        child.getDisplayOrder(),
+                        convertChildrenToResponseDTO(child.getChildren()) // 자식 카테고리가 있을 경우 재귀적으로 변환
+                ))
                 .collect(Collectors.toList());
     }
 

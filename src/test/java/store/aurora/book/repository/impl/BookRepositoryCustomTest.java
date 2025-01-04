@@ -1,5 +1,6 @@
 package store.aurora.book.repository.impl;
 
+import com.netflix.discovery.converters.Auto;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperties;
 import org.junit.platform.commons.logging.Logger;
 import org.junit.platform.commons.logging.LoggerFactory;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
@@ -54,6 +56,9 @@ public class BookRepositoryCustomTest {
 
     @Autowired
     private BookRepository bookRepository;
+
+    @Mock
+    private LikeRepository likeRepository;
 
     @BeforeEach
     public void setup() {
@@ -358,6 +363,34 @@ public class BookRepositoryCustomTest {
         assertThat(result).isNotNull(); // 페이지는 null이면 안 됨
         log.debug("testFindBooksByCategoryIdWithDetailsByNullOrBlankCategoryName 결과 값 확인: {}", result.getContent());
         assertThat(result.getContent()).isEmpty(); // 결과가 비어 있어야 함
+
+    }
+
+    @DisplayName("책 id 리스트로 책 세부사항 가져오는지 확인")
+    @Test
+    void testFindBookByIdIn() {
+        List<Long> ids= new ArrayList<>();
+        ids.add(1L);
+        ids.add(2L);
+        PageRequest pageable = PageRequest.of(0, 10);
+        Page<BookSearchEntityDTO> result = bookRepository.findBookByIdIn(ids, pageable);
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).isNotEmpty();
+        assertThat(result.getTotalElements()).isGreaterThan(0);
+        result.getContent().forEach(book -> {
+            assertThat(book.getTitle()).isNotBlank();
+            assertThat(book.getRegularPrice()).isGreaterThanOrEqualTo(0);
+            assertThat(book.getSalePrice()).isGreaterThanOrEqualTo(0);
+            assertThat(book.getPublishDate()).isNotNull();
+            assertThat(book.getPublishDate()).isBeforeOrEqualTo(LocalDate.now());
+            assertThat(book.getAuthors()).isNotEmpty();
+            book.getAuthors().forEach(author -> {
+                assertThat(author.getName()).isNotBlank();
+            });
+            assertThat(book.getReviewCount()).isGreaterThanOrEqualTo(0);
+            assertThat(book.getViewCount()).isGreaterThanOrEqualTo(0);
+        });
+
 
     }
 }

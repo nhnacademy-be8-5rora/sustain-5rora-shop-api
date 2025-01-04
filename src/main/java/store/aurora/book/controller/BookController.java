@@ -2,6 +2,7 @@ package store.aurora.book.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,6 +16,7 @@ import store.aurora.book.dto.aladin.BookResponseDto;
 import store.aurora.book.service.BookAuthorService;
 import store.aurora.book.service.BookImageService;
 import store.aurora.book.service.BookService;
+import store.aurora.search.dto.BookSearchResponseDTO;
 
 import java.util.List;
 
@@ -89,5 +91,26 @@ public class BookController {
     public ResponseEntity<BookDetailsDto> getBookDetails(@PathVariable Long bookId) {
         BookDetailsDto bookDetails = bookService.getBookDetails(bookId);
         return ResponseEntity.ok(bookDetails);
+    }
+
+    //유저가 좋아요 누른 책 리스트 반환
+    @GetMapping("/likes")
+    public ResponseEntity<Page<BookSearchResponseDTO>> getBooksByLike(@RequestHeader(value = "X-USER-ID") String userId,
+                                                                      @RequestParam Long pageNum) {
+        // 페이지 번호를 0부터 시작하는 방식으로 변환 (pageNum - 1)
+        PageRequest pageable = PageRequest.of(pageNum.intValue() - 1, 8);  // 크기 8로 설정
+
+        // 좋아요 상태에 따른 책 목록을 가져오는 서비스 호출
+        Page<BookSearchResponseDTO> books = bookService.getBooksByLike(userId, pageable);
+
+        // 책 목록을 ResponseEntity로 반환
+        return ResponseEntity.ok(books);  // 좋아요 상태에 맞는 책 목록 반환
+    }
+
+    @GetMapping("/most")
+    public ResponseEntity<BookSearchResponseDTO> getBooksByMost()
+    {
+        BookSearchResponseDTO book = bookService.findMostSeller();
+        return ResponseEntity.ok(book);
     }
 }

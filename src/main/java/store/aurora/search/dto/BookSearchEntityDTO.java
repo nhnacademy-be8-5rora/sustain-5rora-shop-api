@@ -38,14 +38,15 @@ public class BookSearchEntityDTO {
     private Long viewCount;
     private int reviewCount;
     private double reviewRating; // 리뷰 평점
+    private boolean isSale;
 
 
-
-    public BookSearchEntityDTO(Long id, String title, int regularPrice, int salePrice, LocalDate publishDate, String publisherName, String authorsString, String imgPath,String categoryIdList, Long viewCount, int reviewCount, double reviewRating) {
+    public BookSearchEntityDTO(Long id, String title, int regularPrice, int salePrice,boolean isSale, LocalDate publishDate, String publisherName, String authorsString, String imgPath,String categoryIdList, Long viewCount, int reviewCount, double reviewRating) {
         this.id = id;
         this.title = title;
         this.regularPrice = regularPrice;
         this.salePrice = salePrice;
+        this.isSale = isSale;
         this.publishDate = publishDate;
         this.publisherName = publisherName;
         this.authors = convertAuthorsStringToList(authorsString); // 변환 로직
@@ -54,6 +55,7 @@ public class BookSearchEntityDTO {
         this.viewCount = viewCount;
         this.reviewCount = reviewCount;
         this.reviewRating = reviewRating;
+
     }
 
     public List<Long> convertCategoryIdsToList(String categoryIds) {
@@ -136,7 +138,9 @@ public class BookSearchEntityDTO {
     public double getReviewRating() {
         return reviewRating;
     }
-
+    public boolean isSale() {
+        return isSale;
+    }
     @Override
     public String toString() {
         return "BookSearchEntityDTO{" +
@@ -144,6 +148,7 @@ public class BookSearchEntityDTO {
                 ", title='" + title + '\'' +
                 ", regularPrice=" + regularPrice +
                 ", salePrice=" + salePrice +
+                ", isSale=" + isSale +
                 ", publishDate=" + publishDate +
                 ", publisherName='" + publisherName + '\'' +
                 ", authors=" + authors +

@@ -89,9 +89,11 @@ public class SearchServiceImpl implements SearchService {
         Page<BookSearchResponseDTO> bookSearchResponseDTOPage = bookSearchEntityDTOPage.map(BookSearchResponseDTO::new);
 
         // 각 책마다 좋아요 상태를 확인하여 DTO에 추가
-        for (BookSearchResponseDTO book : bookSearchResponseDTOPage.getContent()) {
-            boolean isLiked = likeService.isLiked(userId, book.getId()); // Book 객체 생성하여 전달
-            book.setLiked(isLiked); // 좋아요 상태를 DTO에 추가
+        if (userId != null) {
+            for (BookSearchResponseDTO book : bookSearchResponseDTOPage.getContent()) {
+                boolean isLiked = likeService.isLiked(userId, book.getId());
+                book.setLiked(isLiked); // 좋아요 상태를 DTO에 추가
+            }
         }
 
         return bookSearchResponseDTOPage;

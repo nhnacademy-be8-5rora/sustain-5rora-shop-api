@@ -47,7 +47,7 @@ class SearchServiceImplTest {
         String title = "Example Title";
         Pageable pageable = PageRequest.of(0, 8);
 
-        BookSearchEntityDTO entityDTO = new BookSearchEntityDTO(1L, "Example Title", 20000, 18000,
+        BookSearchEntityDTO entityDTO = new BookSearchEntityDTO(1L, "Example Title", 20000, 18000,true,
                 LocalDate.of(2022, 1, 1), "Example Publisher",
                 "Author Name (AUTHOR)", "/images/example.jpg", "1,3", 5L,5,3.5);
         Page<BookSearchEntityDTO> entityDTOPage = new PageImpl<>(Collections.singletonList(entityDTO));
@@ -102,7 +102,7 @@ class SearchServiceImplTest {
         String authorName = "Example Author";
         Pageable pageable = PageRequest.of(0, 8);
 
-        BookSearchEntityDTO entityDTO = new BookSearchEntityDTO(1L, "Example Title", 20000, 18000,
+        BookSearchEntityDTO entityDTO = new BookSearchEntityDTO(1L, "Example Title", 20000, 18000,true,
                 LocalDate.of(2022, 1, 1), "Example Publisher",
                 "Example Author (AUTHOR)", "/images/example.jpg", "1,2", 5L,5,3.5);
         Page<BookSearchEntityDTO> entityDTOPage = new PageImpl<>(Collections.singletonList(entityDTO));
@@ -152,9 +152,9 @@ class SearchServiceImplTest {
         Pageable pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
 
         // Mock 데이터 준비
-        BookSearchEntityDTO mockBook1 = new BookSearchEntityDTO(1L, "Book Title 1", 1000, 800, LocalDate.now(),
+        BookSearchEntityDTO mockBook1 = new BookSearchEntityDTO(1L, "Book Title 1", 1000, 800,true, LocalDate.now(),
                 "Publisher 1", "Author1 (AUTHOR)", "imagePath1", "1,2", 5L,5,3.5);
-        BookSearchEntityDTO mockBook2 = new BookSearchEntityDTO(2L, "Book Title 2", 1200, 1000, LocalDate.now(),
+        BookSearchEntityDTO mockBook2 = new BookSearchEntityDTO(2L, "Book Title 2", 1200, 1000,true, LocalDate.now(),
                 "Publisher 2", "Author2 (EDITOR)", "imagePath2", "1,3", 5L,3,3.5);
 
         // Page 객체로 Mock 데이터 설정

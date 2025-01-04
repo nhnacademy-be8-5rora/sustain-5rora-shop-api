@@ -3,10 +3,15 @@ package store.aurora.book.controller;
 import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import store.aurora.book.dto.LikeDto;
 import store.aurora.book.service.LikeService;
+import store.aurora.search.dto.BookSearchResponseDTO;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -18,10 +23,11 @@ public class LikeController {
 
     // merge
     @PostMapping("/likes/{bookId}")
-    public ResponseEntity<LikeDto> doLike(@PathVariable Long bookId,
+    public ResponseEntity<Boolean> doLike(@PathVariable Long bookId,
                                           @RequestHeader(value = "X-USER-ID") String userId) {
-        likeService.pressLike(bookId, userId);
-        return ResponseEntity.ok().build();
+        // 서버에서 좋아요를 처리하고, 성공 여부를 boolean 값으로 반환
+        boolean isLiked = likeService.pressLike(bookId, userId);
+        return ResponseEntity.ok(isLiked);  // 좋아요 상태를 true/false로 응답
     }
 
 

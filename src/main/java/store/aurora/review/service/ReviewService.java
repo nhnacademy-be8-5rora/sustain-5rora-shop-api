@@ -1,6 +1,7 @@
 package store.aurora.review.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -8,10 +9,14 @@ import store.aurora.book.entity.Book;
 import store.aurora.book.exception.BookNotFoundException;
 import store.aurora.book.repository.BookRepository;
 import store.aurora.file.ObjectStorageService;
+import store.aurora.order.repository.OrderRepository;
 import store.aurora.review.dto.ReviewRequest;
 import store.aurora.review.entity.Review;
 import store.aurora.review.entity.ReviewImage;
 import store.aurora.review.exception.ReviewAlreadyExistsException;
+import store.aurora.review.exception.ReviewNotFoundException;
+import store.aurora.review.exception.UnauthorizedReviewException;
+import store.aurora.review.repository.ReviewImageRepository;
 import store.aurora.review.repository.ReviewRepository;
 import store.aurora.user.entity.User;
 import store.aurora.user.exception.NotFoundUserException;
@@ -29,6 +34,8 @@ public class ReviewService {
     private final ObjectStorageService objectStorageService;
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
+    private final ReviewImageRepository reviewImageRepository;
+    private final OrderRepository orderRepository;
 
     @Transactional
     //public Review saveReview
@@ -38,6 +45,12 @@ public class ReviewService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundUserException(userId));
+
+        // 해당 사용자가 이 책을 주문했는지 확인
+//        boolean hasPurchasedBook = orderRepository.existsByBookAndUser(book, user);
+//        if (!hasPurchasedBook) {
+//            throw new UnauthorizedReviewException("이 도서를 주문하지 않아 리뷰를 작성할 수 없습니다.");
+//        }
 
         // 이미 해당 책의 리뷰를 작성한 경우
         if (reviewRepository.existsByBookAndUser(book, user)) {
@@ -79,5 +92,40 @@ public class ReviewService {
         return reviewRepository.findByUser(user);
     }
 
+
+    // 리뷰 수정
+    public void updateReview(Long reviewId, ReviewRequest request, Long bookId, String userId) throws IOException {
+        Review existingReview = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ReviewNotFoundException(reviewId));
+
+        existingReview.setReviewRating(request.getRating());
+        existingReview.setReviewContent(request.getContent());
+        existingReview.setReviewCreateAt(LocalDateTime.now());
+
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException(bookId));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundUserException(userId));
+
+        existingReview.setBook(book);
+        existingReview.setUser(user);
+
+        // 기존 이미지 삭제
+        existingReview.getReviewImages().clear();
+
+        List<ReviewImage> images = new ArrayList<>();
+        for (MultipartFile file : request.getFiles()) {
+            String url = objectStorageService.uploadObject(file);
+            ReviewImage image = new ReviewImage();
+//            image.setImageFilePath(storageUrl + "/your_container_name/" + objectName);
+            image.setImageFilePath(url);
+            image.setReview(existingReview);
+            images.add(image);
+        }
+        existingReview.setReviewImages(images);
+
+        reviewRepository.save(existingReview);
+    }
 
 }

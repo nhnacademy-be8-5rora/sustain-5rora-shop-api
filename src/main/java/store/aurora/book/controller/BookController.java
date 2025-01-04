@@ -119,4 +119,10 @@ public class BookController {
         return ResponseEntity.ok(books);  // 좋아요 상태에 맞는 책 목록 반환
     }
 
+    @GetMapping("/most")
+    public ResponseEntity<BookSearchResponseDTO> getBooksByMost()
+    {
+        BookSearchResponseDTO book = bookService.findMostSeller();
+        return ResponseEntity.ok(book);
+    }
 }

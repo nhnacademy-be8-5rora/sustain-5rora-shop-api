@@ -315,9 +315,15 @@ public class BookServiceImpl implements BookService {
 
         // 3. 좋아요한 책들 조회 (BookSearchEntityDTO 형태로)
         Page<BookSearchEntityDTO> books = bookRepository.findBookByIdIn(bookIds, pageable);
+        // BookSearchEntityDTO -> BookSearchResponseDTO로 변환
+        Page<BookSearchResponseDTO> bookSearchResponseDTOPage = books.map(BookSearchResponseDTO::new);
+
+        for (BookSearchResponseDTO book : bookSearchResponseDTOPage.getContent()) {
+            book.setLiked(true); // 좋아요 상태를 DTO에 추가
+        }
 
         // 4. BookSearchEntityDTO 리스트를 BookResponseDTO로 변환
-        return books.map(BookSearchResponseDTO::new);
+        return bookSearchResponseDTOPage;
     }
 
 

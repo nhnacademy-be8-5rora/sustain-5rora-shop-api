@@ -125,6 +125,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                         book.title,
                         book.regularPrice,
                         book.salePrice,
+                        book.isSale,
                         book.publishDate,
                         publisher.name,
                         // 여러 저자와 역할을 쉼표로 묶어서 반환
@@ -235,6 +236,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                         book.title,
                         book.regularPrice,
                         book.salePrice,
+                        book.isSale,
                         book.publishDate,
                         publisher.name,
                         // 여러 저자와 역할을 쉼표로 묶어서 반환
@@ -363,8 +365,10 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                         book.title,
                         book.regularPrice,
                         book.salePrice,
+                        book.isSale,
                         book.publishDate,
                         publisher.name,
+
                         // 여러 저자와 역할을 쉼표로 묶어서 반환
                         JPAExpressions.select(Expressions.stringTemplate(
                                         "GROUP_CONCAT({0} || ' (' || {1} || ')')",
@@ -610,6 +614,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                         book.title,
                         book.regularPrice,
                         book.salePrice,
+                        book.isSale,
                         book.publishDate,
                         publisher.name,
                         // 여러 저자와 역할을 쉼표로 묶어서 반환

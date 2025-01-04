@@ -167,11 +167,11 @@ public class BookServiceTest {
 
         // 6. BookSearchEntityDTO 객체 생성 (BookSearchEntityDTO에서 변환된 객체들)
         BookSearchEntityDTO book1Dto = new BookSearchEntityDTO(
-                1L, "Book Title 1", 10000, 8000, LocalDate.of(2023, 5, 15), "Publisher Name",
+                1L, "Book Title 1", 10000, 8000,true, LocalDate.of(2023, 5, 15), "Publisher Name",
                 "Author Name (Author Role), Another Author (Editor)", "path/to/image1.jpg", "1,2,3", 100L, 10, 4.5
         );
         BookSearchEntityDTO book2Dto = new BookSearchEntityDTO(
-                2L, "Book Title 2", 15000, 12000, LocalDate.of(2022, 8, 22), "Another Publisher",
+                2L, "Book Title 2", 15000, 12000,true, LocalDate.of(2022, 8, 22), "Another Publisher",
                 "Author Two (Writer), Third Author", "path/to/image2.jpg", "4,5", 200L, 20, 4.0
         );
 

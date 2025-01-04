@@ -57,7 +57,7 @@ class SearchControllerTest {
         String type = "title";
         int pageNum = 1;
         PageRequest pageRequest = createPageRequest(pageNum).withSort(Sort.by(Sort.Order.asc("id"))); // 정렬을 명시적으로 설정
-        BookSearchResponseDTO responseDTO = new BookSearchResponseDTO(1L, "Example Title", 1000, 900, null, "Example Publisher", null, null, null, 5L, 3, 3.5,true);
+        BookSearchResponseDTO responseDTO = new BookSearchResponseDTO(1L, "Example Title", 1000, 900, null, "Example Publisher", null, null, null, 5L, 3, 3.5,true,true);
         Page<BookSearchResponseDTO> page = new PageImpl<>(Collections.singletonList(responseDTO));
 
         when(searchService.findBooksByTitleWithDetails(null,keyword, pageRequest)).thenReturn(page);
@@ -82,7 +82,7 @@ class SearchControllerTest {
         String type = "author";
         int pageNum = 1;
         PageRequest pageRequest = createPageRequest(pageNum).withSort(Sort.by(Sort.Order.asc("id"))); // 정렬을 명시적으로 설정
-        BookSearchResponseDTO responseDTO = new BookSearchResponseDTO(1L, "Example Book", 1000, 900, null, "Example Publisher", null, null, null, 5L, 3, 3.5,true);
+        BookSearchResponseDTO responseDTO = new BookSearchResponseDTO(1L, "Example Book", 1000, 900, null, "Example Publisher", null, null, null, 5L, 3, 3.5,true,true);
         Page<BookSearchResponseDTO> page = new PageImpl<>(Collections.singletonList(responseDTO));
 
         when(searchService.findBooksByAuthorNameWithDetails(null,keyword, pageRequest)).thenReturn(page);
@@ -176,8 +176,8 @@ class SearchControllerTest {
         List<AuthorDTO> authors = new ArrayList<>();
         authors.add(new AuthorDTO("Author Name", null));
 
-        BookSearchResponseDTO responseDTO1 = new BookSearchResponseDTO(1L, "Example Book 1", 1000, 900, null, "Example Publisher", null, authors, categoryIds, 5L, 3, 3.5,false);
-        BookSearchResponseDTO responseDTO2 = new BookSearchResponseDTO(2L, "Example Book 2", 1200, 1100, null, "Example Publisher", null, authors, categoryIds, 5L, 3, 3.5,false);
+        BookSearchResponseDTO responseDTO1 = new BookSearchResponseDTO(1L, "Example Book 1", 1000, 900, null, "Example Publisher", null, authors, categoryIds, 5L, 3, 3.5,false,true);
+        BookSearchResponseDTO responseDTO2 = new BookSearchResponseDTO(2L, "Example Book 2", 1200, 1100, null, "Example Publisher", null, authors, categoryIds, 5L, 3, 3.5,false,true);
 
         List<BookSearchResponseDTO> responses = Arrays.asList(responseDTO1, responseDTO2);
         Page<BookSearchResponseDTO> page = new PageImpl<>(responses);

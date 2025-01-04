@@ -26,16 +26,15 @@ import store.aurora.book.exception.book.NotFoundBookException;
 import store.aurora.book.entity.*;
 import store.aurora.book.exception.BookNotFoundException;
 import store.aurora.book.mapper.BookMapper;
-import store.aurora.book.repository.BookImageRepository;
-import store.aurora.book.repository.BookRepository;
-import store.aurora.book.repository.PublisherRepository;
-import store.aurora.book.repository.SeriesRepository;
+import store.aurora.book.repository.*;
 import store.aurora.book.repository.category.CategoryRepository;
 import store.aurora.book.repository.tag.TagRepository;
 import store.aurora.book.service.*;
 import store.aurora.book.service.category.BookCategoryService;
 import store.aurora.book.service.tag.TagService;
 import store.aurora.book.util.AladinBookClient;
+import store.aurora.search.dto.BookSearchEntityDTO;
+import store.aurora.search.dto.BookSearchResponseDTO;
 //import store.aurora.file.FileStorageService;
 
 import java.time.LocalDate;
@@ -43,10 +42,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.springframework.data.domain.Page.empty;
+
 @Service
 @RequiredArgsConstructor
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
+    private final LikeRepository likeRepository;
     private final PublisherService publisherService;
     private final SeriesService seriesService;
     private final BookCategoryService bookCategoryService;
@@ -295,4 +297,28 @@ public class BookServiceImpl implements BookService {
         if (!bookRepository.existsById(bookId))
             throw new BookNotFoundException(bookId);
     }
+
+    @Override
+    public Page<BookSearchResponseDTO> getBooksByLike(String userId, Pageable pageable) {
+        // 1. 사용자가 좋아요를 누른 책 리스트 조회
+        List<Like> likes = likeRepository.findByUserIdAndIsLikeTrue(userId);
+        List<Long> bookIds = new ArrayList<>();
+        for (Like like : likes) {
+            Long bookId = like.getBook().getId();
+            bookIds.add(bookId);
+        }
+
+        // 2. bookIds가 비어있으면 빈 Page를 반환
+        if (bookIds.isEmpty()) {
+            return empty(pageable);  // 빈 페이지 반환
+        }
+
+        // 3. 좋아요한 책들 조회 (BookSearchEntityDTO 형태로)
+        Page<BookSearchEntityDTO> books = bookRepository.findBookByIdIn(bookIds, pageable);
+
+        // 4. BookSearchEntityDTO 리스트를 BookResponseDTO로 변환
+        return books.map(BookSearchResponseDTO::new);
+    }
+
+
 }

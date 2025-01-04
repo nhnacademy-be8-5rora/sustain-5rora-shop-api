@@ -43,4 +43,6 @@ public interface BookService {
     List<BookRequestDto> searchBooks(String query, String queryType, String searchTarget, int start);
 
     Page<BookSearchResponseDTO> getBooksByLike(String userId, Pageable pageable);
+
+    BookSearchResponseDTO findMostSeller();
 }

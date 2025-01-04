@@ -1,6 +1,7 @@
 package store.aurora.book.repository;
 
 
+import com.querydsl.core.Tuple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import store.aurora.book.dto.category.BookCategoryDto;
@@ -22,6 +23,6 @@ public interface BookRepositoryCustom {
     List<ReviewDto> findReviewsByBookId(Long bookId);
     List<BookCategoryDto> findCategoryPathByBookId(Long bookId);
     Page<BookSearchEntityDTO> findBookByIdIn(List<Long> bookId,Pageable pageable);
-
+    Tuple findMostSoldBook();
 }
 

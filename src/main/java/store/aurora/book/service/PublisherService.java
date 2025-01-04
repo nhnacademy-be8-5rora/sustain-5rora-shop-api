@@ -10,7 +10,5 @@ public interface PublisherService {
     Publisher createPublisher(Publisher publisher);
     Publisher updatePublisher(Long id, Publisher updatedPublisher);
     void deletePublisher(Long id);
-    Publisher findOrCreatePublisher(String name);
-
-
+    Publisher getOrCreatePublisher(String name);
 }

@@ -17,7 +17,9 @@ import store.aurora.book.repository.category.BookCategoryRepository;
 import store.aurora.book.repository.category.CategoryRepository;
 import store.aurora.book.service.category.CategoryService;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +27,33 @@ import java.util.stream.Collectors;
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final BookCategoryRepository bookCategoryRepository;
+
+
+    @Override
+    public List<CategoryResponseDTO> getCategoryHierarchy() {
+        // 루트 카테고리를 한 번의 쿼리로 가져옵니다.
+        List<Category> rootCategories = categoryRepository.findAllRootCategoriesWithChildren();
+
+        // 트리 구조 생성
+        return rootCategories.stream()
+                .map(this::buildCategoryHierarchy)
+                .toList();
+    }
+
+    private CategoryResponseDTO buildCategoryHierarchy(Category category) {
+        // 현재 카테고리를 DTO로 변환
+        CategoryResponseDTO dto = new CategoryResponseDTO();
+        dto.setId(category.getId());
+        dto.setName(category.getName());
+        dto.setDepth(category.getDepth());
+
+        // 하위 카테고리 처리 (재귀 호출)
+        dto.setChildren(category.getChildren().stream()
+                .map(this::buildCategoryHierarchy)
+                .toList());
+
+        return dto;
+    }
 
     @Transactional
     public void createCategory(CategoryRequestDTO requestDTO) {
@@ -92,23 +121,69 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<CategoryDTO> findCategoryByParentId(Long categoryId) {
-        List<Category> categories;
-
-        if (categoryId == null || categoryId == 0L) {
-            // categoryId가 null이거나 0인 경우 부모가 없는 카테고리 조회 (최상위 카테고리)
-            categories = categoryRepository.findByParentIsNull();
-        } else {
-            // 주어진 categoryId로 카테고리 조회
-            categories = categoryRepository.findByParentId(categoryId);
+    public CategoryDTO findById(Long categoryId) {
+        Optional<Category> category = categoryRepository.findById(categoryId);
+        CategoryDTO categoryDTO = null;
+        if(category.isPresent()) {
+            categoryDTO= new CategoryDTO(category.get().getId(), category.get().getName(), convertChildrenToDTO(category.get().getChildren()));
         }
+        return categoryDTO;
+    }
 
-        // Category 엔티티를 CategoryDTO로 변환
+    @Transactional
+    @Override
+    public List<BookCategory> createBookCategories(List<Long> categoryIds) {
+        if (categoryIds.isEmpty() || categoryIds.size() > 10) {
+            throw new IllegalArgumentException("카테고리는 최소 1개 이상, 최대 10개 이하만 선택할 수 있습니다.");
+        }
+        List<Category> categories = categoryRepository.findAllById(categoryIds);
         return categories.stream()
-                .map(category -> new CategoryDTO(category.getId(), category.getName()))
+                .map(category -> {
+                    BookCategory bookCategory = new BookCategory();
+                    bookCategory.setCategory(category);
+                    return bookCategory;
+                })
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<CategoryResponseDTO> getRootCategories() {
+        // parent가 null인 카테고리들을 가져옴
+        List<Category> categories = categoryRepository.findByParentIsNull();
+
+        // Category를 CategoryResponseDTO로 변환
+        return categories.stream()
+                .map(category -> new CategoryResponseDTO(
+                        category.getId(),
+                        category.getName(),
+                        category.getParent() != null ? category.getParent().getId() : null, // parent가 없을 경우 null 처리
+                        category.getDepth(),
+                        category.getDisplayOrder(),
+                        convertChildrenToResponseDTO(category.getChildren()) // 자식 카테고리들도 변환
+                ))
+                .collect(Collectors.toList());
+    }
+
+    // 재귀적으로 자식 카테고리들을 CategoryResponseDTO로 변환하는 메서드
+    private List<CategoryResponseDTO> convertChildrenToResponseDTO(List<Category> children) {
+        return children.stream()
+                .map(child -> new CategoryResponseDTO(
+                        child.getId(),
+                        child.getName(),
+                        child.getParent() != null ? child.getParent().getId() : null, // parent가 없을 경우 null 처리
+                        child.getDepth(),
+                        child.getDisplayOrder(),
+                        convertChildrenToResponseDTO(child.getChildren()) // 자식 카테고리가 있을 경우 재귀적으로 변환
+                ))
+                .collect(Collectors.toList());
+    }
+
+    // 자식 카테고리를 CategoryDTO로 변환하는 메서드
+    private List<CategoryDTO> convertChildrenToDTO(List<Category> children) {
+        return children.stream()
+                .map(child -> new CategoryDTO(child.getId(), child.getName(), convertChildrenToDTO(child.getChildren())))
+                .collect(Collectors.toList());
+    }
 
 
 
@@ -151,14 +226,20 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     private CategoryResponseDTO mapToResponseDTO(Category category) {
-        return new CategoryResponseDTO(
-                category.getId(),
-                category.getName(),
-                category.getParent() != null ? category.getParent().getId() : null,
-                category.getParent() != null ? category.getParent().getName() : null,
-                category.getDepth(),
-                category.getDisplayOrder()
-        );
+        CategoryResponseDTO dto = new CategoryResponseDTO();
+        dto.setId(category.getId());
+        dto.setName(category.getName());
+        dto.setParentId(category.getParent() != null ? category.getParent().getId() : null);
+        dto.setDepth(category.getDepth());
+        dto.setDisplayOrder(category.getDisplayOrder());
+
+        // 자식 카테고리를 재귀적으로 매핑
+        List<CategoryResponseDTO> childDTOs = category.getChildren().stream()
+                .map(this::mapToResponseDTO)
+                .collect(Collectors.toList());
+        dto.setChildren(childDTOs);
+
+        return dto;
     }
 
 }

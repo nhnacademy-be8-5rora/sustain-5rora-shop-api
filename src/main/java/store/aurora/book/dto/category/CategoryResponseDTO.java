@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,7 +16,7 @@ public class CategoryResponseDTO {
     private Long id;
     private String name;
     private Long parentId;
-    private String parentName;
     private Integer depth;
     private Integer displayOrder;
+    private List<CategoryResponseDTO> children = new ArrayList<>();
 }

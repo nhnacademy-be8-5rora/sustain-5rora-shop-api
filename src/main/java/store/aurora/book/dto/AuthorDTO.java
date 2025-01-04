@@ -6,9 +6,9 @@ import store.aurora.book.entity.AuthorRole;
 @Data
 public class AuthorDTO {
     private String name;
-    private AuthorRole.Role role;
+    private String role;
 
-    public AuthorDTO(String name, AuthorRole.Role role) {
+    public AuthorDTO(String name, String role) {
         this.name = name;
         this.role = role;
     }

@@ -11,8 +11,11 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import store.aurora.book.repository.BookRepository;
+import store.aurora.book.service.LikeService;
+import store.aurora.book.service.impl.LikeServiceImpl;
 import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.search.dto.BookSearchResponseDTO;
+import store.aurora.search.service.SearchService;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -29,6 +32,9 @@ class SearchServiceImplTest {
     @InjectMocks
     private SearchServiceImpl searchService;
 
+    @Mock
+    private LikeService likeService;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -41,7 +47,7 @@ class SearchServiceImplTest {
         String title = "Example Title";
         Pageable pageable = PageRequest.of(0, 8);
 
-        BookSearchEntityDTO entityDTO = new BookSearchEntityDTO(1L, "Example Title", 20000, 18000,
+        BookSearchEntityDTO entityDTO = new BookSearchEntityDTO(1L, "Example Title", 20000, 18000,true,
                 LocalDate.of(2022, 1, 1), "Example Publisher",
                 "Author Name (AUTHOR)", "/images/example.jpg", "1,3", 5L,5,3.5);
         Page<BookSearchEntityDTO> entityDTOPage = new PageImpl<>(Collections.singletonList(entityDTO));
@@ -49,7 +55,7 @@ class SearchServiceImplTest {
         when(bookRepository.findBooksByTitleWithDetails(title, pageable)).thenReturn(entityDTOPage);
 
         // 반환값 받기
-        Page<BookSearchResponseDTO> result = searchService.findBooksByTitleWithDetails(title, pageable);
+        Page<BookSearchResponseDTO> result = searchService.findBooksByTitleWithDetails(null,title, pageable);
 
         // 결과 검증
         assertThat(result).isNotNull();
@@ -78,7 +84,7 @@ class SearchServiceImplTest {
         Pageable pageable = PageRequest.of(0, 8);
 
         // When
-        Page<BookSearchResponseDTO> resultForNull = searchService.findBooksByTitleWithDetails(title, pageable);
+        Page<BookSearchResponseDTO> resultForNull = searchService.findBooksByTitleWithDetails(null,title, pageable);
 
         // Then
         assertThat(resultForNull).isNotNull();
@@ -96,7 +102,7 @@ class SearchServiceImplTest {
         String authorName = "Example Author";
         Pageable pageable = PageRequest.of(0, 8);
 
-        BookSearchEntityDTO entityDTO = new BookSearchEntityDTO(1L, "Example Title", 20000, 18000,
+        BookSearchEntityDTO entityDTO = new BookSearchEntityDTO(1L, "Example Title", 20000, 18000,true,
                 LocalDate.of(2022, 1, 1), "Example Publisher",
                 "Example Author (AUTHOR)", "/images/example.jpg", "1,2", 5L,5,3.5);
         Page<BookSearchEntityDTO> entityDTOPage = new PageImpl<>(Collections.singletonList(entityDTO));
@@ -104,7 +110,7 @@ class SearchServiceImplTest {
         when(bookRepository.findBooksByAuthorNameWithDetails(authorName, pageable)).thenReturn(entityDTOPage);
 
         // 반환값 받기
-        Page<BookSearchResponseDTO> result = searchService.findBooksByAuthorNameWithDetails(authorName, pageable);
+        Page<BookSearchResponseDTO> result = searchService.findBooksByAuthorNameWithDetails(null,authorName, pageable);
 
         // 결과 검증
         assertThat(result).isNotNull();
@@ -125,8 +131,8 @@ class SearchServiceImplTest {
         Pageable pageable = PageRequest.of(0, 8);
 
         // When
-        Page<BookSearchResponseDTO> resultForNull = searchService.findBooksByAuthorNameWithDetails(authorName, pageable);
-        Page<BookSearchResponseDTO> resultForEmpty = searchService.findBooksByAuthorNameWithDetails(emptyAuthorName, pageable);
+        Page<BookSearchResponseDTO> resultForNull = searchService.findBooksByAuthorNameWithDetails(null,authorName, pageable);
+        Page<BookSearchResponseDTO> resultForEmpty = searchService.findBooksByAuthorNameWithDetails(null,emptyAuthorName, pageable);
 
         // Then
         assertThat(resultForNull).isNotNull();
@@ -146,9 +152,9 @@ class SearchServiceImplTest {
         Pageable pageable = PageRequest.of(0, 10); // 첫 번째 페이지, 10개의 결과
 
         // Mock 데이터 준비
-        BookSearchEntityDTO mockBook1 = new BookSearchEntityDTO(1L, "Book Title 1", 1000, 800, LocalDate.now(),
+        BookSearchEntityDTO mockBook1 = new BookSearchEntityDTO(1L, "Book Title 1", 1000, 800,true, LocalDate.now(),
                 "Publisher 1", "Author1 (AUTHOR)", "imagePath1", "1,2", 5L,5,3.5);
-        BookSearchEntityDTO mockBook2 = new BookSearchEntityDTO(2L, "Book Title 2", 1200, 1000, LocalDate.now(),
+        BookSearchEntityDTO mockBook2 = new BookSearchEntityDTO(2L, "Book Title 2", 1200, 1000,true, LocalDate.now(),
                 "Publisher 2", "Author2 (EDITOR)", "imagePath2", "1,3", 5L,3,3.5);
 
         // Page 객체로 Mock 데이터 설정
@@ -158,7 +164,7 @@ class SearchServiceImplTest {
         when(bookRepository.findBooksByCategoryWithDetails(categoryId, pageable)).thenReturn(mockPage);
 
         // When
-        Page<BookSearchResponseDTO> result = searchService.findBooksByCategoryWithDetails(categoryId, pageable);
+        Page<BookSearchResponseDTO> result = searchService.findBooksByCategoryWithDetails(null,categoryId, pageable);
 
         // Then
         assertThat(result).isNotNull();
@@ -184,7 +190,7 @@ class SearchServiceImplTest {
         Pageable pageable = PageRequest.of(0, 8);
 
         // When
-        Page<BookSearchResponseDTO> resultForNull = searchService.findBooksByCategoryWithDetails(categoryId, pageable);
+        Page<BookSearchResponseDTO> resultForNull = searchService.findBooksByCategoryWithDetails(null,categoryId, pageable);
 
         // Then
         assertThat(resultForNull).isNotNull();

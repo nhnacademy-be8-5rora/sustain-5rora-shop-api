@@ -57,10 +57,10 @@ class SearchControllerTest {
         String type = "title";
         int pageNum = 1;
         PageRequest pageRequest = createPageRequest(pageNum).withSort(Sort.by(Sort.Order.asc("id"))); // 정렬을 명시적으로 설정
-        BookSearchResponseDTO responseDTO = new BookSearchResponseDTO(1L, "Example Title", 1000, 900, null, "Example Publisher", null, null, null, 5L, 3, 3.5);
+        BookSearchResponseDTO responseDTO = new BookSearchResponseDTO(1L, "Example Title", 1000, 900, null, "Example Publisher", null, null, null, 5L, 3, 3.5,true,true);
         Page<BookSearchResponseDTO> page = new PageImpl<>(Collections.singletonList(responseDTO));
 
-        when(searchService.findBooksByTitleWithDetails(keyword, pageRequest)).thenReturn(page);
+        when(searchService.findBooksByTitleWithDetails(null,keyword, pageRequest)).thenReturn(page);
 
         mockMvc.perform(get(BASE_URL)
                         .param("type", type)
@@ -72,7 +72,7 @@ class SearchControllerTest {
                 .andExpect(jsonPath("$.content[0].id", is(1)))
                 .andExpect(jsonPath("$.content[0].title", is("Example Title")));
 
-        verify(searchService, times(1)).findBooksByTitleWithDetails(keyword, pageRequest);
+        verify(searchService, times(1)).findBooksByTitleWithDetails(null,keyword, pageRequest);
     }
 
     @DisplayName("작가이름 기준으로 검색할 때 내용과 상태코드가 잘 넘어오는지 확인")
@@ -82,10 +82,10 @@ class SearchControllerTest {
         String type = "author";
         int pageNum = 1;
         PageRequest pageRequest = createPageRequest(pageNum).withSort(Sort.by(Sort.Order.asc("id"))); // 정렬을 명시적으로 설정
-        BookSearchResponseDTO responseDTO = new BookSearchResponseDTO(1L, "Example Book", 1000, 900, null, "Example Publisher", null, null, null, 5L, 3, 3.5);
+        BookSearchResponseDTO responseDTO = new BookSearchResponseDTO(1L, "Example Book", 1000, 900, null, "Example Publisher", null, null, null, 5L, 3, 3.5,true,true);
         Page<BookSearchResponseDTO> page = new PageImpl<>(Collections.singletonList(responseDTO));
 
-        when(searchService.findBooksByAuthorNameWithDetails(keyword, pageRequest)).thenReturn(page);
+        when(searchService.findBooksByAuthorNameWithDetails(null,keyword, pageRequest)).thenReturn(page);
 
         mockMvc.perform(get(BASE_URL)
                         .param("type", type)
@@ -97,7 +97,7 @@ class SearchControllerTest {
                 .andExpect(jsonPath("$.content[0].id", is(1)))
                 .andExpect(jsonPath("$.content[0].title", is("Example Book")));
 
-        verify(searchService, times(1)).findBooksByAuthorNameWithDetails(keyword, pageRequest);
+        verify(searchService, times(1)).findBooksByAuthorNameWithDetails(null,keyword, pageRequest);
     }
 
     @DisplayName("타입이 title,author,category에 해당하지 않거나 null 또는 empty일 때 noContent 반환")
@@ -176,13 +176,13 @@ class SearchControllerTest {
         List<AuthorDTO> authors = new ArrayList<>();
         authors.add(new AuthorDTO("Author Name", null));
 
-        BookSearchResponseDTO responseDTO1 = new BookSearchResponseDTO(1L, "Example Book 1", 1000, 900, null, "Example Publisher", null, authors, categoryIds, 5L, 3, 3.5);
-        BookSearchResponseDTO responseDTO2 = new BookSearchResponseDTO(2L, "Example Book 2", 1200, 1100, null, "Example Publisher", null, authors, categoryIds, 5L, 3, 3.5);
+        BookSearchResponseDTO responseDTO1 = new BookSearchResponseDTO(1L, "Example Book 1", 1000, 900, null, "Example Publisher", null, authors, categoryIds, 5L, 3, 3.5,false,true);
+        BookSearchResponseDTO responseDTO2 = new BookSearchResponseDTO(2L, "Example Book 2", 1200, 1100, null, "Example Publisher", null, authors, categoryIds, 5L, 3, 3.5,false,true);
 
         List<BookSearchResponseDTO> responses = Arrays.asList(responseDTO1, responseDTO2);
         Page<BookSearchResponseDTO> page = new PageImpl<>(responses);
 
-        when(searchService.findBooksByCategoryWithDetails(Long.valueOf(keyword), pageRequest)).thenReturn(page);
+        when(searchService.findBooksByCategoryWithDetails(null,Long.valueOf(keyword), pageRequest)).thenReturn(page);
 
         mockMvc.perform(get(BASE_URL)
                         .param("type", type)
@@ -202,6 +202,6 @@ class SearchControllerTest {
                 .andExpect(jsonPath("$.content[1].categoryIdList[0]", is(1)))
                 .andExpect(jsonPath("$.content[1].authors[0].name", is(responseDTO2.getAuthors().get(0).getName())));
 
-        verify(searchService, times(1)).findBooksByCategoryWithDetails(Long.valueOf(keyword), pageRequest);
+        verify(searchService, times(1)).findBooksByCategoryWithDetails(null,Long.valueOf(keyword), pageRequest);
     }
 }

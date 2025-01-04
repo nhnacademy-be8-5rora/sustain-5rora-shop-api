@@ -20,4 +20,7 @@ public class Series {
     @Column(nullable = false, unique = true)
     private String name;
 
+    public Series(String name) {
+        this.name = name;
+    }
 }

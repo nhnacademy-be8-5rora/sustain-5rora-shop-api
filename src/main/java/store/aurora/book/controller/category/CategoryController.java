@@ -24,10 +24,22 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
+    //최상위 카테고리 가져오기
+    @GetMapping("/root")
+    public ResponseEntity<List<CategoryResponseDTO>> getRootCategories() {
+        return ResponseEntity.ok(categoryService.getRootCategories());
+    }
+
     @GetMapping
     public ResponseEntity<List<CategoryResponseDTO>> getAllCategories() {
-        List<CategoryResponseDTO> categories = categoryService.getAllCategories();
-        return ResponseEntity.ok(categories);
+        return ResponseEntity.ok(categoryService.getAllCategories());
+    }
+
+    // 계층형 카테고리 데이터 반환
+    @GetMapping("/hierarchy")
+    public ResponseEntity<List<CategoryResponseDTO>> getCategoryHierarchy() {
+        List<CategoryResponseDTO> hierarchy = categoryService.getCategoryHierarchy();
+        return ResponseEntity.ok(hierarchy);
     }
 
     @PostMapping
@@ -58,10 +70,10 @@ public class CategoryController {
         return ResponseEntity.ok(response);
     }
 
+
     @GetMapping("/{categoryId}")
-    public ResponseEntity<List<CategoryDTO>> getCategoriesByParentId(@PathVariable Long categoryId) {
-        List<CategoryDTO> categoryList = categoryService.findCategoryByParentId(Objects.requireNonNullElse(categoryId, 0L));
+    public ResponseEntity<CategoryDTO> getCategoriesByParentId(@PathVariable Long categoryId) {
+        CategoryDTO categoryList = categoryService.findById(Objects.requireNonNullElse(categoryId, 0L));
         return ResponseEntity.ok(categoryList);
     }
-
 }

@@ -34,7 +34,8 @@ public class BookSearchResponseDTO {
     private Long viewCount;
     private int reviewCount;
     private double reviewRating; // 리뷰 평점
-
+    private boolean liked;
+    private boolean isSale;
     public BookSearchResponseDTO(BookSearchEntityDTO book) {
         this.id = book.getId();
         this.title = book.getTitle();
@@ -49,6 +50,8 @@ public class BookSearchResponseDTO {
         this.viewCount = book.getViewCount();
         this.reviewCount = book.getReviewCount();
         this.reviewRating = book.getReviewRating();
+        this.liked=false;
+        this.isSale=book.isSale();
     }
 
     @Override
@@ -64,7 +67,9 @@ public class BookSearchResponseDTO {
                 ", categoryIdList=" + categoryIdList +  // categoryNames 추가
                 ", viewCount=" + viewCount +  // viewCount 추가
                 ", reviewCount=" + reviewCount +
-                ", reviewRating=" + reviewRating + "]";
+                ", reviewRating=" + reviewRating +
+                ", liked=" + liked +
+                ", isSale=" + isSale +"]";
     }
 
 

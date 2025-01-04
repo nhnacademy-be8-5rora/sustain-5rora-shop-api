@@ -31,4 +31,10 @@ public class BookImage {
 
     @Column(name = "is_thumbnail", nullable = false)
     private boolean isThumbnail;
+
+    public BookImage(Book book, String filePath, boolean isThumbnail) {
+        this.book = book;
+        this.filePath = filePath;
+        this.isThumbnail = isThumbnail;
+    }
 }

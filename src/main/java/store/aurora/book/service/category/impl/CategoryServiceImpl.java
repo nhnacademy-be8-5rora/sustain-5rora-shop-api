@@ -1,6 +1,8 @@
 package store.aurora.book.service.category.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.category.CategoryDTO;
@@ -12,7 +14,6 @@ import store.aurora.book.entity.category.Category;
 import store.aurora.book.exception.category.CategoryLinkedToBooksException;
 import store.aurora.book.exception.category.CategoryNotFoundException;
 import store.aurora.book.exception.category.InvalidCategoryException;
-import store.aurora.book.exception.category.SubCategoryExistsException;
 import store.aurora.book.repository.category.BookCategoryRepository;
 import store.aurora.book.repository.category.CategoryRepository;
 import store.aurora.book.service.category.CategoryService;
@@ -28,6 +29,60 @@ public class CategoryServiceImpl implements CategoryService {
     private final BookCategoryRepository bookCategoryRepository;
 
 
+    @Override
+    public Page<CategoryResponseDTO> getPagedCategories(Pageable pageable) {
+        Page<Category> categoryPage = categoryRepository.findAll(pageable);
+
+        return categoryPage.map(category -> {
+            CategoryResponseDTO dto = new CategoryResponseDTO();
+            dto.setId(category.getId());
+            dto.setName(category.getName());
+            dto.setDepth(category.getDepth());
+            dto.setParentName(category.getParent() != null ? category.getParent().getName() : null);
+            return dto;
+        });
+    }
+
+    @Override
+    public List<CategoryResponseDTO> getChildrenCategories(Long parentId) {
+        List<Category> childCategories = categoryRepository.findByParentId(parentId);
+
+        // 직속 하위 카테고리를 DTO로 변환
+        return childCategories.stream()
+                .map(this::mapToResponseDTO)
+                .toList();
+    }
+    @Override
+    public Page<CategoryResponseDTO> getPagedChildrenCategories(Long parentId, Pageable pageable) {
+        Page<Category> childCategories = categoryRepository.findByParentId(parentId, pageable);
+
+        // 직속 하위 카테고리를 DTO로 변환
+        return childCategories
+                .map(this::mapToResponseDTO);
+
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<CategoryResponseDTO> getRootCategories() {
+        // 부모가 없는 루트 카테고리를 조회
+        List<Category> rootCategories = categoryRepository.findByParentIsNull();
+
+        // CategoryResponseDTO로 변환
+        return rootCategories.stream()
+                .map(this::mapToResponseDTO)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<CategoryResponseDTO> getPagedRootCategories(Pageable pageable) {
+        // 부모가 없는 루트 카테고리를 조회
+        Page<Category> rootCategories = categoryRepository.findByParentIsNull(pageable);
+
+        // CategoryResponseDTO로 변환
+        return rootCategories.map(this::mapToResponseDTO);
+    }
     @Override
     public List<CategoryResponseDTO> getCategoryHierarchy() {
         // 루트 카테고리를 한 번의 쿼리로 가져옵니다.
@@ -54,24 +109,34 @@ public class CategoryServiceImpl implements CategoryService {
         return dto;
     }
 
+
+    @Override
     @Transactional
     public void createCategory(CategoryRequestDTO requestDTO) {
         validateCategoryName(requestDTO.getName());
-
-
         Category parent = getParentCategory(requestDTO.getParentId());
         validateUniqueCategoryName(requestDTO.getName(), parent);
 
-        Category category = new Category();
-        category.setName(requestDTO.getName());
-        category.setParent(parent);
-        category.setDepth((parent != null) ? parent.getDepth() + 1 : 0);
-        category.setDisplayOrder(calculateDisplayOrder(parent));
-
+        Category category = buildCategory(requestDTO, parent);
         categoryRepository.save(category);
     }
 
+    private Category buildCategory(CategoryRequestDTO requestDTO, Category parent) {
+        Category category = new Category();
+        category.setName(requestDTO.getName());
+        category.setParent(parent);
 
+        if (parent != null) {
+            parent.addChild(category); // 부모의 depth를 기반으로 계산
+        } else {
+            category.setDepth(0); // 루트 카테고리
+        }
+
+//        category.setDisplayOrder(calculateDisplayOrder(parent));
+        return category;
+    }
+
+    @Override
     @Transactional
     public void updateCategoryName(Long categoryId, String newName) {
         validateCategoryName(newName);
@@ -84,16 +149,13 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.save(category);
     }
 
+    @Override
     @Transactional
     public void deleteCategory(Long categoryId) {
         Category category = findCategoryByIdOrThrow(categoryId);
 
         if (bookCategoryRepository.existsByCategoryId(categoryId)) {
             throw new CategoryLinkedToBooksException(categoryId);
-        }
-
-        if (categoryRepository.existsByParent(category)) {
-            throw new SubCategoryExistsException(categoryId);
         }
         categoryRepository.delete(category);
     }
@@ -187,25 +249,17 @@ public class CategoryServiceImpl implements CategoryService {
         }
     }
 
-    private int calculateDisplayOrder(Category parent) {
-        Integer maxOrder = categoryRepository.findMaxDisplayOrderByParent(parent);
-        return (maxOrder != null) ? maxOrder + 1 : 0;
-    }
+//    private int calculateDisplayOrder(Category parent) {
+//        Integer maxOrder = categoryRepository.findMaxDisplayOrderByParent(parent);
+//        return (maxOrder != null) ? maxOrder + 1 : 0;
+//    }
 
     private CategoryResponseDTO mapToResponseDTO(Category category) {
         CategoryResponseDTO dto = new CategoryResponseDTO();
         dto.setId(category.getId());
         dto.setName(category.getName());
-        dto.setParentId(category.getParent() != null ? category.getParent().getId() : null);
         dto.setDepth(category.getDepth());
-        dto.setDisplayOrder(category.getDisplayOrder());
-
-        // 자식 카테고리를 재귀적으로 매핑
-        List<CategoryResponseDTO> childDTOs = category.getChildren().stream()
-                .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
-        dto.setChildren(childDTOs);
-
+        dto.setParentName(category.getParent() != null ? category.getParent().getName() : null);
         return dto;
     }
 

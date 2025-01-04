@@ -7,12 +7,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.tag.TagRequestDto;
 import store.aurora.book.dto.tag.TagResponseDto;
+import store.aurora.book.entity.Book;
 import store.aurora.book.entity.tag.BookTag;
 import store.aurora.book.entity.tag.Tag;
 import store.aurora.book.repository.tag.BookTagRepository;
 import store.aurora.book.repository.tag.TagRepository;
 import store.aurora.book.service.tag.TagService;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -85,7 +88,8 @@ public class TagServiceImpl implements TagService {
     }
     @Transactional
     @Override
-    public List<Tag> getOrCreateTagsByName(List<String> tagNames) {
+    public List<Tag> getOrCreateTagsByName(String tags) {
+        List<String> tagNames = parseTags(tags);
         if (tagNames == null || tagNames.isEmpty()) {
             return List.of();
         }
@@ -107,9 +111,28 @@ public class TagServiceImpl implements TagService {
                 })
                 .collect(Collectors.toList());
     }
-    /**
-     * 엔티티를 DTO로 매핑
-     */
+
+    private List<String> parseTags(String tags) {
+        if (tags == null || tags.isBlank()) {
+            return Collections.emptyList();
+        }
+
+        return Arrays.stream(tags.split(","))
+                .map(String::trim) // 공백 제거
+                .filter(tag -> !tag.isEmpty()) // 빈 태그 제거
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public String getFormattedTags(Book book) {
+        List<BookTag> bookTags = bookTagRepository.findByBook(book);
+
+        return bookTags.stream()
+                .map(bookTag -> bookTag.getTag().getName())
+                .collect(Collectors.joining(", "));
+    }
+
     private TagResponseDto mapToResponseDto(Tag tag) {
         TagResponseDto responseDto = new TagResponseDto();
         responseDto.setId(tag.getId());

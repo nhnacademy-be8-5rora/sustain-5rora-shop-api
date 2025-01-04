@@ -59,13 +59,15 @@ public class BookMapper {
         bookCategories.forEach(book::addBookCategory);
 
         // Tags
-        if (bookDto.getTagNames() != null && !bookDto.getTagNames().isEmpty()) {
-            List<Tag> tags = tagService.getOrCreateTagsByName(bookDto.getTagNames());
+        if (bookDto.getTags() != null && !bookDto.getTags().isBlank()) {
+            // 태그 파싱 및 생성/조회
+            List<Tag> tags = tagService.getOrCreateTagsByName(bookDto.getTags());
+
+            // BookTag 생성 및 연결
             List<BookTag> bookTags = tagService.createBookTags(tags);
             bookTags.forEach(book::addBookTag);
         }
-
-        return book;
+            return book;
     }
 
     // Book -> BookResponseDto 변환
@@ -107,9 +109,7 @@ public class BookMapper {
         bookDetailDto.setCategoryIds(book.getBookCategories().stream()
                 .map(category -> category.getCategory().getId())
                 .collect(Collectors.toList()));
-        bookDetailDto.setTagIds(book.getBookTags().stream()
-                .map(tag -> tag.getTag().getId())
-                .collect(Collectors.toList()));
+        bookDetailDto.setTags(tagService.getFormattedTags(book));
         bookDetailDto.setCover(bookImageService.getThumbnailPath(book));
         bookDetailDto.setAdditionalImages(bookImageService.getAdditionalImages(book));
 

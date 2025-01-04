@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.tag.TagRequestDto;
 import store.aurora.book.dto.tag.TagResponseDto;
+import store.aurora.book.entity.Book;
 import store.aurora.book.entity.tag.BookTag;
 import store.aurora.book.entity.tag.Tag;
 
@@ -27,7 +28,9 @@ public interface TagService {
 
     void deleteTag(Long id);
 
-    List<Tag> getOrCreateTagsByName(List<String> tagNames);
+    List<Tag> getOrCreateTagsByName(String tags);
 
     List<BookTag> createBookTags(List<Tag> tags);
+
+    String getFormattedTags(Book book);
 }

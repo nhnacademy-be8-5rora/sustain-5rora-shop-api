@@ -1,6 +1,7 @@
 package store.aurora.book.service.category;
 
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import store.aurora.book.dto.category.CategoryDTO;
 import store.aurora.book.dto.category.CategoryRequestDTO;
 import store.aurora.book.dto.category.CategoryResponseDTO;
@@ -10,7 +11,16 @@ import store.aurora.book.entity.category.BookCategory;
 import java.util.List;
 
 public interface CategoryService {
-    // 최적화된 계층형 데이터 가져오기
+    Page<CategoryResponseDTO> getPagedCategories(Pageable pageable);
+
+    List<CategoryResponseDTO> getChildrenCategories(Long parentId);
+
+    Page<CategoryResponseDTO> getPagedChildrenCategories(Long parentId, Pageable pageable);
+
+    List<CategoryResponseDTO> getRootCategories();
+
+    Page<CategoryResponseDTO> getPagedRootCategories(Pageable pageable);
+
     List<CategoryResponseDTO> getCategoryHierarchy();
 
     void createCategory(CategoryRequestDTO requestDTO);

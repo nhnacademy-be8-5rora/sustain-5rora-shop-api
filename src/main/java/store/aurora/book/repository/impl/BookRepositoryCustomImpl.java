@@ -516,7 +516,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                                 current.getId(),
                                 current.getName(),
                                 current.getDepth(),
-                                current.getDisplayOrder(),
+//                                current.getDisplayOrder(),
                                 new ArrayList<>()
                         )
                 );
@@ -549,7 +549,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         }
 
         // 4. 최상위 카테고리 리스트 반환
-        roots.sort(Comparator.comparingInt(BookCategoryDto::getDisplayOrder)); // 정렬 기준 설정
+//        roots.sort(Comparator.comparingInt(BookCategoryDto::getDisplayOrder)); // 정렬 기준 설정
         return roots;
     }
 

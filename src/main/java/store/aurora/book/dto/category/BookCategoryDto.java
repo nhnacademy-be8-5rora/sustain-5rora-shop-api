@@ -16,7 +16,7 @@ public class BookCategoryDto {
     private Long id;
     private String name;
     private Integer depth;
-    private Integer displayOrder;
+//    private Integer displayOrder;
     private List<BookCategoryDto> children = new ArrayList<>();
 }
 

@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import store.aurora.book.dto.tag.TagRequestDto;
 import store.aurora.book.dto.tag.TagResponseDto;
-import store.aurora.book.page.CustomPage;
 import store.aurora.book.service.tag.TagService;
 
 import java.util.List;
@@ -27,16 +26,9 @@ public class TagController {
     }
 
     @GetMapping("/paged")
-    public ResponseEntity<CustomPage<TagResponseDto>> getAllTags(Pageable pageable) {
+    public ResponseEntity<Page<TagResponseDto>> getAllTags(Pageable pageable) {
         Page<TagResponseDto> tags = tagService.getAllTags(pageable);
-        CustomPage<TagResponseDto> customPage = new CustomPage<>(
-                tags.getContent(),
-                tags.getNumber(),
-                tags.getTotalPages(),
-                tags.getTotalElements(),
-                tags.getSize()
-        );
-        return ResponseEntity.ok(customPage);
+        return ResponseEntity.ok(tags);
     }
     @GetMapping("/all")
     public ResponseEntity<List<TagResponseDto>> getAllTags() {

@@ -2,6 +2,7 @@ package store.aurora.book.repository.impl;
 
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.*;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -16,11 +17,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import store.aurora.book.dto.*;
 import store.aurora.book.dto.category.BookCategoryDto;
-import store.aurora.book.dto.category.CategoryResponseDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.entity.QBook;
 import store.aurora.book.repository.BookRepositoryCustom;
+import store.aurora.order.entity.QOrder;
+import store.aurora.order.entity.QOrderDetail;
+import store.aurora.order.entity.enums.OrderState;
 import store.aurora.search.dto.BookSearchEntityDTO;
 
 import static store.aurora.book.entity.QBook.book;
@@ -35,13 +38,17 @@ import static store.aurora.book.entity.QAuthorRole.authorRole;
 import static store.aurora.book.entity.QBookImage.bookImage;
 import static store.aurora.book.entity.tag.QBookTag.bookTag;
 import static store.aurora.book.entity.tag.QTag.tag;
+import static store.aurora.order.entity.QOrderDetail.orderDetail;
 import static store.aurora.review.entity.QReview.review;
 import static store.aurora.review.entity.QReviewImage.reviewImage;
 import static store.aurora.user.entity.QUser.user;
+import static store.aurora.order.entity.QOrder.order;
+
 
 
 import static store.aurora.utils.ValidationUtils.*;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.Objects;
@@ -72,15 +79,10 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 : book.title.like("%" + title + "%"); // 제목 필터링 조건
 
         // 이미지를 하나만 가져오는 쿼리
-        var bookImagePathSubquery = JPAExpressions.select(bookImage.filePath)
-                .from(bookImage)
-                .where(bookImage.book.id.eq(book.id)
-                        .and(bookImage.isThumbnail.isTrue()));
+        var bookImagePathSubquery = getBookImagePathSubquery();
 
         // 조회수를 가져오는 서브쿼리
-        var viewCountSubquery = JPAExpressions.select(bookView.count())
-                .from(bookView)
-                .where(bookView.book.id.eq(book.id));
+        var viewCountSubquery = getViewCountSubquery();
 
         // 리뷰 개수 가져오는 쿼리
         var reviewCountSubquery = JPAExpressions.select(review.count().intValue()) // int로 변환
@@ -88,9 +90,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .where(review.book.id.eq(book.id));
 
         // 평균 리뷰 점수 가져오는 서브쿼리
-        var averageReviewRatingSubquery = JPAExpressions.select(review.reviewRating.avg())
-                .from(review)
-                .where(review.book.id.eq(book.id));
+        var averageReviewRatingSubquery = getAverageReviewRatingSubquery();
 
         // 정렬 기준 추출
         Sort.Order sortOrder = pageable.getSort().stream().findFirst().orElse(Sort.Order.asc("id")); // 기본 정렬 기준
@@ -99,6 +99,8 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
             case "publishdate" -> book.publishDate;
             case "title" -> book.title;
             case "reviewrating" -> averageReviewRatingSubquery; // reviewRating에 대한 정렬 처리
+            case "like" -> getLikeCountSubquery();
+            case "view" -> getViewCountSubquery();
             default -> book.id; // 기본값
         };
 
@@ -174,16 +176,11 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         }
 
         // 서브쿼리: 첫 번째 이미지 경로 가져오기
-        var bookImagePathSubquery = JPAExpressions.select(bookImage.filePath)
-                .from(bookImage)
-                .where(bookImage.book.id.eq(book.id)
-                        .and(bookImage.isThumbnail.isTrue()));
+        var bookImagePathSubquery = getBookImagePathSubquery();
 
 
         // 조회수를 가져오는 서브쿼리
-        var viewCountSubquery = JPAExpressions.select(bookView.count())
-                .from(bookView)
-                .where(bookView.book.id.eq(book.id));
+        var viewCountSubquery = getViewCountSubquery();
 
         // 리뷰 개수
         var reviewCountSubquery = JPAExpressions.select(review.count().intValue()) // int로 변환
@@ -191,9 +188,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .where(review.book.id.eq(book.id));
 
         // 평균 리뷰 점수 가져오는 서브쿼리
-        var averageReviewRatingSubquery = JPAExpressions.select(review.reviewRating.avg())
-                .from(review)
-                .where(review.book.id.eq(book.id));
+        var averageReviewRatingSubquery = getAverageReviewRatingSubquery();
 
         // 정렬 조건 설정
         Sort.Order sortOrder = pageable.getSort().stream().findFirst().orElse(Sort.Order.asc("title")); // 기본 정렬 기준
@@ -307,22 +302,14 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .where(review.book.id.eq(book.id));
 
         // 평균 리뷰 점수 가져오는 서브쿼리
-        var averageReviewRatingSubquery = JPAExpressions.select(review.reviewRating.avg())
-                .from(review)
-                .where(review.book.id.eq(book.id));
+        var averageReviewRatingSubquery = getAverageReviewRatingSubquery();
 
         // 서브쿼리: 첫 번째 이미지 경로 가져오기
-        var bookImagePathSubquery = JPAExpressions.select(bookImage.filePath)
-                .from(bookImage)
-                .where(bookImage.book.id.eq(book.id)
-                        .and(bookImage.isThumbnail.isTrue()));
-
+        var bookImagePathSubquery = getBookImagePathSubquery();
 
 
         // 조회수를 가져오는 서브쿼리
-        var viewCountSubquery = JPAExpressions.select(bookView.count())
-                .from(bookView)
-                .where(bookView.book.id.eq(book.id));
+        var viewCountSubquery = getViewCountSubquery();
 
         // 정렬 조건 설정
         Sort.Order sortOrder = pageable.getSort().stream().findFirst().orElse(Sort.Order.asc("title")); // 기본 정렬 기준
@@ -561,15 +548,10 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
     public Page<BookSearchEntityDTO> findBookByIdIn(List<Long> bookId, Pageable pageable) {
 
         // 이미지를 하나만 가져오는 쿼리
-        var bookImagePathSubquery = JPAExpressions.select(bookImage.filePath)
-                .from(bookImage)
-                .where(bookImage.book.id.eq(book.id)
-                        .and(bookImage.isThumbnail.isTrue()));
+        var bookImagePathSubquery = getBookImagePathSubquery();
 
         // 조회수를 가져오는 서브쿼리
-        var viewCountSubquery = JPAExpressions.select(bookView.count())
-                .from(bookView)
-                .where(bookView.book.id.eq(book.id));
+        var viewCountSubquery = getViewCountSubquery();
 
         // 리뷰 개수 가져오는 쿼리
         var reviewCountSubquery = JPAExpressions.select(review.count().intValue()) // int로 변환
@@ -577,9 +559,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .where(review.book.id.eq(book.id));
 
         // 평균 리뷰 점수 가져오는 서브쿼리
-        var averageReviewRatingSubquery = JPAExpressions.select(review.reviewRating.avg())
-                .from(review)
-                .where(review.book.id.eq(book.id));
+        var averageReviewRatingSubquery = getAverageReviewRatingSubquery();
 
         // 정렬 기준 추출
         Sort.Order sortOrder = pageable.getSort().stream().findFirst().orElse(Sort.Order.asc("id")); // 기본 정렬 기준
@@ -651,6 +631,55 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
 
         return new PageImpl<>(content, pageable, total);
     }
+
+    // 이미지를 하나만 가져오는 서브쿼리
+    private Expression<String> getBookImagePathSubquery() {
+        return JPAExpressions.select(bookImage.filePath)
+                .from(bookImage)
+                .where(bookImage.book.id.eq(book.id)
+                        .and(bookImage.isThumbnail.isTrue()));
+    }
+
+    // 조회수를 가져오는 서브쿼리
+    private Expression<Long> getViewCountSubquery() {
+        return JPAExpressions.select(bookView.count())
+                .from(bookView)
+                .where(bookView.book.id.eq(book.id));
+    }
+    // 평균 리뷰 점수 가져오는 서브쿼리
+    private Expression<Double> getAverageReviewRatingSubquery() {
+        return JPAExpressions.select(review.reviewRating.avg())
+                .from(review)
+                .where(review.book.id.eq(book.id));
+    }
+
+    // 좋아요 수를 가져오는 서브쿼리
+    public Expression<Long> getLikeCountSubquery() {
+        return JPAExpressions.select(like.count())
+                .from(like)
+                .where(like.book.id.eq(book.id));
+    }
+
+    @Override
+// 저번 달 1일부터 마지막 날까지 가장 많이 팔린 책 id 뽑기
+    public Tuple findMostSoldBook() {
+
+        // 현재 날짜 기준으로 저번 달의 시작일과 종료일 계산
+        LocalDate now = LocalDate.now();
+        LocalDate lastMonthStart = now.minusMonths(1).withDayOfMonth(1);
+        LocalDate lastMonthEnd = now.minusMonths(1).withDayOfMonth(now.minusMonths(1).lengthOfMonth());
+
+        return queryFactory
+                .select(orderDetail.book.id, orderDetail.quantity.sum())
+                .from(orderDetail)
+                .join(orderDetail.order, order) // Order와 조인
+                .where(orderDetail.state.eq(OrderState.CONFIRMED)
+                        .and(order.orderTime.between(lastMonthStart.atStartOfDay(), lastMonthEnd.atTime(23, 59, 59)))) // 날짜 조건 추가
+                .groupBy(orderDetail.book.id)
+                .orderBy(orderDetail.quantity.sum().desc())
+                .fetchFirst(); // 첫 번째 결과만 가져옴
+    }
+
 
 
 }

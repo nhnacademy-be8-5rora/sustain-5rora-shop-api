@@ -9,9 +9,24 @@ VALUES
 INSERT INTO roles (role_name) VALUES ('ROLE_ADMIN');
 INSERT INTO roles (role_name) VALUES ('ROLE_USER');
 
+
+
+-- -------- 회원
+
 INSERT INTO users (
     is_oauth, user_birthday, user_signup_date, user_last_login, id, user_name, user_email, user_phone_number, user_pwd, user_status
 ) value (true, '2024-12-22', '2024-12-23', null, 'apple', '홍길동', 'email@gmail.com','01012345678',
          '$2b$12$rrIioTXmwjsZewl2323Z8OHI0GOfak3MvIAUnISTR5Yyf3S7eRk7y', 'ACTIVE');
 
 insert into user_roles(role_id, user_id) VALUE(2, 'apple');
+
+
+
+-- -------- 관리자
+
+INSERT INTO users (
+    is_oauth, user_birthday, user_signup_date, user_last_login, id, user_name, user_email, user_phone_number, user_pwd, user_status
+) value (true, '2024-12-22', '2024-12-23', null, 'admin', '홍길동', 'email22@gmail.com','01098682422',
+         '$2b$12$rrIioTXmwjsZewl2323Z8OHI0GOfak3MvIAUnISTR5Yyf3S7eRk7y', 'ACTIVE');
+
+insert into user_roles(role_id, user_id) VALUE(1, 'admin');

@@ -1,9 +1,11 @@
 package store.aurora.book.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -326,5 +328,23 @@ public class BookServiceImpl implements BookService {
         return bookSearchResponseDTOPage;
     }
 
+    @Override
+    public BookSearchResponseDTO findMostSeller() {
 
+        Tuple bookIdTuple = bookRepository.findMostSoldBook();
+        if (bookIdTuple == null) {
+            // bookIdTuple이 null일 경우 빈 페이지 반환
+            return null; // 또는 빈 BookSearchResponseDTO를 반환할 수도 있음
+        }
+        Long bookId = bookIdTuple.get(0, Long.class);  // 0번째가 bookId
+        // 책 ID를 리스트에 담기
+        List<Long> bookIds = new ArrayList<>();
+        bookIds.add(bookId);  // 하나의 bookId를 리스트에 추가
+        Pageable pageable = PageRequest.of(0, 1); // 첫 번째 페이지, 한 개의 책만 가져옴
+        Page<BookSearchEntityDTO> books = bookRepository.findBookByIdIn(bookIds, pageable);
+        // BookSearchEntityDTO -> BookSearchResponseDTO로 변환
+        Page<BookSearchResponseDTO> bookSearchResponseDTOPage = books.map(BookSearchResponseDTO::new);
+
+        return bookSearchResponseDTOPage.getContent().getFirst();
+    }
 }

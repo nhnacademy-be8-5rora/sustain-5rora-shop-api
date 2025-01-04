@@ -9,7 +9,7 @@ import store.aurora.book.repository.BookRepository;
 import store.aurora.book.repository.LikeRepository;
 import store.aurora.book.service.LikeService;
 import store.aurora.user.entity.User;
-import store.aurora.user.exception.NotFoundUserException;
+import store.aurora.user.exception.UserNotFoundException;
 import store.aurora.user.repository.UserRepository;
 
 import java.util.Optional;
@@ -25,7 +25,7 @@ public class LikeServiceImpl implements LikeService {
     @Override
     public boolean pressLike(Long bookId, String userId) {
         Book findBook = bookRepository.findById(bookId).orElseThrow(() -> new NotFoundBookException(bookId));
-        User findUser = userRepository.findById(userId).orElseThrow(() -> new NotFoundUserException(userId));
+        User findUser = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
         Like like=null;
         if(likeRepository.existsLikeByBookAndUser(findBook,findUser))

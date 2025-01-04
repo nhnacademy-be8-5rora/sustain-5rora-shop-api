@@ -2,8 +2,8 @@ package store.aurora.user.exception;
 
 import store.aurora.common.exception.DataNotFoundException;
 
-public class NotFoundUserException extends DataNotFoundException {
-    public NotFoundUserException(String userId) {
+public class UserNotFoundException extends DataNotFoundException {
+    public UserNotFoundException(String userId) {
         super(String.format("%s not found user", userId));
     }
 }

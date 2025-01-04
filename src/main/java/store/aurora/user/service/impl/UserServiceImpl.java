@@ -144,7 +144,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(String userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundUserException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
         user.setStatus(UserStatus.DELETED);
         userRepository.save(user);
@@ -168,14 +168,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUser(String userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundUserException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
     }
 
     // 휴면 해제 처리
     @Override
     public void reactivateUser(String userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundUserException("사용자가 존재하지 않습니다."));
+                .orElseThrow(() -> new UserNotFoundException("사용자가 존재하지 않습니다."));
 
         // 인증 api에서 비밀번호 확인 인증 처리
 

@@ -3,6 +3,7 @@ package store.aurora.order.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import store.aurora.order.entity.Wrap;
+import store.aurora.order.exception.exception404.WrapNotFoundException;
 import store.aurora.order.repository.WrapRepository;
 import store.aurora.order.service.WrapService;
 
@@ -33,7 +34,7 @@ public class WrapServiceImpl implements WrapService {
     @Override
     public Wrap getWrap(Long id) {
         if(!isExist(id)) {
-            throw new IllegalArgumentException("wrap is not exist");
+            throw new WrapNotFoundException(id);
         }
         return wrapRepository.getReferenceById(id);
     }
@@ -55,7 +56,7 @@ public class WrapServiceImpl implements WrapService {
             throw new IllegalArgumentException("wrap id is null");
         }
         else if(!isExist(wrap.getId())) {
-            throw new IllegalArgumentException("wrap is not exist");
+            throw new WrapNotFoundException(wrap.getId());
         }
         wrapRepository.save(wrap);
     }
@@ -66,7 +67,7 @@ public class WrapServiceImpl implements WrapService {
             throw new IllegalArgumentException("wrap id is null");
         }
         if(!isExist(wrapId)) {
-            throw new IllegalArgumentException("wrap is not exist");
+            throw new WrapNotFoundException(wrapId);
         }
         wrapRepository.deleteById(wrapId);
     }

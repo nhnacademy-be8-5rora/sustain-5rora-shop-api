@@ -19,7 +19,7 @@ spring:
         highlight_sql: true
         auto_quote_keyword: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     defer-datasource-initialization: true # ??? ?? ???? ??????. ?? JPA ???? ?????? ??? ?? ?? ?????? ?, ?????? ??? ???? ??? ?????.
 
 #  h2:
@@ -68,9 +68,13 @@ management:
 nhncloud:
   storage:
     url: https://kr1-api-object-storage.nhncloudservice.com/v1/AUTH_c20e3b10d61749a2a52346ed0261d79e
-    token: gAAAAABnc0U-kqIfK374SJuoxNAIptX16ELrdHz-WtL0EDwNO4Gha-9pHHoLTKqsu2a_yvPHkQq-SoAXkBLq_Anfoeu4Uz77uBB365-ySzOoEqdcjYtyW_hivK8h8OqRDHpMXA0Uaj02YBSzPVbIaE3dEXxzgCGeZRf9cg2O0Q3SUOXG-2-RGRo
     container: aurora # 컨테이너 이름
 
+  identity:
+    token-url: "https://api-identity-infrastructure.nhncloudservice.com/v2.0/tokens"
+    tenant-id: "c20e3b10d61749a2a52346ed0261d79e"
+    username: "rkdtkscjs1@naver.com"
+    password: "tksrkd1!"
 
 ### key manager
 key:

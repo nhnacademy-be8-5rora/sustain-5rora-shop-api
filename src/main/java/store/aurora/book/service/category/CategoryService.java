@@ -20,4 +20,5 @@ public interface CategoryService {
     List<Book> getBooksByCategoryId(Long categoryId);
     CategoryDTO findById(Long categoryId);
     List<BookCategory> createBookCategories(List<Long> categoryIds);
+    List<CategoryResponseDTO> getRootCategories();
 }

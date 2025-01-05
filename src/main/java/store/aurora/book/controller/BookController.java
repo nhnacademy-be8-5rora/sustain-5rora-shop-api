@@ -1,8 +1,8 @@
 package store.aurora.book.controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -10,16 +10,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.dto.BookDetailsDto;
-import store.aurora.book.dto.BookDetailsUpdateDTO;
-import store.aurora.book.dto.BookRequestDTO;
-import store.aurora.book.dto.BookSalesInfoUpdateDTO;
 import store.aurora.book.dto.aladin.BookDetailDto;
 import store.aurora.book.dto.aladin.BookRequestDto;
 import store.aurora.book.dto.aladin.BookResponseDto;
-import store.aurora.book.page.CustomPage;
 import store.aurora.book.service.BookAuthorService;
 import store.aurora.book.service.BookImageService;
 import store.aurora.book.service.BookService;
+import store.aurora.search.dto.BookSearchResponseDTO;
 
 import java.util.List;
 
@@ -68,16 +65,9 @@ public class BookController {
     }
 
     @GetMapping
-    public ResponseEntity<CustomPage<BookResponseDto>> getAllBooks(Pageable pageable) {
+    public ResponseEntity<Page<BookResponseDto>> getAllBooks(Pageable pageable) {
         Page<BookResponseDto> books = bookService.getAllBooks(pageable);
-        CustomPage<BookResponseDto> customPage = new CustomPage<>(
-                books.getContent(),
-                books.getNumber(),      // 현재 페이지
-                books.getTotalPages(),  // 총 페이지 수
-                books.getTotalElements(), // 총 요소 개수
-                books.getSize()         // 페이지 크기
-        );
-        return ResponseEntity.ok(customPage);
+        return ResponseEntity.ok(books);
     }
 
     @PutMapping(value = "/{bookId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -101,5 +91,26 @@ public class BookController {
     public ResponseEntity<BookDetailsDto> getBookDetails(@PathVariable Long bookId) {
         BookDetailsDto bookDetails = bookService.getBookDetails(bookId);
         return ResponseEntity.ok(bookDetails);
+    }
+
+    //유저가 좋아요 누른 책 리스트 반환
+    @GetMapping("/likes")
+    public ResponseEntity<Page<BookSearchResponseDTO>> getBooksByLike(@RequestHeader(value = "X-USER-ID") String userId,
+                                                                      @RequestParam Long pageNum) {
+        // 페이지 번호를 0부터 시작하는 방식으로 변환 (pageNum - 1)
+        PageRequest pageable = PageRequest.of(pageNum.intValue() - 1, 8);  // 크기 8로 설정
+
+        // 좋아요 상태에 따른 책 목록을 가져오는 서비스 호출
+        Page<BookSearchResponseDTO> books = bookService.getBooksByLike(userId, pageable);
+
+        // 책 목록을 ResponseEntity로 반환
+        return ResponseEntity.ok(books);  // 좋아요 상태에 맞는 책 목록 반환
+    }
+
+    @GetMapping("/most")
+    public ResponseEntity<BookSearchResponseDTO> getBooksByMost()
+    {
+        BookSearchResponseDTO book = bookService.findMostSeller();
+        return ResponseEntity.ok(book);
     }
 }

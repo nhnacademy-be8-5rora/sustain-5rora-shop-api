@@ -1,16 +1,21 @@
 package store.aurora.book.service.tag.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.tag.TagRequestDto;
 import store.aurora.book.dto.tag.TagResponseDto;
+import store.aurora.book.entity.Book;
 import store.aurora.book.entity.tag.BookTag;
 import store.aurora.book.entity.tag.Tag;
 import store.aurora.book.repository.tag.BookTagRepository;
 import store.aurora.book.repository.tag.TagRepository;
 import store.aurora.book.service.tag.TagService;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,9 +25,6 @@ public class TagServiceImpl implements TagService {
     private final TagRepository tagRepository;
     private final BookTagRepository bookTagRepository;
 
-    /**
-     * 태그 생성
-     */
     @Transactional
     @Override
     public TagResponseDto createTag(TagRequestDto requestDto) {
@@ -36,19 +38,29 @@ public class TagServiceImpl implements TagService {
         return mapToResponseDto(tag);
     }
 
-    /**
-     * 모든 태그 조회
-     */
+    @Transactional(readOnly = true)
     @Override
-    public List<TagResponseDto> getAllTags() {
-        return tagRepository.findAll().stream()
-                .map(this::mapToResponseDto)
-                .toList();
+    public List<TagResponseDto> searchTags(String keyword) {
+        return tagRepository.findByKeyword(keyword)
+                .stream()
+                .map(tag -> new TagResponseDto(tag.getId(), tag.getName()))
+                .collect(Collectors.toList());
     }
 
-    /**
-     * ID로 태그 조회
-     */
+    @Override
+    public List<TagResponseDto> getAllTags() {
+        return tagRepository.findAll()
+                .stream()
+                .map(this::mapToResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<TagResponseDto> getAllTags(Pageable pageable) {
+        return tagRepository.findAll(pageable)
+                .map(this::mapToResponseDto);
+    }
+
     @Override
     public TagResponseDto getTagById(Long id) {
         Tag tag = tagRepository.findById(id)
@@ -56,9 +68,6 @@ public class TagServiceImpl implements TagService {
         return mapToResponseDto(tag);
     }
 
-    /**
-     * 태그 수정
-     */
     @Transactional
     @Override
     public TagResponseDto updateTag(Long id, TagRequestDto requestDto) {
@@ -69,9 +78,6 @@ public class TagServiceImpl implements TagService {
         return mapToResponseDto(tag);
     }
 
-    /**
-     * 태그 삭제
-     */
     @Transactional
     @Override
     public void deleteTag(Long id) {
@@ -80,11 +86,23 @@ public class TagServiceImpl implements TagService {
         }
         tagRepository.deleteById(id);
     }
+    @Transactional
+    @Override
+    public List<Tag> getOrCreateTagsByName(String tags) {
+        List<String> tagNames = parseTags(tags);
+        if (tagNames == null || tagNames.isEmpty()) {
+            return List.of();
+        }
+
+        return tagNames.stream()
+                .map(tagName -> tagRepository.findByName(tagName)
+                        .orElseGet(() -> tagRepository.save(new Tag(tagName))))
+                .collect(Collectors.toList());
+    }
 
     @Transactional
     @Override
-    public List<BookTag> createBookTags(List<Long> tagIds) {
-        List<Tag> tags = tagRepository.findAllById(tagIds);
+    public List<BookTag> createBookTags(List<Tag> tags) {
         return tags.stream()
                 .map(tag -> {
                     BookTag bookTag = new BookTag();
@@ -93,9 +111,28 @@ public class TagServiceImpl implements TagService {
                 })
                 .collect(Collectors.toList());
     }
-    /**
-     * 엔티티를 DTO로 매핑
-     */
+
+    private List<String> parseTags(String tags) {
+        if (tags == null || tags.isBlank()) {
+            return Collections.emptyList();
+        }
+
+        return Arrays.stream(tags.split(","))
+                .map(String::trim) // 공백 제거
+                .filter(tag -> !tag.isEmpty()) // 빈 태그 제거
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public String getFormattedTags(Book book) {
+        List<BookTag> bookTags = bookTagRepository.findByBook(book);
+
+        return bookTags.stream()
+                .map(bookTag -> bookTag.getTag().getName())
+                .collect(Collectors.joining(", "));
+    }
+
     private TagResponseDto mapToResponseDto(Tag tag) {
         TagResponseDto responseDto = new TagResponseDto();
         responseDto.setId(tag.getId());

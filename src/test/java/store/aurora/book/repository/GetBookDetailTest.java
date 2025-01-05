@@ -97,14 +97,14 @@ public class GetBookDetailTest {
         Category parentCategory = new Category();
         parentCategory.setName("Parent Category");
         parentCategory.setDepth(0);
-        parentCategory.setDisplayOrder(1);
+//        parentCategory.setDisplayOrder(1);
         categoryRepository.save(parentCategory);
 
         Category subCategory = new Category();
         subCategory.setName("Sub Category");
         subCategory.setParent(parentCategory);
         subCategory.setDepth(1);
-        subCategory.setDisplayOrder(1);
+//        subCategory.setDisplayOrder(1);
         categoryRepository.save(subCategory);
 
         BookCategory bookCategory = new BookCategory();

@@ -1,5 +1,7 @@
 package store.aurora.book.repository.category;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -19,8 +21,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     boolean existsByParent(Category category);
 
     //todo 나중에 Query 말고 다른걸로 수정해야함
-    @Query("SELECT MAX(c.displayOrder) FROM Category c WHERE c.parent = :parent")
-    Integer findMaxDisplayOrderByParent(@Param("parent") Category parent);
+//    @Query("SELECT MAX(c.displayOrder) FROM Category c WHERE c.parent = :parent")
+//    Integer findMaxDisplayOrderByParent(@Param("parent") Category parent);
 
     long countByIdIn(List<Long> ids);
 
@@ -28,7 +30,9 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     Optional<Category> findCategoryWithBooksById(Long id);
 
     List<Category> findByParentId(Long parentId);
+    Page<Category> findByParentId(Long parentId,Pageable pageable);
     List<Category> findByParentIsNull();
+    Page<Category> findByParentIsNull(Pageable pageable);
 
 
     List<Category> findByParent(Category parent);
@@ -36,5 +40,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     @Query("SELECT c FROM Category c LEFT JOIN FETCH c.children WHERE c.parent IS NULL")
     List<Category> findAllRootCategoriesWithChildren();
 
+    @Query("SELECT c FROM Category c WHERE c.parent.id = :parentId")
+    List<Category> findAllByParentId(@Param("parentId") Long parentId);
 }
 

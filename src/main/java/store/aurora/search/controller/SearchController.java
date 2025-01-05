@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.search.service.SearchService;
 
 import java.util.List;
@@ -24,7 +25,7 @@ public class SearchController {
 
     // 디버그위한 요청 url : 5rora-test.com:9080/books/search?type=title&keyword=한강&orderBy=salePrice&orderDirection=desc&pageNum=1
     @GetMapping("/api/books/search")
-    public ResponseEntity<Page<?>> search(
+    public ResponseEntity<Page<BookSearchResponseDTO>> search(
             @RequestHeader(value = "X-USER-ID", required = false) String userId,  // X-USER-ID 헤더에서 userId를 받아옴
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String type,
@@ -47,7 +48,7 @@ public class SearchController {
         }
 
         // 키워드 null 허용
-        Page<?> bookSearchResponseDTOPage = null;
+        Page<BookSearchResponseDTO> bookSearchResponseDTOPage = null;
         if (type != null && keyword != null) {
             switch (type) {
                 case "title":
@@ -72,9 +73,9 @@ public class SearchController {
         }
 
         // PageImpl을 사용하여 반환
-        List<?> content = bookSearchResponseDTOPage.getContent();
+        List<BookSearchResponseDTO> content = bookSearchResponseDTOPage.getContent();
         long totalElements = bookSearchResponseDTOPage.getTotalElements();
-        Page<?> pageResult = new PageImpl<>(content, pageRequest, totalElements);
+        Page<BookSearchResponseDTO> pageResult = new PageImpl<>(content, pageRequest, totalElements);
 
         return ResponseEntity.ok().body(pageResult);  // 결과가 있으면 200 OK 반환
     }

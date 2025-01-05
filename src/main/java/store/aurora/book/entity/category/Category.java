@@ -28,25 +28,24 @@ public class Category {
 
     @ManyToOne
     @JoinColumn(name = "parent_id")
-    @JsonBackReference // 관계의 "inverse"
     private Category parent;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JsonManagedReference // 관계의 "owner"
     private List<Category> children = new ArrayList<>();
 
     @Column(nullable = false)
     private Integer depth;
 
-    @Column(name = "display_order", nullable = false)
-    private Integer displayOrder;
-
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookCategory> bookCategories = new ArrayList<>();
 
     public void addChild(Category child) {
+        if (this.depth >= 2) {
+            throw new IllegalStateException("더 이상 하위 계층을 추가할 수 없습니다.");
+        }
         children.add(child);
         child.setParent(this);
+        child.setDepth(this.depth + 1);
     }
 
     public void addBookCategory(BookCategory bookCategory) {

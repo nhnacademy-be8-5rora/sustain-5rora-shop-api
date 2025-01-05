@@ -18,7 +18,6 @@ import store.aurora.book.repository.category.BookCategoryRepository;
 import store.aurora.book.repository.category.CategoryRepository;
 import store.aurora.book.service.category.CategoryService;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -209,7 +208,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<CategoryResponseDTO> getRootCategories() {
+    public List<CategoryResponseDTO> getCategories() {
         // parent가 null인 카테고리들을 가져옴
         List<Category> categories = categoryRepository.findByParentIsNull();
 
@@ -219,8 +218,8 @@ public class CategoryServiceImpl implements CategoryService {
                         category.getId(),
                         category.getName(),
                         category.getParent() != null ? category.getParent().getId() : null, // parent가 없을 경우 null 처리
+                        category.getParent() != null ? category.getParent().getName() : null,
                         category.getDepth(),
-                        category.getDisplayOrder(),
                         convertChildrenToResponseDTO(category.getChildren()) // 자식 카테고리들도 변환
                 ))
                 .collect(Collectors.toList());
@@ -233,8 +232,8 @@ public class CategoryServiceImpl implements CategoryService {
                         child.getId(),
                         child.getName(),
                         child.getParent() != null ? child.getParent().getId() : null, // parent가 없을 경우 null 처리
+                        child.getParent() != null ? child.getParent().getName() : null,
                         child.getDepth(),
-                        child.getDisplayOrder(),
                         convertChildrenToResponseDTO(child.getChildren()) // 자식 카테고리가 있을 경우 재귀적으로 변환
                 ))
                 .collect(Collectors.toList());

@@ -157,6 +157,15 @@ public class CategoryServiceImpl implements CategoryService {
         if (bookCategoryRepository.existsByCategoryId(categoryId)) {
             throw new CategoryLinkedToBooksException(categoryId);
         }
+
+        // 부모-자식 관계 끊기
+        if (category.getParent() != null) {
+            category.getParent().getChildren().remove(category); // 부모의 자식 목록에서 제거
+        }
+
+        // 자식 카테고리의 부모 관계 제거
+        category.getChildren().forEach(child -> child.setParent(null));
+
         categoryRepository.delete(category);
     }
 

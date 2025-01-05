@@ -19,13 +19,11 @@ public class PointPolicy {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Setter
     @NotBlank
     @Size(max = 50)
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 50, unique = true)
     private String pointPolicyName;
 
-    @Setter
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

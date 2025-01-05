@@ -3,9 +3,8 @@ package store.aurora.point.service;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import store.aurora.point.dto.PointPolicyUpdateRequest;
 import store.aurora.point.entity.PointPolicy;
-import store.aurora.point.entity.PointPolicyType;
+import store.aurora.point.exception.PointPolicyAlreadyExistsException;
 import store.aurora.point.exception.PointPolicyNotFoundException;
 import store.aurora.point.repository.PointPolicyRepository;
 
@@ -32,5 +31,13 @@ public class PointPolicyService {
                 .orElseThrow(() -> new PointPolicyNotFoundException(id));
 
         policy.setPointPolicyValue(newValue);
+    }
+
+    public PointPolicy createPointPolicy(PointPolicy pointPolicy) {
+        if (pointPolicyRepository.existsByPointPolicyName(pointPolicy.getPointPolicyName())) {
+            throw new PointPolicyAlreadyExistsException(pointPolicy.getPointPolicyName());
+        }
+
+        return pointPolicyRepository.save(pointPolicy);
     }
 }

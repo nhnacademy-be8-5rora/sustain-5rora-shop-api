@@ -65,13 +65,13 @@ insert into series (name) values ('test name');
 
 
 -- 최상위 카테고리(부모가 없는 카테고리) 삽입
-INSERT INTO categories (name, parent_id, depth, display_order)
+INSERT INTO categories (name, parent_id, depth)
 VALUES
-    ('Example Category', NULL, 0, 1), -- 최상위 카테고리, depth 0
-    ('Example Category2', NULL, 0, 2); -- 또 다른 최상위 카테고리, depth 0
+    ('Example Category', NULL, 0), -- 최상위 카테고리, depth 0
+    ('Example Category2', NULL, 0); -- 또 다른 최상위 카테고리, depth 0
 
-INSERT INTO categories (name, parent_id, depth, display_order) VALUES ('Ex Cate Child1', 1, 1, 1);
-INSERT INTO categories (name, parent_id, depth, display_order) VALUES ('Ex Cate Child2', 1, 1, 2);
+INSERT INTO categories (name, parent_id, depth) VALUES ('Ex Cate Child1', 1, 1);
+INSERT INTO categories (name, parent_id, depth) VALUES ('Ex Cate Child2', 1, 1);
 
 
 insert into books (title, regular_price, sale_price, is_sale, explanation, publisher_id, series_id, packaging, publish_date, isbn, stock, contents) values

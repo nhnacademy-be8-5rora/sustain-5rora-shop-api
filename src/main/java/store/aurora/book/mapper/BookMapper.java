@@ -8,6 +8,7 @@ import store.aurora.book.dto.aladin.BookResponseDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.tag.BookTag;
+import store.aurora.book.entity.tag.Tag;
 import store.aurora.book.service.BookAuthorService;
 import store.aurora.book.service.BookImageService;
 import store.aurora.book.service.PublisherService;
@@ -58,12 +59,15 @@ public class BookMapper {
         bookCategories.forEach(book::addBookCategory);
 
         // Tags
-        if (bookDto.getTagIds() != null && !bookDto.getTagIds().isEmpty()) {
-            List<BookTag> bookTags = tagService.createBookTags(bookDto.getTagIds());
+        if (bookDto.getTags() != null && !bookDto.getTags().isBlank()) {
+            // 태그 파싱 및 생성/조회
+            List<Tag> tags = tagService.getOrCreateTagsByName(bookDto.getTags());
+
+            // BookTag 생성 및 연결
+            List<BookTag> bookTags = tagService.createBookTags(tags);
             bookTags.forEach(book::addBookTag);
         }
-
-        return book;
+            return book;
     }
 
     // Book -> BookResponseDto 변환
@@ -105,9 +109,7 @@ public class BookMapper {
         bookDetailDto.setCategoryIds(book.getBookCategories().stream()
                 .map(category -> category.getCategory().getId())
                 .collect(Collectors.toList()));
-        bookDetailDto.setTagIds(book.getBookTags().stream()
-                .map(tag -> tag.getTag().getId())
-                .collect(Collectors.toList()));
+        bookDetailDto.setTags(tagService.getFormattedTags(book));
         bookDetailDto.setCover(bookImageService.getThumbnailPath(book));
         bookDetailDto.setAdditionalImages(bookImageService.getAdditionalImages(book));
 

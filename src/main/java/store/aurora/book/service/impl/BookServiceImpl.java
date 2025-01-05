@@ -119,7 +119,6 @@ public class BookServiceImpl implements BookService {
         bookAuthorService.parseAndSaveBookAuthors(book, bookDto.getAuthor());
 
         bookImageService.processApiImages(book, bookDto.getCover(), additionalImages);
-
     }
 
     @Transactional
@@ -211,8 +210,8 @@ public class BookServiceImpl implements BookService {
         }
 
         // 7. 태그 업데이트
-        if (bookDto.getTagIds() != null && !bookDto.getTagIds().isEmpty()) {
-            List<Tag> tags = tagRepository.findAllById(bookDto.getTagIds());
+        if (bookDto.getTags() != null && !bookDto.getTags().isEmpty()) {
+            List<Tag> tags = tagService.getOrCreateTagsByName(bookDto.getTags());
             book.clearBookTags();
             for (Tag tag : tags) {
                 BookTag bookTag = new BookTag();

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.user.dto.SignUpRequest;
 import store.aurora.user.dto.UserDetailResponseDto;
+import store.aurora.user.dto.UserInfoResponseDto;
 import store.aurora.user.dto.UserResponseDto;
 import store.aurora.user.entity.*;
 import store.aurora.user.exception.*;
@@ -144,7 +145,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(String userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         user.setStatus(UserStatus.DELETED);
         userRepository.save(user);
@@ -168,14 +169,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public User getUser(String userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException(userId));
     }
 
     // 휴면 해제 처리
     @Override
     public void reactivateUser(String userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("사용자가 존재하지 않습니다."));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         // 인증 api에서 비밀번호 확인 인증 처리
 
@@ -211,7 +212,30 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserDetailResponseDto getPasswordAndRole(String userId) {
         User user = getUser(userId);
+        if (user.getStatus() == UserStatus.DELETED) {
+            throw new UserNotFoundException(userId);
+        }
         String role = getRole(user, userId);
         return new UserDetailResponseDto(user.getPassword(), role);
+    }
+
+    // 회원정보 조회
+    @Override
+    @Transactional(readOnly = true)
+    public UserInfoResponseDto getUserInfo(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        Rank rankName = userRankHistoryRepository.findLatestRankNameByUserId(userId)
+                .orElseThrow(() -> new RankNotFoundException(userId));
+
+        return new UserInfoResponseDto(
+                user.getId(),
+                user.getName(),
+                user.getBirth(),
+                user.getPhoneNumber(),
+                user.getEmail(),
+                rankName.name()
+        );
     }
 }

@@ -73,6 +73,10 @@ public class OrderProcessServiceImpl implements OrderProcessService {
 
             totalAmount += amount;
         }
+
+        // 배송비 계산
+        totalAmount += getDeliveryFee(totalAmount);
+
         return totalAmount;
     }
 

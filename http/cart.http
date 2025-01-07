@@ -20,7 +20,7 @@ POST http://localhost:8280/api/cart?bookId=10&quantity=2
 X-USER-ID: user123
 
 ### 회원 장바구니 삭제
-DELETE http://localhost:8280/api/cart/1
+DELETE http://localhost:9280/api/cart/1
 X-USER-ID: apple
 
 #------------------------- 비인증자 -----------------------

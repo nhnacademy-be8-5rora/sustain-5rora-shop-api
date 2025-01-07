@@ -34,6 +34,11 @@ public class PointPolicy {
     @Column(nullable = false, precision = 10, scale = 1)
     private BigDecimal pointPolicyValue;
 
+    @Setter
+    @NotNull
+    @Column(nullable = false)
+    private Boolean isActive = true;
+
     public PointPolicy(String pointPolicyName, PointPolicyType pointPolicyType, BigDecimal pointPolicyValue) {
         this.pointPolicyName = pointPolicyName;
         this.pointPolicyType = pointPolicyType;

@@ -15,7 +15,6 @@ import store.aurora.book.service.impl.LikeServiceImpl;
 import store.aurora.user.entity.User;
 import store.aurora.user.repository.UserRepository;
 import store.aurora.book.exception.book.NotFoundBookException;
-import store.aurora.user.exception.NotFoundUserException;
 
 import java.util.Optional;
 

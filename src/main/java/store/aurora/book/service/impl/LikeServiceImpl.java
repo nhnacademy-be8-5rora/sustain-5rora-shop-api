@@ -14,7 +14,7 @@ import store.aurora.book.service.LikeService;
 import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.user.entity.User;
-import store.aurora.user.exception.NotFoundUserException;
+import store.aurora.user.exception.UserNotFoundException;
 import store.aurora.user.repository.UserRepository;
 
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ public class LikeServiceImpl implements LikeService {
     @Override
     public boolean pressLike(Long bookId, String userId) {
         Book findBook = bookRepository.findById(bookId).orElseThrow(() -> new NotFoundBookException(bookId));
-        User findUser = userRepository.findById(userId).orElseThrow(() -> new NotFoundUserException(userId));
+        User findUser = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
         // 이미 좋아요를 눌렀는지 확인
         Like like = likeRepository.findByUserAndBook(findUser, findBook)
@@ -53,7 +53,7 @@ public class LikeServiceImpl implements LikeService {
         Book findBook = bookRepository.findById(bookId)
                 .orElseThrow(() -> new NotFoundBookException(bookId)); // 책이 없으면 예외 발생
         User findUser = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundUserException(userId)); // 사용자가 없으면 예외 발생
+                .orElseThrow(() -> new UserNotFoundException(userId)); // 사용자가 없으면 예외 발생
 
         // 좋아요가 눌려 있지 않으면 취소할 수 없음
         Like like = likeRepository.findByUserAndBook(findUser, findBook)

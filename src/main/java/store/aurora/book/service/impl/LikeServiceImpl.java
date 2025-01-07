@@ -53,7 +53,7 @@ public class LikeServiceImpl implements LikeService {
         Book findBook = bookRepository.findById(bookId)
                 .orElseThrow(() -> new NotFoundBookException(bookId)); // 책이 없으면 예외 발생
         User findUser = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundUserException(userId)); // 사용자가 없으면 예외 발생
+                .orElseThrow(() -> new UserNotFoundException(userId)); // 사용자가 없으면 예외 발생
 
         // 좋아요가 눌려 있지 않으면 취소할 수 없음
         Like like = likeRepository.findByUserAndBook(findUser, findBook)

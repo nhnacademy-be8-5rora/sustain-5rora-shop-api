@@ -41,6 +41,11 @@ public class PointPolicyController {
         pointPolicyService.updatePointPolicyValue(id, request.getPointPolicyValue());
     }
 
+    @PatchMapping("/{id}/toggle-status")
+    public void updatePointPolicy(@PathVariable Integer id) {
+        pointPolicyService.toggleStatus(id);
+    }
+
     @Operation(summary = "포인트 정책 등록", description = "새로운 포인트 정책을 등록합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "정책이 성공적으로 생성됨",

@@ -28,88 +28,6 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final BookCategoryRepository bookCategoryRepository;
 
-
-    @Override
-    public Page<CategoryResponseDTO> getPagedCategories(Pageable pageable) {
-        Page<Category> categoryPage = categoryRepository.findAll(pageable);
-
-        return categoryPage.map(category -> {
-            CategoryResponseDTO dto = new CategoryResponseDTO();
-            dto.setId(category.getId());
-            dto.setName(category.getName());
-            dto.setDepth(category.getDepth());
-            dto.setParentName(category.getParent() != null ? category.getParent().getName() : null);
-            return dto;
-        });
-    }
-
-    @Override
-    public List<CategoryResponseDTO> getChildrenCategories(Long parentId) {
-        List<Category> childCategories = categoryRepository.findByParentId(parentId);
-
-        // 직속 하위 카테고리를 DTO로 변환
-        return childCategories.stream()
-                .map(this::mapToResponseDTO)
-                .toList();
-    }
-    @Override
-    public Page<CategoryResponseDTO> getPagedChildrenCategories(Long parentId, Pageable pageable) {
-        Page<Category> childCategories = categoryRepository.findByParentId(parentId, pageable);
-
-        // 직속 하위 카테고리를 DTO로 변환
-        return childCategories
-                .map(this::mapToResponseDTO);
-
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public List<CategoryResponseDTO> getRootCategories() {
-        // 부모가 없는 루트 카테고리를 조회
-        List<Category> rootCategories = categoryRepository.findByParentIsNull();
-
-        // CategoryResponseDTO로 변환
-        return rootCategories.stream()
-                .map(this::mapToResponseDTO)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public Page<CategoryResponseDTO> getPagedRootCategories(Pageable pageable) {
-        // 부모가 없는 루트 카테고리를 조회
-        Page<Category> rootCategories = categoryRepository.findByParentIsNull(pageable);
-
-        // CategoryResponseDTO로 변환
-        return rootCategories.map(this::mapToResponseDTO);
-    }
-    @Override
-    public List<CategoryResponseDTO> getCategoryHierarchy() {
-        // 루트 카테고리를 한 번의 쿼리로 가져옵니다.
-        List<Category> rootCategories = categoryRepository.findAllRootCategoriesWithChildren();
-
-        // 트리 구조 생성
-        return rootCategories.stream()
-                .map(this::buildCategoryHierarchy)
-                .toList();
-    }
-
-    private CategoryResponseDTO buildCategoryHierarchy(Category category) {
-        // 현재 카테고리를 DTO로 변환
-        CategoryResponseDTO dto = new CategoryResponseDTO();
-        dto.setId(category.getId());
-        dto.setName(category.getName());
-        dto.setDepth(category.getDepth());
-
-        // 하위 카테고리 처리 (재귀 호출)
-        dto.setChildren(category.getChildren().stream()
-                .map(this::buildCategoryHierarchy)
-                .toList());
-
-        return dto;
-    }
-
-
     @Override
     @Transactional
     public void createCategory(CategoryRequestDTO requestDTO) {
@@ -132,7 +50,6 @@ public class CategoryServiceImpl implements CategoryService {
             category.setDepth(0); // 루트 카테고리
         }
 
-//        category.setDisplayOrder(calculateDisplayOrder(parent));
         return category;
     }
 
@@ -169,15 +86,26 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.delete(category);
     }
 
-    @Override
     @Transactional(readOnly = true)
-    public List<CategoryResponseDTO> getAllCategories() {
-        return categoryRepository.findAll()
-                .stream()
-                .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
+    @Override
+    public Page<CategoryResponseDTO> getRootCategories(Pageable pageable) {
+        // 부모가 없는 루트 카테고리를 조회
+        Page<Category> rootCategories = categoryRepository.findByParentIsNull(pageable);
+
+        // CategoryResponseDTO로 변환
+        return rootCategories.map(this::mapToResponseDTO);
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Page<CategoryResponseDTO> getChildrenCategories(Long parentId, Pageable pageable) {
+        Page<Category> childCategories = categoryRepository.findByParentId(parentId, pageable);
+
+        // 직속 하위 카테고리를 DTO로 변환
+        return childCategories
+                .map(this::mapToResponseDTO);
+
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -289,11 +217,6 @@ public class CategoryServiceImpl implements CategoryService {
             throw new InvalidCategoryException("해당 이름의 카테고리가 이미 존재합니다.");
         }
     }
-
-//    private int calculateDisplayOrder(Category parent) {
-//        Integer maxOrder = categoryRepository.findMaxDisplayOrderByParent(parent);
-//        return (maxOrder != null) ? maxOrder + 1 : 0;
-//    }
 
     private CategoryResponseDTO mapToResponseDTO(Category category) {
         CategoryResponseDTO dto = new CategoryResponseDTO();

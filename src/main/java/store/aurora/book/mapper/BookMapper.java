@@ -6,6 +6,7 @@ import store.aurora.book.dto.aladin.BookDetailDto;
 import store.aurora.book.dto.aladin.BookRequestDto;
 import store.aurora.book.dto.aladin.BookResponseDto;
 import store.aurora.book.entity.Book;
+import store.aurora.book.entity.BookImage;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.tag.BookTag;
 import store.aurora.book.entity.tag.Tag;
@@ -76,7 +77,12 @@ public class BookMapper {
         bookDto.setId(book.getId());
         bookDto.setTitle(book.getTitle());
         bookDto.setAuthor(bookAuthorService.getFormattedAuthors(book));
-        bookDto.setCover(bookImageService.getThumbnailPath(book));
+        BookImage thumbnailImage = bookImageService.getThumbnail(book);
+        if (thumbnailImage != null) {
+            bookDto.setCover(thumbnailImage.getFilePath());
+        } else {
+            bookDto.setCover(null);
+        }
         bookDto.setDescription(book.getExplanation());
         bookDto.setIsbn13(book.getIsbn());
         bookDto.setPriceSales(book.getSalePrice());
@@ -108,11 +114,19 @@ public class BookMapper {
         bookDetailDto.setIsPackaged(book.isPackaging());
         bookDetailDto.setCategoryIds(book.getBookCategories().stream()
                 .map(category -> category.getCategory().getId())
-                .collect(Collectors.toList()));
+                .toList());
         bookDetailDto.setTags(tagService.getFormattedTags(book));
-        bookDetailDto.setCover(bookImageService.getThumbnailPath(book));
-        bookDetailDto.setAdditionalImages(bookImageService.getAdditionalImages(book));
+        // Cover 이미지 처리
+        BookImage thumbnailImage = bookImageService.getThumbnail(book);
+        if (thumbnailImage != null) {
+            bookDetailDto.setCover(new BookDetailDto.ImageDetail(thumbnailImage.getId(), thumbnailImage.getFilePath()));
+        }
 
+        // Additional Images 처리
+        List<BookDetailDto.ImageDetail> additionalImages = bookImageService.getAdditionalImages(book).stream()
+                .map(image -> new BookDetailDto.ImageDetail(image.getId(), image.getFilePath()))
+                .toList();
+        bookDetailDto.setAdditionalImages(additionalImages);
         return bookDetailDto;
     }
 }

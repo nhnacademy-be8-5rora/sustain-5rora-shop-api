@@ -10,6 +10,7 @@ import store.aurora.common.dto.ErrorResponseDto;
 import store.aurora.common.dto.ValidationErrorResponse;
 import store.aurora.common.exception.DataAlreadyExistsException;
 import store.aurora.common.exception.DataNotFoundException;
+import store.aurora.file.ObjectStorageException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -48,6 +49,11 @@ public class GlobalExceptionHandler {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
         return createResponseEntity(ex, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(ObjectStorageException.class)
+    public ResponseEntity<ErrorResponseDto> handleObjectStorageException(ObjectStorageException e) {
+        return createResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private ResponseEntity<ErrorResponseDto> createResponseEntity(Exception e, HttpStatus status) {

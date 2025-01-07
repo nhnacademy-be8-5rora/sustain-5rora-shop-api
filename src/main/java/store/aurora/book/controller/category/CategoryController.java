@@ -27,33 +27,20 @@ public class CategoryController {
     private final CategoryService categoryService;
 
 
-    @GetMapping("/root/paged")
-    public ResponseEntity<Page<CategoryResponseDTO>> getPagedRootCategories(Pageable pageable) {
-        return ResponseEntity.ok(categoryService.getPagedRootCategories(pageable));
-    }
-
-    @GetMapping("/{parentId}/children/paged")
-    public ResponseEntity<Page<CategoryResponseDTO>> getPagedChildrenCategories(@PathVariable Long parentId,
-                                                                                Pageable pageable) {
-        return ResponseEntity.ok(categoryService.getPagedChildrenCategories(parentId, pageable));
-    }
-
-
     @GetMapping("/root")
-    public ResponseEntity<List<CategoryResponseDTO>> getCategories() {
-        return ResponseEntity.ok(categoryService.getCategories());
+    public ResponseEntity<Page<CategoryResponseDTO>> getRootCategories(Pageable pageable) {
+        return ResponseEntity.ok(categoryService.getRootCategories(pageable));
+    }
+
+    @GetMapping("/{parentId}/children")
+    public ResponseEntity<Page<CategoryResponseDTO>> getChildrenCategories(@PathVariable Long parentId,
+                                                                                Pageable pageable) {
+        return ResponseEntity.ok(categoryService.getChildrenCategories(parentId, pageable));
     }
 
     @GetMapping
-    public ResponseEntity<List<CategoryResponseDTO>> getAllCategories() {
-        return ResponseEntity.ok(categoryService.getAllCategories());
-    }
-
-    // 계층형 카테고리 데이터 반환
-    @GetMapping("/hierarchy")
-    public ResponseEntity<List<CategoryResponseDTO>> getCategoryHierarchy() {
-        List<CategoryResponseDTO> hierarchy = categoryService.getCategoryHierarchy();
-        return ResponseEntity.ok(hierarchy);
+    public ResponseEntity<List<CategoryResponseDTO>> getCategories() {
+        return ResponseEntity.ok(categoryService.getCategories());
     }
 
     @PostMapping

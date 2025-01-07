@@ -16,7 +16,7 @@ public interface AladinBookClient {
             @RequestParam("Start") int start,
             @RequestParam("SearchTarget") String searchTarget,
             @RequestParam("Output") String output,
-            @RequestParam("Version") String version // 추가된 부분
+            @RequestParam("Version") String version
 
     );
 

@@ -200,4 +200,100 @@ class SearchServiceImplTest {
 
         verify(bookRepository, times(0)).findBooksByCategoryWithDetails(anyLong(), eq(pageable));
     }
+
+    @DisplayName("userId가 null이 아닐 경우 좋아요 상태를 확인하고 DTO에 추가하는지 확인")
+    @Test
+    void findBooksByTitleWithDetails_UserIdIsNotNull_CheckLikes() {
+        // Given
+        String userId = "testUser";
+        String title = "Example Title";
+        Pageable pageable = PageRequest.of(0, 8);
+
+        // Mock BookSearchEntityDTO
+        BookSearchEntityDTO entityDTO = new BookSearchEntityDTO(1L, "Example Title", 20000, 18000, true,
+                LocalDate.of(2022, 1, 1), "Example Publisher", "Author Name (AUTHOR)",
+                "/images/example.jpg", "1,3", 5L, 5, 3.5);
+        Page<BookSearchEntityDTO> entityDTOPage = new PageImpl<>(Collections.singletonList(entityDTO));
+
+        // Mocking repository behavior
+        when(bookRepository.findBooksByTitleWithDetails(title, pageable)).thenReturn(entityDTOPage);
+        when(likeService.isLiked(userId, 1L)).thenReturn(true); // userId가 null이 아니면 좋아요 상태를 true로 설정
+
+        // When
+        Page<BookSearchResponseDTO> result = searchService.findBooksByTitleWithDetails(userId, title, pageable);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(1);
+
+        BookSearchResponseDTO responseDTO = result.getContent().get(0);
+        assertThat(responseDTO.isLiked()).isTrue(); // 좋아요 상태가 true로 설정되었는지 확인
+
+        // Verify that the likeService.isLiked method was called
+        verify(likeService, times(1)).isLiked(userId, 1L);
+    }
+
+    @DisplayName("userId가 null이 아닐 경우 좋아요 상태를 확인하고 DTO에 추가하는지 확인")
+    @Test
+    void findBooksByCategoryWithDetails_UserIdIsNotNull_CheckLikes() {
+        // Given
+        String userId = "testUser";
+        Long category = 1L;
+        Pageable pageable = PageRequest.of(0, 8);
+
+        // Mock BookSearchEntityDTO
+        BookSearchEntityDTO entityDTO = new BookSearchEntityDTO(1L, "Example Title", 20000, 18000, true,
+                LocalDate.of(2022, 1, 1), "Example Publisher", "Author Name (AUTHOR)",
+                "/images/example.jpg", "1,3", 5L, 5, 3.5);
+        Page<BookSearchEntityDTO> entityDTOPage = new PageImpl<>(Collections.singletonList(entityDTO));
+
+        // Mocking repository behavior
+        when(bookRepository.findBooksByCategoryWithDetails(category, pageable)).thenReturn(entityDTOPage);
+        when(likeService.isLiked(userId, 1L)).thenReturn(true); // userId가 null이 아니면 좋아요 상태를 true로 설정
+
+        // When
+        Page<BookSearchResponseDTO> result = searchService.findBooksByCategoryWithDetails(userId, category, pageable);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(1);
+
+        BookSearchResponseDTO responseDTO = result.getContent().get(0);
+        assertThat(responseDTO.isLiked()).isTrue(); // 좋아요 상태가 true로 설정되었는지 확인
+
+        // Verify that the likeService.isLiked method was called
+        verify(likeService, times(1)).isLiked(userId, 1L);
+    }
+
+    @DisplayName("userId가 null이 아닐 경우 좋아요 상태를 확인하고 DTO에 추가하는지 확인")
+    @Test
+    void findBooksByAuthorWithDetails_UserIdIsNotNull_CheckLikes() {
+        // Given
+        String userId = "testUser";
+        String author = "Example name";
+        Pageable pageable = PageRequest.of(0, 8);
+
+        // Mock BookSearchEntityDTO
+        BookSearchEntityDTO entityDTO = new BookSearchEntityDTO(1L, "Example Title", 20000, 18000, true,
+                LocalDate.of(2022, 1, 1), "Example Publisher", "Author Name (AUTHOR)",
+                "/images/example.jpg", "1,3", 5L, 5, 3.5);
+        Page<BookSearchEntityDTO> entityDTOPage = new PageImpl<>(Collections.singletonList(entityDTO));
+
+        // Mocking repository behavior
+        when(bookRepository.findBooksByAuthorNameWithDetails(author, pageable)).thenReturn(entityDTOPage);
+        when(likeService.isLiked(userId, 1L)).thenReturn(true); // userId가 null이 아니면 좋아요 상태를 true로 설정
+
+        // When
+        Page<BookSearchResponseDTO> result = searchService.findBooksByAuthorNameWithDetails(userId, author, pageable);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(1);
+
+        BookSearchResponseDTO responseDTO = result.getContent().get(0);
+        assertThat(responseDTO.isLiked()).isTrue(); // 좋아요 상태가 true로 설정되었는지 확인
+
+        // Verify that the likeService.isLiked method was called
+        verify(likeService, times(1)).isLiked(userId, 1L);
+    }
 }

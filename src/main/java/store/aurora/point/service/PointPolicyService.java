@@ -25,12 +25,20 @@ public class PointPolicyService {
         return pointPolicyRepository.findAll();
     }
 
+    public PointPolicy getPointPolicyById(Integer id) {
+        return pointPolicyRepository.findById(id)
+                .orElseThrow(() -> new PointPolicyNotFoundException(id));
+    }
+
     @Transactional
     public void updatePointPolicyValue(Integer id, BigDecimal newValue) {
-        PointPolicy policy = pointPolicyRepository.findById(id)
-                .orElseThrow(() -> new PointPolicyNotFoundException(id));
+        getPointPolicyById(id).setPointPolicyValue(newValue);
+    }
 
-        policy.setPointPolicyValue(newValue);
+    @Transactional
+    public void toggleStatus(Integer id) {
+        PointPolicy pointPolicy = getPointPolicyById(id);
+        pointPolicy.setIsActive(!pointPolicy.getIsActive()); // 활성화 상태 토글
     }
 
     public PointPolicy createPointPolicy(PointPolicy pointPolicy) {

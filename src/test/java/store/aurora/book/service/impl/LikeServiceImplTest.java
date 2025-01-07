@@ -116,16 +116,6 @@ class LikeServiceImplTest {
     }
 
     @Test
-    @DisplayName("좋아요 정보가 없을 때 예외를 던져야 한다.")
-    void testIsLiked_throwsExceptionWhenLikeIsNull() {
-        // 예외가 던져지는지 확인
-        assertThrows(IllegalArgumentException.class, () -> {
-            likeService.isLiked("user1", 1L);
-        });
-    }
-
-
-    @Test
     @DisplayName("좋아요가 눌려있으면 true를 반환해야 한다.")
     void testIsLiked() {
         // 좋아요가 눌려있는 상태로 반환할 Like 객체 설정

@@ -68,12 +68,8 @@ public class LikeServiceImpl implements LikeService {
     @Override
     public boolean isLiked(String userId, Long bookId) {
         Like like = likeRepository.findByUserIdAndBookId(userId, bookId);
-        if (like == null) {
-            throw new IllegalArgumentException("이 책에 대한 좋아요 정보가 없습니다.");
-        }
-        return like.isLike(); // 좋아요 여부 반환
+        return like != null && like.isLike(); // 좋아요가 눌려있으면 true, 아니면 false
     }
-
 
 
 }

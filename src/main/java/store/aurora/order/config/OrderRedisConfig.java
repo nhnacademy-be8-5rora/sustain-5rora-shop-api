@@ -1,6 +1,5 @@
 package store.aurora.order.config;
 
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;

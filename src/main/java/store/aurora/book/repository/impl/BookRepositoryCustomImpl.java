@@ -153,6 +153,8 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                         averageReviewRatingSubquery // 평균 리뷰 점수 추가
                 ))
                 .orderBy(orderSpecifier) // 정렬 기준 추가
+                .offset(pageable.getOffset()) // 시작 위치 설정
+                .limit(pageable.getPageSize()) // 가져올 데이터 수 설정
                 .fetch();
 
         log.debug("customImpl 메서드 값 확인 {}", content.toString());

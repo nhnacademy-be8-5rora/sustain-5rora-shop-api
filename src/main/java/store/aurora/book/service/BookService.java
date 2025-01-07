@@ -14,21 +14,22 @@ import store.aurora.search.dto.BookSearchResponseDTO;
 import java.util.List;
 
 public interface BookService {
+
     void saveDirectBook(BookRequestDto bookDto, MultipartFile coverImage, List<MultipartFile> additionalImages);
 
     void saveBookFromApi(BookRequestDto bookDto, List<MultipartFile> additionalImages);
 
-    @Transactional
     void updateBook(Long bookId, BookRequestDto bookDto,
                     MultipartFile coverImage,
                     List<MultipartFile> additionalImages,
                     List<Long> deleteImageIds);
 
-    BookRequestDto findBookRequestDtoById(String isbn13);
+    List<BookRequestDto> getPageData(String query, int start);
+
+    BookRequestDto getBookDetailsByIsbn(String isbn13);
 
     Page<BookResponseDto> getAllBooks(Pageable pageable);
 
-    @Transactional(readOnly = true)
     BookDetailDto getBookDetailsForAdmin(Long bookId);
 
     Book getBookById(Long bookId);
@@ -39,10 +40,10 @@ public interface BookService {
 
     void notExistThrow(Long bookId);
 
-    // aladin
-    List<BookRequestDto> searchBooks(String query, String queryType, String searchTarget, int start);
-
     Page<BookSearchResponseDTO> getBooksByLike(String userId, Pageable pageable);
 
     BookSearchResponseDTO findMostSeller();
+
+    List<BookRequestDto> searchBooks(String query, String queryType, String searchTarget, int start);
+
 }

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.entity.Book;
+import store.aurora.book.entity.BookImage;
 
 import java.util.List;
 
@@ -17,9 +18,9 @@ public interface BookImageService {
 
     void deleteImages(List<Long> imageIds);
 
-    String getThumbnailPath(Book book);
+    BookImage getThumbnail(Book book);
 
-    List<String> getAdditionalImages(Book book);
+    List<BookImage> getAdditionalImages(Book book);
 
 
 }

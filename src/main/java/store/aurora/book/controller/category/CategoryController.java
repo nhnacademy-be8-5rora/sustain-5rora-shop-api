@@ -2,6 +2,8 @@ package store.aurora.book.controller.category;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,10 +26,22 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    //최상위 카테고리 가져오기
+
+    @GetMapping("/root/paged")
+    public ResponseEntity<Page<CategoryResponseDTO>> getPagedRootCategories(Pageable pageable) {
+        return ResponseEntity.ok(categoryService.getPagedRootCategories(pageable));
+    }
+
+    @GetMapping("/{parentId}/children/paged")
+    public ResponseEntity<Page<CategoryResponseDTO>> getPagedChildrenCategories(@PathVariable Long parentId,
+                                                                                Pageable pageable) {
+        return ResponseEntity.ok(categoryService.getPagedChildrenCategories(parentId, pageable));
+    }
+
+
     @GetMapping("/root")
-    public ResponseEntity<List<CategoryResponseDTO>> getRootCategories() {
-        return ResponseEntity.ok(categoryService.getRootCategories());
+    public ResponseEntity<List<CategoryResponseDTO>> getCategories() {
+        return ResponseEntity.ok(categoryService.getCategories());
     }
 
     @GetMapping

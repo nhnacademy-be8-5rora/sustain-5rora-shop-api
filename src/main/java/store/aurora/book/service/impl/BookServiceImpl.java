@@ -3,6 +3,8 @@ package store.aurora.book.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -66,6 +68,7 @@ public class BookServiceImpl implements BookService {
     private final SeriesRepository seriesRepository;
     private final CategoryRepository categoryRepository;
     private final BookMapper bookMapper;
+    private static final Logger USER_LOG = LoggerFactory.getLogger("user-logger");
 
     @Value("${aladin.api.ttb-key}")
     private String ttbKey;
@@ -116,7 +119,6 @@ public class BookServiceImpl implements BookService {
         bookAuthorService.parseAndSaveBookAuthors(book, bookDto.getAuthor());
 
         bookImageService.processApiImages(book, bookDto.getCover(), additionalImages);
-
     }
 
     @Transactional
@@ -208,8 +210,8 @@ public class BookServiceImpl implements BookService {
         }
 
         // 7. 태그 업데이트
-        if (bookDto.getTagIds() != null && !bookDto.getTagIds().isEmpty()) {
-            List<Tag> tags = tagRepository.findAllById(bookDto.getTagIds());
+        if (bookDto.getTags() != null && !bookDto.getTags().isEmpty()) {
+            List<Tag> tags = tagService.getOrCreateTagsByName(bookDto.getTags());
             book.clearBookTags();
             for (Tag tag : tags) {
                 BookTag bookTag = new BookTag();
@@ -330,21 +332,28 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public BookSearchResponseDTO findMostSeller() {
-
         Tuple bookIdTuple = bookRepository.findMostSoldBook();
         if (bookIdTuple == null) {
-            // bookIdTuple이 null일 경우 빈 페이지 반환
-            return null; // 또는 빈 BookSearchResponseDTO를 반환할 수도 있음
+            // bookIdTuple이 null일 경우 로그를 남기고 빈 값 반환
+            USER_LOG.error("No most sold book found for last month.");
+            return null;
         }
+
         Long bookId = bookIdTuple.get(0, Long.class);  // 0번째가 bookId
-        // 책 ID를 리스트에 담기
         List<Long> bookIds = new ArrayList<>();
         bookIds.add(bookId);  // 하나의 bookId를 리스트에 추가
-        Pageable pageable = PageRequest.of(0, 1); // 첫 번째 페이지, 한 개의 책만 가져옴
+
+        Pageable pageable = PageRequest.of(0, 1);
         Page<BookSearchEntityDTO> books = bookRepository.findBookByIdIn(bookIds, pageable);
-        // BookSearchEntityDTO -> BookSearchResponseDTO로 변환
+
+        if (books.isEmpty()) {
+            USER_LOG.error("No books found for the given book ID: {}", bookId);
+            return null;
+        }
+
         Page<BookSearchResponseDTO> bookSearchResponseDTOPage = books.map(BookSearchResponseDTO::new);
 
-        return bookSearchResponseDTOPage.getContent().getFirst();
+        return bookSearchResponseDTOPage.getContent().isEmpty() ? null : bookSearchResponseDTOPage.getContent().get(0);
     }
+
 }

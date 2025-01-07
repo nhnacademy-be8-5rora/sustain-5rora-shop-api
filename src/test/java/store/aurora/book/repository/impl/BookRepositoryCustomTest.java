@@ -78,8 +78,8 @@ public class BookRepositoryCustomTest {
         entityManager.merge(series);  // Series 객체가 이미 존재하는 경우 merge() 사용
 
         // Category 생성
-        Category category1 = new Category(1L, "Example Category", null, new ArrayList<>(), 0, 1, new ArrayList<>());
-        Category category2 = new Category(2L, "Example Category2", null, new ArrayList<>(), 0, 2, new ArrayList<>());
+        Category category1 = new Category(1L, "Example Category", null, new ArrayList<>(), 0, new ArrayList<>());
+        Category category2 = new Category(2L, "Example Category2", null, new ArrayList<>(), 0, new ArrayList<>());
         entityManager.merge(category1);
         entityManager.merge(category2);
 

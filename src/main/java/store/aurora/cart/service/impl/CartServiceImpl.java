@@ -16,6 +16,7 @@ import store.aurora.cart.dto.CartDTO;
 import store.aurora.cart.dto.CartItemDTO;
 import store.aurora.cart.entity.Cart;
 import store.aurora.cart.entity.CartItem;
+import store.aurora.cart.exception.CartItemNotFoundException;
 import store.aurora.cart.repository.CartItemRepository;
 import store.aurora.cart.repository.CartRepository;
 import store.aurora.cart.service.CartService;
@@ -26,8 +27,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 @Service
 public class CartServiceImpl implements CartService {
     private static final String CART_COOKIE_NAME = "CART";
@@ -39,6 +41,8 @@ public class CartServiceImpl implements CartService {
 
     private final UserService userService;
     private final BookService bookService;
+
+    private static final Logger USER_LOG = LoggerFactory.getLogger("user-logger");
 
     public CartServiceImpl(CartRepository cartRepository, CartItemRepository cartItemRepository, UserService userService, BookService bookService) {
         this.cartRepository = cartRepository;
@@ -84,7 +88,19 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public void deleteCartItem(String userId, Long bookId) {
         Cart cart = getUserCart(userId);
-        cart.getCartItems().removeIf(cartItem -> Objects.equals(cartItem.getBook().getId(), bookId)); // todo 현재는 존재하지 않는 북 삭제시 그냥 넘어감
+
+        Optional<CartItem> itemToRemove = cart.getCartItems().stream()
+                .filter(cartItem -> Objects.equals(cartItem.getBook().getId(), bookId))
+                .findFirst();
+
+        // 아이템이 존재하지 않는 경우
+        if (itemToRemove.isEmpty()) {
+            USER_LOG.error("Attempted to delete a non-existent cart item: userId={}, bookId={}", userId, bookId);
+            throw new CartItemNotFoundException(userId, bookId);
+        }
+
+        cart.getCartItems().remove(itemToRemove.get());
+        USER_LOG.info("Cart item deleted successfully: userId={}, bookId={}", userId, bookId);
     }
 
     @Override
@@ -199,7 +215,6 @@ public class CartServiceImpl implements CartService {
 
     private void saveCookie(List<CartItemDTO> cartItems, HttpServletResponse response) throws UnsupportedEncodingException, JsonProcessingException {
         String cartJson = objectMapper.writeValueAsString(cartItems);
-        log.debug("cart cookie to send: {}", cartJson);
         String encodedCartJson = URLEncoder.encode(cartJson, "UTF-8");
         Cookie cartCookie = new Cookie(CART_COOKIE_NAME, encodedCartJson);
         cartCookie.setMaxAge(60 * 60 * 24); // 24시간

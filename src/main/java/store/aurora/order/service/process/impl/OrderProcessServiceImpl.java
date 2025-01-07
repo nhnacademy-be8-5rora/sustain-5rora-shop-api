@@ -76,6 +76,58 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         return totalAmount;
     }
 
+    @Override
+    public String getOrderUuid(){
+        return UUID.randomUUID().toString();
+    }
+
+    @Override
+    public void saveOrderInfoInRedisWithUuid(String uuid, OrderRequestDto orderInfo){
+        orderRedisTemplate.opsForValue().set(uuid, orderInfo);
+    }
+
+    @Override
+    public OrderResponseDto getOrderResponseFromOrderRequestDtoInRedis(String uuid){
+        OrderResponseDto response = new OrderResponseDto();
+
+        OrderRequestDto dto = orderRedisTemplate.opsForValue().get(uuid);
+
+        // customerKey 생성
+        String customerKey = UUID.randomUUID().toString().replace("-", "");
+
+        // Amount 생성
+        String currency = "KRW";
+
+        /*
+            OrderDetailList 를 통해서 다음 내용 ( value, orderName ) 생성함
+
+            todo: OrderDetailDto마다 쿠폰 할인 금액 적용
+             for-each : orderDetailList
+                discountAmount = coupon 할인가
+         */
+        List<OrderDetailDTO> orderDetailList = Objects.requireNonNull(dto).getOrderDetailDTOList();
+
+        int value = getTotalAmountFromOrderDetailList(orderDetailList);
+
+        // OrderName 생성
+        StringBuilder orderName = new StringBuilder();
+        for(OrderDetailDTO detail : orderDetailList){
+            orderName.append(detail.getBookId())
+                    .append(detail.getQuantity())
+                    .append(Objects.nonNull(detail.getWrapId()) ? detail.getWrapId() : "")
+                    .append(Objects.nonNull(detail.getCouponId()) ? detail.getCouponId() : "");
+        }
+
+
+        // response setting
+        response.setCustomerKey(customerKey);
+        response.setCurrency(currency);
+        response.setValue(value);
+        response.setOrderName(orderName.toString());
+
+        return response;
+    }
+
     // todo Payment 처리 로직 추가
     @Override
     public void userOrderProcess(OrderDTO order,
@@ -156,57 +208,5 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .build();
 
         shipmentInformationService.createShipmentInformation(info);
-    }
-
-    @Override
-    public String getOrderUuid(){
-        return UUID.randomUUID().toString();
-    }
-
-    @Override
-    public void saveOrderInfoInRedisWithUuid(String uuid, OrderRequestDto orderInfo){
-        orderRedisTemplate.opsForValue().set(uuid, orderInfo);
-    }
-
-    @Override
-    public OrderResponseDto getOrderResponseFromOrderRequestDtoInRedis(String uuid){
-        OrderResponseDto response = new OrderResponseDto();
-
-        OrderRequestDto dto = orderRedisTemplate.opsForValue().get(uuid);
-
-        // customerKey 생성
-        String customerKey = UUID.randomUUID().toString().replace("-", "");
-
-        // Amount 생성
-        String currency = "KRW";
-
-        /*
-            OrderDetailList 를 통해서 다음 내용 ( value, orderName ) 생성함
-
-            todo: OrderDetailDto마다 쿠폰 할인 금액 적용
-             for-each : orderDetailList
-                discountAmount = coupon 할인가
-         */
-        List<OrderDetailDTO> orderDetailList = Objects.requireNonNull(dto).getOrderDetailDTOList();
-
-        int value = getTotalAmountFromOrderDetailList(orderDetailList);
-
-        // OrderName 생성
-        StringBuilder orderName = new StringBuilder();
-        for(OrderDetailDTO detail : orderDetailList){
-            orderName.append(detail.getBookId())
-                    .append(detail.getQuantity())
-                    .append(Objects.nonNull(detail.getWrapId()) ? detail.getWrapId() : "")
-                    .append(Objects.nonNull(detail.getCouponId()) ? detail.getCouponId() : "");
-        }
-
-
-        // response setting
-        response.setCustomerKey(customerKey);
-        response.setCurrency(currency);
-        response.setValue(value);
-        response.setOrderName(orderName.toString());
-
-        return response;
     }
 }

@@ -20,7 +20,6 @@ import store.aurora.user.repository.UserRepository;
 import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.book.exception.book.NotFoundBookException;
-import store.aurora.user.exception.NotFoundUserException;
 
 import java.util.Arrays;
 import java.util.List;

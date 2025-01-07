@@ -13,4 +13,5 @@ public interface OrderProcessService {
     int getTotalAmountFromOrderDetailList(List<OrderDetailDTO> orderDetailList);
     void userOrderProcess(OrderDTO order, List<OrderDetailDTO> orderDetailList, ReceiverInfoDTO receiverInfo, User user, OrderedPersonInfoDTO orderedPersonInfo);
     void nonUserOrderProcess(OrderDTO order, List<OrderDetailDTO> orderDetailList, ReceiverInfoDTO receiverInfo, OrderedPersonInfoDTO orderedPersonInfo);
+    String getOrderUuid();
 }

@@ -2,6 +2,7 @@ package store.aurora.order.service.process.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import store.aurora.book.service.BookService;
 import store.aurora.order.dto.OrderDTO;
@@ -17,9 +18,10 @@ import store.aurora.order.entity.enums.ShipmentState;
 import store.aurora.order.service.*;
 import store.aurora.order.service.process.OrderProcessService;
 import store.aurora.user.entity.User;
-import store.aurora.user.service.UserService;
 
 import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -31,7 +33,8 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     private final ShipmentInformationService shipmentInformationService;
     private final ShipmentService shipmentService;
     private final WrapService wrapService;
-    private final UserService userService;
+
+    private final RedisTemplate<String, Object> redisTemplate;
 
     /* todo 배송비 로직 수정
         이 로직으로는 배송비 정책을 수정할 때마다 코드를 수정하고, 서버를 재배포해야 한다.
@@ -43,7 +46,6 @@ public class OrderProcessServiceImpl implements OrderProcessService {
             2-1. 특정 시간마다 배송비를 캐싱하고, 배송비를 가져올 때 캐싱된 값을 사용
             2-2. 배송비 관련 정보가 변경되었을 때 캐싱된 값을 삭제하고, 새로운 값을 캐싱
      */
-    // todo public이어야 할 필요에 대한 고려 ( public이 아닌 private로 변경해도 되는지 확인 필요 )
     /**
      * 배송비 계산
      * 배송비 정책에 의거해 배송비 계산
@@ -79,7 +81,6 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     }
 
     // todo Payment 처리 로직 추가
-    // todo nonUserProcess 작성 후 중복 코드 메소드화
     /**
      * 사용자 주문 처리
      * @param order OrderDTO 주문 정보
@@ -108,7 +109,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .user(user)
                 .build();
 
-        orderSuccessProcess(orderService.createOrder(newOrder), orderDetailList, receiverInfo);
+        orderSuccessProcess(newOrder, orderDetailList, receiverInfo);
     }
 
     @Override
@@ -130,7 +131,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .password(orderedPersonInfo.getPassword())
                 .build();
 
-        orderSuccessProcess(orderService.createOrder(newOrder), orderDetailList, receiverInfo);
+        orderSuccessProcess(newOrder, orderDetailList, receiverInfo);
     }
 
     private void orderSuccessProcess(Order order,
@@ -167,5 +168,14 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .build();
 
         shipmentInformationService.createShipmentInformation(info);
+    }
+
+    /**
+     * 주문 번호 uuid 생성
+     * @return uuid 주문 번호
+     */
+    @Override
+    public String getOrderUuid(){
+        return UUID.randomUUID().toString();
     }
 }

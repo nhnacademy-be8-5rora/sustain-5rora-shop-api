@@ -34,29 +34,44 @@ public class LikeServiceImpl implements LikeService {
         Book findBook = bookRepository.findById(bookId).orElseThrow(() -> new NotFoundBookException(bookId));
         User findUser = userRepository.findById(userId).orElseThrow(() -> new NotFoundUserException(userId));
 
-        Like like=null;
-        if(likeRepository.existsLikeByBookAndUser(findBook,findUser))
-        {
-            like = likeRepository.findByUserAndBook(findUser,findBook);
-            like.setLike(!like.isLike());
-        }
+        // 이미 좋아요를 눌렀는지 확인
+        Like like = likeRepository.findByUserAndBook(findUser, findBook)
+                .orElseGet(() -> new Like(findBook, findUser, false)); // 없으면 새로 생성
 
-        else like = new Like( findBook, findUser, true);
+        // 이미 좋아요가 눌려있으면 토글(좋아요 취소)
+        like.setLike(!like.isLike());
 
-        Like savedLike = likeRepository.save(like);  // 저장된 Like 엔티티 반환
-        return savedLike != null;  // 저장된 엔티티가 null이 아니면 성공
+        // 저장
+        Like savedLike = likeRepository.save(like);
+        return true; // 저장에 성공하면 true 반환
     }
+
 
     @Override
     public Like cancelLike(Long bookId, String userId) {
-        return likeRepository.deleteByBookIdAndUserId(bookId, userId);
+        // 책과 사용자가 존재하는지 확인
+        Book findBook = bookRepository.findById(bookId)
+                .orElseThrow(() -> new NotFoundBookException(bookId)); // 책이 없으면 예외 발생
+        User findUser = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundUserException(userId)); // 사용자가 없으면 예외 발생
+
+        // 좋아요가 눌려 있지 않으면 취소할 수 없음
+        Like like = likeRepository.findByUserAndBook(findUser, findBook)
+                .orElseThrow(() -> new IllegalArgumentException("좋아요를 누르지 않은 책입니다."));
+
+        // 좋아요 취소
+        like.setLike(false);
+        return likeRepository.save(like);
     }
 
+
     @Override
-    // 사용자와 책을 기준으로 좋아요 여부 확인
     public boolean isLiked(String userId, Long bookId) {
         Like like = likeRepository.findByUserIdAndBookId(userId, bookId);
-        return like != null && like.isLike(); // 좋아요가 눌려있으면 true, 아니면 false
+        if (like == null) {
+            throw new IllegalArgumentException("이 책에 대한 좋아요 정보가 없습니다.");
+        }
+        return like.isLike(); // 좋아요 여부 반환
     }
 
 

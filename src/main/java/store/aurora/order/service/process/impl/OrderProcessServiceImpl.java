@@ -21,7 +21,6 @@ import store.aurora.user.entity.User;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -35,7 +34,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     private final ShipmentService shipmentService;
     private final WrapService wrapService;
 
-    private final RedisTemplate<String, Map<String, Object>> redisTemplate;
+    private final RedisTemplate<String, Map<String, Object>> orderRedisTemplate;
 
     /**
      * 배송비 계산
@@ -178,18 +177,21 @@ public class OrderProcessServiceImpl implements OrderProcessService {
 
     /**
      * 주문 정보를 uuid를 key로 하여 redis에 저장
-     * <pre> todo: redisTemplate을 사용하여 저장하고 있으나, redis 사용 데이터베이스 변경에 대한 필요성 고려 필요함
-     * </pre>
      * @param uuid 주문 번호
      * @param orderInfo 주문 정보
      */
     @Override
     public void orderInfoSaveInRedisWithUuid(String uuid, Map<String, Object> orderInfo){
-        redisTemplate.opsForValue().set(uuid, orderInfo);
+        orderRedisTemplate.opsForValue().set(uuid, orderInfo);
     }
 
+    /**
+     * uuid를 key로 하여 redis에서 주문 정보를 가져옴
+     * @param uuid 주문 번호 ( key )
+     * @return 주문 정보
+     */
     @Override
     public Map<String, Object> getOrderInfoFromRedis(String uuid){
-        return redisTemplate.opsForValue().get(uuid);
+        return orderRedisTemplate.opsForValue().get(uuid);
     }
 }

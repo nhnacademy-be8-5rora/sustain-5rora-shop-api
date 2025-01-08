@@ -33,13 +33,8 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     private final ShipmentInformationService shipmentInformationService;
     private final ShipmentService shipmentService;
     private final WrapService wrapService;
-
-    private final RedisTemplate<String, OrderRequestDto> orderRedisTemplate;
-
     private final SettingService settingService;
-    private static final String DEFAULT_MIN_AMOUNT_VALUE = "30000";
-    private static final String DEFAULT_DELIVERY_FEE_VALUE = "5000";
-
+    private final RedisTemplate<String, OrderRequestDto> orderRedisTemplate;
 
     /*
      *     todo 배송비 로직 수정
@@ -51,33 +46,11 @@ public class OrderProcessServiceImpl implements OrderProcessService {
      */
     @Override
     public int getDeliveryFee(int totalAmount) {
-        String minAmountKey = "minAmount";
-
-        String minAmountValue;
-        try{
-            minAmountValue = settingService.getSettingValue(minAmountKey);
-        } catch(IllegalArgumentException e){
-            settingService.saveSetting(minAmountKey, DEFAULT_MIN_AMOUNT_VALUE);
-            minAmountValue = settingService.getSettingValue(minAmountKey);
-        }
-
-        String deliveryFeeKey = "deliveryFee";
-
-        String deliveryValue;
-        try{
-            deliveryValue = settingService.getSettingValue(deliveryFeeKey);
-        } catch(IllegalArgumentException e){
-            settingService.saveSetting(deliveryFeeKey, DEFAULT_DELIVERY_FEE_VALUE);
-            deliveryValue = settingService.getSettingValue(deliveryFeeKey);
-        }
-
-        int minAmount = Integer.parseInt(minAmountValue);
-
+        int minAmount = settingService.getMinAmount();
         if(totalAmount >= minAmount){
             return 0;
         }
-
-        return Integer.parseInt(deliveryValue);
+        return settingService.getDeliveryFee();
     }
 
     @Override
@@ -131,7 +104,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         OrderRequestDto dto = orderRedisTemplate.opsForValue().get(uuid);
 
         // customerKey 생성
-        String customerKey = UUID.randomUUID().toString().replace("-", "");
+        String customerKey = UUID.randomUUID().toString();
 
         // Amount 생성
         String currency = "KRW";

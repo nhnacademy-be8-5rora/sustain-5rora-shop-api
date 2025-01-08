@@ -3,6 +3,7 @@ package store.aurora.common.setting.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import store.aurora.common.setting.SettingTable;
+import store.aurora.common.setting.exception.SettingValueNotExistsException;
 import store.aurora.common.setting.repository.SettingRepository;
 import store.aurora.common.setting.service.SettingService;
 
@@ -12,6 +13,9 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class SettingServiceImpl implements SettingService {
     private final SettingRepository repo;
+
+    private static final String DEFAULT_DELIVERY_FEE_VALUE = "5000";
+    private static final String DEFAULT_MIN_AMOUNT_VALUE = "30000";
 
     @Override
     public SettingTable saveSetting(String key, String value) {
@@ -33,7 +37,7 @@ public class SettingServiceImpl implements SettingService {
 
         String value = repo.getReferenceById(key).getValue();
         if(Objects.isNull(value)){
-            throw new IllegalArgumentException("value is null");
+            throw new SettingValueNotExistsException("value is null" + "\nkey: " + key);
         }
         return value;
     }
@@ -44,5 +48,29 @@ public class SettingServiceImpl implements SettingService {
             throw new IllegalArgumentException("key is null");
         }
         repo.deleteById(key);
+    }
+
+    @Override
+    public int getDeliveryFee(){
+        try{
+            String deliveryFee = getSettingValue("deliveryFee");
+
+            return Integer.parseInt(deliveryFee);
+        } catch(SettingValueNotExistsException e){
+            saveSetting("deliveryFee", DEFAULT_DELIVERY_FEE_VALUE);
+            return Integer.parseInt(DEFAULT_DELIVERY_FEE_VALUE);
+        }
+    }
+
+    @Override
+    public int getMinAmount(){
+        try{
+            String minAmount = getSettingValue("minAmount");
+
+            return Integer.parseInt(minAmount);
+        } catch(SettingValueNotExistsException e){
+            saveSetting("minAmount", DEFAULT_MIN_AMOUNT_VALUE);
+            return Integer.parseInt(DEFAULT_MIN_AMOUNT_VALUE);
+        }
     }
 }

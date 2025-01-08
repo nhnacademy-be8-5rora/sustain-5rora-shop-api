@@ -20,6 +20,8 @@ import store.aurora.user.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -65,10 +67,14 @@ public class LikeServiceImpl implements LikeService {
     }
 
 
+    //    @EntityGraph(attributePaths = "book") 를 이용하여 N+1 문제 해결
     @Override
-    public boolean isLiked(String userId, Long bookId) {
-        Like like = likeRepository.findByUserIdAndBookId(userId, bookId);
-        return like != null && like.isLike(); // 좋아요가 눌려있으면 true, 아니면 false
+    public Set<Long> getLikedBookIds(String userId, List<Long> bookIds) {
+        // LIKE 테이블에서 유저가 좋아요를 누른 책들의 ID를 가져오는 쿼리
+        return likeRepository.findByUserIdAndBookIdInAndIsLikeTrue(userId, bookIds)
+                .stream()
+                .map(like -> like.getBook().getId())  // book 객체에서 ID를 가져옴
+                .collect(Collectors.toSet());
     }
 
 

@@ -45,7 +45,6 @@ class ShipmentInformationRepositoryTest {
         shipmentInformation.setReceiverAddress("123 Main Street, Seoul");
         shipmentInformation.setReceiverPhone("010-9876-5432");
         shipmentInformation.setCustomerRequest("문 앞에 놓아주세요.");
-        ShipmentInformation savedShipmentInformation = shipmentInformationRepository.save(shipmentInformation);
 
         Optional<ShipmentInformation> foundShipmentInformation = shipmentInformationRepository.findById(savedOrder.getId());
 

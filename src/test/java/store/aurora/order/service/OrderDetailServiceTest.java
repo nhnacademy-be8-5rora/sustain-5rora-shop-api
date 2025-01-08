@@ -22,7 +22,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class OrderDetailServiceTest {
+class OrderDetailServiceTest {
 
     private OrderDetailRepository orderDetailRepository;
     private OrderService orderService;
@@ -310,8 +310,9 @@ public class OrderDetailServiceTest {
                 // order does not exist
                 ()->{
                     when(orderService.isExist(anyLong())).thenReturn(false);
+                    Order order = orderService.getOrder(1L);
                     assertThrows(OrderNotFoundException.class,
-                            ()->orderDetailService.getOrderDetailsByOrder(orderService.getOrder(1L)));
+                            ()->orderDetailService.getOrderDetailsByOrder(order));
                 }
         );
     }

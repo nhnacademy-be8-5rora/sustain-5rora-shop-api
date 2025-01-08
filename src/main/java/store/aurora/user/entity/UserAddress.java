@@ -36,7 +36,12 @@ public class UserAddress {
     @JoinColumn(name = "addr_id", nullable = false)
     private Address address;
 
-    public UserAddress(String addrDetail, Address address, String receiver, User user) {
+    @NotNull
+    @Column(name = "user_addr_nickname", length = 50, nullable = false, unique = true)
+    private String nickname;
+
+    public UserAddress(String nickname, String addrDetail, Address address, String receiver, User user) {
+        this.nickname = nickname;
         this.addrDetail = addrDetail;
         this.address = address;
         this.receiver = receiver;

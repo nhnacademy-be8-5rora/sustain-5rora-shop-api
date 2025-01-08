@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import store.aurora.common.dto.ErrorResponseDto;
 import store.aurora.user.dto.UserAddressRequest;
@@ -55,6 +54,7 @@ public class UserAddressController {
     public ResponseEntity<String> addUserAddress(@RequestHeader(value = "X-USER-ID") String userId,
                                                  @RequestBody @Valid UserAddressRequest request) {
         userAddressService.addUserAddress(
+                request.getNickname(),
                 request.getReceiver(),
                 request.getRoadAddress(),
                 request.getAddrDetail(),

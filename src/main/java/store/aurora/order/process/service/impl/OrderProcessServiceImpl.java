@@ -6,7 +6,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.service.BookService;
-import store.aurora.common.setting.service.SettingService;
 import store.aurora.order.dto.*;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.OrderDetail;
@@ -14,6 +13,8 @@ import store.aurora.order.entity.Shipment;
 import store.aurora.order.entity.ShipmentInformation;
 import store.aurora.order.entity.enums.OrderState;
 import store.aurora.order.entity.enums.ShipmentState;
+import store.aurora.order.process.service.DeliveryFeeService;
+import store.aurora.order.process.service.OrderInfoService;
 import store.aurora.order.service.*;
 import store.aurora.order.process.service.OrderProcessService;
 import store.aurora.user.entity.User;
@@ -33,26 +34,15 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     private final ShipmentInformationService shipmentInformationService;
     private final ShipmentService shipmentService;
     private final WrapService wrapService;
-    private final SettingService settingService;
-    private final RedisTemplate<String, OrderRequestDto> orderRedisTemplate;
+    private final DeliveryFeeService deliveryFeeService;
+    private final OrderInfoService orderInfoService;
 
-    /*
-     *     todo 배송비 로직 수정
-     *      배송비 정책이 수정될 경우를 고려해 setting 테이블에서 배송비 관련 정보를 가져오도록 수정해야 함
-     *         이 로직으로는 배송비 정책을 수정할 때마다 코드를 수정하고, 서버를 재배포해야 한다.
-     *         2단계. 매 주문마다 배송비를 setting에서 불러오는 것이 아닌 캐싱하여 사용
-     *             2-1. 특정 시간마다 배송비를 캐싱하고, 배송비를 가져올 때 캐싱된 값을 사용
-     *             2-2. 배송비 관련 정보가 변경되었을 때 캐싱된 값을 삭제하고, 새로운 값을 캐싱
-     */
     @Override
-    public int getDeliveryFee(int totalAmount) {
-        int minAmount = settingService.getMinAmount();
-        if(totalAmount >= minAmount){
-            return 0;
-        }
-        return settingService.getDeliveryFee();
+    public String getOrderUuid(){
+        return UUID.randomUUID().toString();
     }
 
+    // todo: point 사용량 파라미터로 받아서 적용해야 함
     @Override
     public int getTotalAmountFromOrderDetailList(List<OrderDetailDTO> orderDetailList) {
         int totalAmount = 0;
@@ -76,37 +66,28 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         }
 
         // 배송비 계산
-        totalAmount += getDeliveryFee(totalAmount);
+        totalAmount += deliveryFeeService.getDeliveryFee(totalAmount);
 
         return totalAmount;
     }
 
     @Override
-    public String getOrderUuid(){
-        return UUID.randomUUID().toString();
-    }
-
-    @Override
     public void saveOrderInfoInRedisWithUuid(String uuid, OrderRequestDto orderInfo){
-        orderRedisTemplate.opsForValue().set(uuid, orderInfo);
+        orderInfoService.saveOrderInfoInRedisWithUuid(uuid, orderInfo);
     }
 
+    // todo: Coupon api 에 요청하는 로직 보내서 할인 금액 계산 / 계산된 할인 금액 받아오기
     public int getBookDiscountAmountFromDiscountPolicy(int bookSalePrice){
-        int discountAmount = 0;
-
-        return discountAmount;
+        return bookSalePrice * 10 / 100;
     }
 
     @Override
     public OrderResponseDto getOrderResponseFromOrderRequestDtoInRedis(String uuid){
         OrderResponseDto response = new OrderResponseDto();
 
-        OrderRequestDto dto = orderRedisTemplate.opsForValue().get(uuid);
+        OrderRequestDto dto = orderInfoService.getOrderInfoFromRedis(uuid);
 
-        // customerKey 생성
         String customerKey = UUID.randomUUID().toString();
-
-        // Amount 생성
         String currency = "KRW";
 
         /*
@@ -121,7 +102,6 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         // todo: 포인트 사용 금액 적용
         int value = getTotalAmountFromOrderDetailList(orderDetailList);
 
-        // OrderName 생성
         StringBuilder orderName = new StringBuilder();
         for(OrderDetailDTO detail : orderDetailList){
             orderName.append(detail.getBookId())
@@ -129,7 +109,6 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                     .append(Objects.nonNull(detail.getWrapId()) ? detail.getWrapId() : "")
                     .append(Objects.nonNull(detail.getCouponId()) ? detail.getCouponId() : "");
         }
-
 
         // response setting
         response.setCustomerKey(customerKey);
@@ -140,7 +119,9 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         return response;
     }
 
-    // todo Payment 처리 로직 추가
+    // todo-1 Payment 처리 로직 추가
+    // todo-2 사용하는 DTO 수정
+    // todo-3 장바구니 물품 주문한 경우, 주문한 책 장바구니에서 지우는 로직 추가
     @Override
     public void userOrderProcess(OrderDTO order,
                                  List<OrderDetailDTO> orderDetailList,
@@ -150,7 +131,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
 
         int totalAmount = getTotalAmountFromOrderDetailList(orderDetailList);
         Order newOrder = Order.builder()
-                .deliveryFee(getDeliveryFee(totalAmount))
+                .deliveryFee(deliveryFeeService.getDeliveryFee(totalAmount))
                 .orderTime(order.getOrderTime())
                 .totalAmount(0)
                 .pointAmount(order.getPointAmount())
@@ -164,6 +145,8 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         orderSuccessProcess(newOrder, orderDetailList, receiverInfo);
     }
 
+    // todo-1 Payment 처리 로직 추가
+    // todo-2 사용하는 DTO 수정
     @Override
     public void nonUserOrderProcess(OrderDTO order,
                                     List<OrderDetailDTO> orderDetailList,
@@ -172,7 +155,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
 
         int totalAmount = getTotalAmountFromOrderDetailList(orderDetailList);
         Order newOrder = Order.builder()
-                .deliveryFee(getDeliveryFee(totalAmount))
+                .deliveryFee(deliveryFeeService.getDeliveryFee(totalAmount))
                 .orderTime(order.getOrderTime())
                 .totalAmount(0)
                 .pointAmount(order.getPointAmount())

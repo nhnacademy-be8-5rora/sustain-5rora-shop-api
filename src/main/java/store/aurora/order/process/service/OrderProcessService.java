@@ -8,38 +8,17 @@ import java.util.List;
 public interface OrderProcessService {
 
     /**
-     * 배송비 계산
-     * 배송비 정책에 의거해 배송비 계산
-     * <pre> 현재: 총 주문 금액이 30,000원 이상일 경우 배송비 무료 </pre>
-     * @param totalAmount 쿠폰을 적용한 총 주문 금액 ( 포인트 적용 전 )
-     * @return 배송비
-     */
-    int getDeliveryFee(int totalAmount);
-    int getTotalAmountFromOrderDetailList(List<OrderDetailDTO> orderDetailList);
-
-    /**
-     * 사용자 주문 내역 저장
-     * @param order OrderDTO 주문 정보
-     * @param orderDetailList List<OrderDetailDTO> 주문 상세 정보
-     * @param receiverInfo ReceiverInfoDTO 수령인 정보
-     * @param user User 사용자 정보
-     * @param orderedPersonInfo OrderedPersonInfoDTO 주문자 정보
-     */
-    void userOrderProcess(OrderDTO order, List<OrderDetailDTO> orderDetailList, ReceiverInfoDTO receiverInfo, User user, OrderedPersonInfoDTO orderedPersonInfo);
-    /**
-     * 비사용자 주문 내역 저장
-     * @param order OrderDTO 주문 정보
-     * @param orderDetailList List<OrderDetailDTO> 주문 상세 정보
-     * @param receiverInfo ReceiverInfoDTO 수령인 정보
-     * @param orderedPersonInfo OrderedPersonInfoDTO 주문자 정보
-     */
-    void nonUserOrderProcess(OrderDTO order, List<OrderDetailDTO> orderDetailList, ReceiverInfoDTO receiverInfo, OrderedPersonInfoDTO orderedPersonInfo);
-
-    /**
      * 주문 번호 uuid 생성
      * @return uuid 주문 번호
      */
     String getOrderUuid();
+
+    /**
+     * 주문 상세 정보를 통해 주문 총 금액 계산 (결제 금액은 포인트 사용량 포함해야 함)
+     * @param orderDetailList 주문 상세 정보
+     * @return totalAmount 총 금액
+     */
+    int getTotalAmountFromOrderDetailList(List<OrderDetailDTO> orderDetailList);
 
     /**
      * 주문 정보를 uuid를 key로 하여 redis에 저장
@@ -64,4 +43,23 @@ public interface OrderProcessService {
      * @return responseDto
      */
     OrderResponseDto getOrderResponseFromOrderRequestDtoInRedis(String uuid);
+
+    /**
+     * 사용자 주문 내역 저장
+     * @param order OrderDTO 주문 정보
+     * @param orderDetailList List<OrderDetailDTO> 주문 상세 정보
+     * @param receiverInfo ReceiverInfoDTO 수령인 정보
+     * @param user User 사용자 정보
+     * @param orderedPersonInfo OrderedPersonInfoDTO 주문자 정보
+     */
+    void userOrderProcess(OrderDTO order, List<OrderDetailDTO> orderDetailList, ReceiverInfoDTO receiverInfo, User user, OrderedPersonInfoDTO orderedPersonInfo);
+    /**
+     * 비사용자 주문 내역 저장
+     * @param order OrderDTO 주문 정보
+     * @param orderDetailList List<OrderDetailDTO> 주문 상세 정보
+     * @param receiverInfo ReceiverInfoDTO 수령인 정보
+     * @param orderedPersonInfo OrderedPersonInfoDTO 주문자 정보
+     */
+    void nonUserOrderProcess(OrderDTO order, List<OrderDetailDTO> orderDetailList, ReceiverInfoDTO receiverInfo, OrderedPersonInfoDTO orderedPersonInfo);
+
 }

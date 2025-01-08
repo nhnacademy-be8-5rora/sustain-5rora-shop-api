@@ -24,13 +24,15 @@ public class BookImageServiceImpl implements BookImageService {
         if (coverUrl != null) {
             String modifiedCoverUrl = modifyCoverUrl(coverUrl);
             if (modifiedCoverUrl != null) {
-                addBookImage(book, modifiedCoverUrl, true); // 썸네일로 저장
+                String uploadedCoverUrl = objectStorageService.uploadObjectFromUrl(modifiedCoverUrl);
+                if (uploadedCoverUrl != null) {
+                    addBookImage(book, uploadedCoverUrl, true); // 썸네일로 저장
+                }
             }
-        }else {
-            throw new IllegalArgumentException("Modified coverUrl is null");
         }
         handleAdditionalImages(book, uploadedImages);
     }
+
     @Override
     public void handleImageUpload(Book book, MultipartFile file, boolean isThumbnail) {
         if (file != null && !file.isEmpty()) {
@@ -53,11 +55,16 @@ public class BookImageServiceImpl implements BookImageService {
         if (imageIds == null || imageIds.isEmpty()) {
             return; // 삭제할 이미지가 없는 경우 바로 반환
         }
-        // 이미지 ID로 데이터베이스에서 이미지 조회
+
+        // 데이터베이스에서 삭제할 이미지 조회
         List<BookImage> imagesToDelete = bookImageRepository.findAllById(imageIds);
 
-        // 각 이미지 삭제
-        for (BookImage image : imagesToDelete) {
+        if (imagesToDelete.isEmpty()) {
+            throw new IllegalArgumentException("No images found for the provided IDs");
+        }
+
+        // 데이터베이스에서 BookImage 엔티티 삭제
+        imagesToDelete.forEach(image -> {
             // 1. 오브젝트 스토리지에서 이미지 삭제
             objectStorageService.deleteObject(image.getFilePath());
 
@@ -66,29 +73,24 @@ public class BookImageServiceImpl implements BookImageService {
             if (book != null) {
                 book.getBookImages().remove(image); // 컬렉션에서 제거
             }
-        }
+
+            // 3. BookImage 엔티티 삭제
+            bookImageRepository.delete(image);
+        });
     }
 
     @Override
-    public String getThumbnailPath(Book book) {
-        if (book == null || book.getBookImages() == null) {
-            return null;
-        }
+    public BookImage getThumbnail(Book book) {
         return book.getBookImages().stream()
                 .filter(BookImage::isThumbnail)
-                .map(BookImage::getFilePath)
                 .findFirst()
                 .orElse(null);
     }
 
     @Override
-    public List<String> getAdditionalImages(Book book) {
-        if (book == null || book.getBookImages() == null) {
-            return List.of();
-        }
+    public List<BookImage> getAdditionalImages(Book book) {
         return book.getBookImages().stream()
-                .filter(image -> !image.isThumbnail()) // 썸네일이 아닌 이미지만 가져오기
-                .map(BookImage::getFilePath)
+                .filter(image -> !image.isThumbnail())
                 .toList();
     }
 

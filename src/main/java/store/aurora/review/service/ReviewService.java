@@ -19,7 +19,7 @@ import store.aurora.review.exception.UnauthorizedReviewException;
 import store.aurora.review.repository.ReviewImageRepository;
 import store.aurora.review.repository.ReviewRepository;
 import store.aurora.user.entity.User;
-import store.aurora.user.exception.NotFoundUserException;
+import store.aurora.user.exception.UserNotFoundException;
 import store.aurora.user.repository.UserRepository;
 
 import java.io.IOException;
@@ -44,7 +44,7 @@ public class ReviewService {
                 .orElseThrow(() -> new BookNotFoundException(bookId));
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundUserException(userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         // 해당 사용자가 이 책을 주문했는지 확인
 //        boolean hasPurchasedBook = orderRepository.existsByBookAndUser(book, user);
@@ -88,7 +88,7 @@ public class ReviewService {
     // 리뷰 목록 조회 (사용자 ID로 조회)
     public List<Review> getReviewsByUserId(String userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundUserException(userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
         return reviewRepository.findByUser(user);
     }
 
@@ -106,7 +106,7 @@ public class ReviewService {
                 .orElseThrow(() -> new BookNotFoundException(bookId));
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundUserException(userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         existingReview.setBook(book);
         existingReview.setUser(user);

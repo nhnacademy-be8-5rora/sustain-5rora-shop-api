@@ -87,57 +87,6 @@ class WrapServiceTest {
         assertEquals(List.of(wrap1, wrap2), wrapService.getWraps());
     }
 
-//    @Test
-//    void updateWrap() {
-//        Wrap wrap = new Wrap();
-//        wrap.setAmount(1000);
-//        wrap.setName("포장지");
-//
-//        Mockito.when(wrapRepository.)
-//
-//        wrapService.updateWrap(wrap);
-//
-//        Wrap getWrap = wrapService.getWrap(wrap.getId());
-//        assertEquals(2000, getWrap.getAmount());
-//    }
-
-//    @Test
-//    void updateWrapThrowExceptionsInputNull() {
-//        assertThrows(IllegalArgumentException.class, ()->wrapService.updateWrap(null));
-//    }
-//
-//    @Test
-//    void updateWrapThrowExceptionNotCreated(){
-//        Wrap wrap = new Wrap();
-//        wrap.setAmount(1000);
-//        wrap.setName("포장지");
-//        assertThrows(IllegalArgumentException.class, ()->wrapService.updateWrap(wrap));
-//        wrapService.createWrap(wrap);
-//    }
-//
-//    @Test
-//    void updateWrapThrowExceptionNameNull(){
-//        Wrap wrap = new Wrap();
-//        wrap.setAmount(1000);
-//        wrap.setName("포장지");
-//        wrapService.createWrap(wrap);
-//
-//        wrap.setName(null);
-//        assertThrows(IllegalArgumentException.class, ()->wrapService.updateWrap(wrap));
-//    }
-//
-//    @Test
-//    void updateWrapThrowExceptionNotExist() {
-//        Wrap wrap = new Wrap();
-//        wrap.setAmount(1000);
-//        wrap.setName("포장지");
-//        wrapService.createWrap(wrap);
-//
-//        assertDoesNotThrow(()->wrapService.updateWrap(wrap));
-//        wrapService.deleteByWrapId(wrap.getId());
-//        assertThrows(WrapNotFoundException.class, ()->wrapService.updateWrap(wrap));
-//    }
-
     @Test
     void deleteByWrapId() {
         Mockito.when(wrapRepository.existsById(1L)).thenReturn(true);

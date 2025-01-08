@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import store.aurora.order.dto.OrderRequestDto;
 import store.aurora.order.dto.OrderResponseDto;
 import store.aurora.order.dto.OrderUuidAndRedirectUrlDto;
-import store.aurora.order.service.process.OrderProcessService;
+import store.aurora.order.process.service.OrderProcessService;
 
 @RestController
 @RequestMapping("/api/order")

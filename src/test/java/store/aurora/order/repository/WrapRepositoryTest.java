@@ -16,7 +16,7 @@ class WrapRepositoryTest {
     private WrapRepository wrapRepository;
 
     @Test
-    public void saveTest(){
+    void saveTest(){
         Wrap wrap = new Wrap();
         wrap.setName("wrapName");
         wrap.setAmount(1000);
@@ -25,7 +25,7 @@ class WrapRepositoryTest {
     }
 
     @Test
-    public void readTest(){
+    void readTest(){
         Wrap wrap = new Wrap();
         wrap.setName("wrapName");
         wrap.setAmount(1000);
@@ -34,7 +34,7 @@ class WrapRepositoryTest {
     }
 
     @Test
-    public void updateTest(){
+    void updateTest(){
         Wrap wrap = new Wrap();
         wrap.setName("wrapName");
         wrap.setAmount(1000);
@@ -46,7 +46,7 @@ class WrapRepositoryTest {
     }
 
     @Test
-    public void deleteTest(){
+    void deleteTest(){
         Wrap wrap = new Wrap();
         wrap.setName("wrapName");
         wrap.setAmount(1000);

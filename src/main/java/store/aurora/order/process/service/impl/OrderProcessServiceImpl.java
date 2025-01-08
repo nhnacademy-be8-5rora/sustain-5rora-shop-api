@@ -1,10 +1,12 @@
-package store.aurora.order.service.process.impl;
+package store.aurora.order.process.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.service.BookService;
+import store.aurora.common.setting.service.SettingService;
 import store.aurora.order.dto.*;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.OrderDetail;
@@ -13,7 +15,7 @@ import store.aurora.order.entity.ShipmentInformation;
 import store.aurora.order.entity.enums.OrderState;
 import store.aurora.order.entity.enums.ShipmentState;
 import store.aurora.order.service.*;
-import store.aurora.order.service.process.OrderProcessService;
+import store.aurora.order.process.service.OrderProcessService;
 import store.aurora.user.entity.User;
 
 import java.util.List;
@@ -23,6 +25,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class OrderProcessServiceImpl implements OrderProcessService {
     private final BookService bookService;
     private final OrderService orderService;
@@ -33,34 +36,59 @@ public class OrderProcessServiceImpl implements OrderProcessService {
 
     private final RedisTemplate<String, OrderRequestDto> orderRedisTemplate;
 
+    private final SettingService settingService;
+    private static final String DEFAULT_MIN_AMOUNT_VALUE = "30000";
+    private static final String DEFAULT_DELIVERY_FEE_VALUE = "5000";
+
+
     /*
      *     todo 배송비 로직 수정
      *      배송비 정책이 수정될 경우를 고려해 setting 테이블에서 배송비 관련 정보를 가져오도록 수정해야 함
      *         이 로직으로는 배송비 정책을 수정할 때마다 코드를 수정하고, 서버를 재배포해야 한다.
-     *         그래서 setting 테이블을 작성하여 관리하고자 함
-     *         1단계. setting 테이블에 배송비 관련 정보를 저장하고, 배송비를 가져오는 로직으로 수정
      *         2단계. 매 주문마다 배송비를 setting에서 불러오는 것이 아닌 캐싱하여 사용
      *             2-1. 특정 시간마다 배송비를 캐싱하고, 배송비를 가져올 때 캐싱된 값을 사용
      *             2-2. 배송비 관련 정보가 변경되었을 때 캐싱된 값을 삭제하고, 새로운 값을 캐싱
      */
     @Override
     public int getDeliveryFee(int totalAmount) {
-        int minAmount = 30000;
+        String minAmountKey = "minAmount";
 
-        int deliveryFee = 5000;
-        if(totalAmount >= minAmount){
-            deliveryFee = 0;
+        String minAmountValue;
+        try{
+            minAmountValue = settingService.getSettingValue(minAmountKey);
+        } catch(IllegalArgumentException e){
+            settingService.saveSetting(minAmountKey, DEFAULT_MIN_AMOUNT_VALUE);
+            minAmountValue = settingService.getSettingValue(minAmountKey);
         }
 
-        return deliveryFee;
+        String deliveryFeeKey = "deliveryFee";
+
+        String deliveryValue;
+        try{
+            deliveryValue = settingService.getSettingValue(deliveryFeeKey);
+        } catch(IllegalArgumentException e){
+            settingService.saveSetting(deliveryFeeKey, DEFAULT_DELIVERY_FEE_VALUE);
+            deliveryValue = settingService.getSettingValue(deliveryFeeKey);
+        }
+
+        int minAmount = Integer.parseInt(minAmountValue);
+
+        if(totalAmount >= minAmount){
+            return 0;
+        }
+
+        return Integer.parseInt(deliveryValue);
     }
 
     @Override
     public int getTotalAmountFromOrderDetailList(List<OrderDetailDTO> orderDetailList) {
         int totalAmount = 0;
         for (OrderDetailDTO detail : orderDetailList) {
-            int amount = bookService.getBookById(detail.getBookId()).getSalePrice()
-                        * detail.getQuantity();
+            // 책 가격
+            int bookSalePrice = bookService.getBookById(detail.getBookId()).getSalePrice();
+
+            // 책 가격 계산
+            int amount = bookSalePrice * detail.getQuantity();
 
             // wrap 금액 적용
             if(Objects.nonNull(detail.getWrapId()))
@@ -90,6 +118,12 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         orderRedisTemplate.opsForValue().set(uuid, orderInfo);
     }
 
+    public int getBookDiscountAmountFromDiscountPolicy(int bookSalePrice){
+        int discountAmount = 0;
+
+        return discountAmount;
+    }
+
     @Override
     public OrderResponseDto getOrderResponseFromOrderRequestDtoInRedis(String uuid){
         OrderResponseDto response = new OrderResponseDto();
@@ -111,6 +145,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
          */
         List<OrderDetailDTO> orderDetailList = Objects.requireNonNull(dto).getOrderDetailDTOList();
 
+        // todo: 포인트 사용 금액 적용
         int value = getTotalAmountFromOrderDetailList(orderDetailList);
 
         // OrderName 생성

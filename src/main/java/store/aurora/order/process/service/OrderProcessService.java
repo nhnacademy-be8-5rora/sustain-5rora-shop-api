@@ -1,4 +1,4 @@
-package store.aurora.order.service.process;
+package store.aurora.order.process.service;
 
 import store.aurora.order.dto.*;
 import store.aurora.user.entity.User;

@@ -18,9 +18,7 @@ public interface TagService {
 
     List<TagResponseDto> searchTags(String keyword);
 
-    List<TagResponseDto> getAllTags();
-
-    Page<TagResponseDto> getAllTags(Pageable pageable);
+    Page<TagResponseDto> getTags(Pageable pageable);
 
     TagResponseDto getTagById(Long id);
 

@@ -25,14 +25,10 @@ public class TagController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
-    @GetMapping("/paged")
-    public ResponseEntity<Page<TagResponseDto>> getAllTags(Pageable pageable) {
-        Page<TagResponseDto> tags = tagService.getAllTags(pageable);
+    @GetMapping
+    public ResponseEntity<Page<TagResponseDto>> getTags(Pageable pageable) {
+        Page<TagResponseDto> tags = tagService.getTags(pageable);
         return ResponseEntity.ok(tags);
-    }
-    @GetMapping("/all")
-    public ResponseEntity<List<TagResponseDto>> getAllTags() {
-        return ResponseEntity.ok(tagService.getAllTags());
     }
 
     @GetMapping("/{id}")

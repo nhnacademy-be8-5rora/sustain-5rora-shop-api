@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.user.entity.Address;
 import store.aurora.user.entity.UserAddress;
+import store.aurora.user.exception.AddressLimitExceededException;
 import store.aurora.user.exception.UserAddressAlreadyExistsException;
 import store.aurora.user.exception.UserAddressNotFoundException;
 import store.aurora.user.repository.UserAddressRepository;
@@ -21,6 +22,13 @@ public class UserAddressService {
 
     @Transactional
     public void addUserAddress(String nickname, String receiver, String roadAddress, String addrDetail, String userId) {
+        // 사용자의 기존 주소 수를 확인
+        int userAddressCount = userAddressRepository.countByUserId(userId);
+
+        if (userAddressCount >= 10) {
+            throw new AddressLimitExceededException();
+        }
+
         // Address 엔터티 저장 또는 가져오기
         Address address = addressService.saveOrGetAddress(roadAddress);
 

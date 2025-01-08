@@ -37,7 +37,7 @@ public class UserAddress {
     private Address address;
 
     @NotNull
-    @Column(name = "user_addr_nickname", length = 50, nullable = false, unique = true)
+    @Column(name = "user_addr_nickname", length = 50, nullable = false)
     private String nickname;
 
     public UserAddress(String nickname, String addrDetail, Address address, String receiver, User user) {

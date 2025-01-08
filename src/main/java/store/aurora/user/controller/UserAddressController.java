@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import store.aurora.common.dto.ErrorResponseDto;
 import store.aurora.user.dto.UserAddressRequest;
@@ -46,6 +47,8 @@ public class UserAddressController {
     @Operation(summary = "배송지 추가", description = "사용자가 새로운 배송지를 추가합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "배송지가 성공적으로 추가되었습니다."),
+            @ApiResponse(responseCode = "400", description = "Maximum address limit reached or invalid data",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "409", description = "중복된 배송지가 이미 존재합니다.",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ErrorResponseDto.class)))

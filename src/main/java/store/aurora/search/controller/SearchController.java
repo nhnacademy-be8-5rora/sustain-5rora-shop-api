@@ -33,7 +33,16 @@ public class SearchController {
             @RequestParam(required = false) String orderDirection, // 정렬 방향 (asc 또는 desc)
             @RequestParam(required = false, defaultValue = "1") String pageNum) { // pageNum 기본값을 1로 설정
 
-        int page = Integer.parseInt(pageNum) - 1; // pageNum은 1부터 시작하므로 1을 빼줘야 0-based 페이지로 맞춰짐
+
+        int page;
+        try {
+            page = Integer.parseInt(pageNum) - 1;
+            if (page < 0) {
+                return ResponseEntity.badRequest().body(null); // pageNum이 1보다 작은 경우 처리
+            }
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().body(null); // 잘못된 pageNum 값에 대한 응답
+        }
         PageRequest pageRequest;
 
         // orderBy가 null이면 기본값 설정
@@ -58,7 +67,12 @@ public class SearchController {
                     if(keyword.isEmpty()) {
                         keyword = "0";
                     }
-                    bookSearchResponseDTOPage = searchService.findBooksByCategoryWithDetails(userId, Long.valueOf(keyword), pageRequest);
+                    try {
+                        Long categoryId = Long.valueOf(keyword); // 카테고리 ID 변환
+                        bookSearchResponseDTOPage = searchService.findBooksByCategoryWithDetails(userId, categoryId, pageRequest);
+                    } catch (NumberFormatException e) {
+                        throw new IllegalArgumentException("category id는 숫자만 입력 가능합니다.");
+                    }
                     break;
                 case "author":
                     bookSearchResponseDTOPage = searchService.findBooksByAuthorNameWithDetails(userId, keyword, pageRequest);

@@ -1,9 +1,10 @@
-package store.aurora.order.service.process.impl;
+package store.aurora.order.process.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.service.BookService;
 import store.aurora.common.setting.service.SettingService;
 import store.aurora.order.dto.*;
@@ -14,7 +15,7 @@ import store.aurora.order.entity.ShipmentInformation;
 import store.aurora.order.entity.enums.OrderState;
 import store.aurora.order.entity.enums.ShipmentState;
 import store.aurora.order.service.*;
-import store.aurora.order.service.process.OrderProcessService;
+import store.aurora.order.process.service.OrderProcessService;
 import store.aurora.user.entity.User;
 
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class OrderProcessServiceImpl implements OrderProcessService {
     private final BookService bookService;
     private final OrderService orderService;
@@ -82,8 +84,11 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     public int getTotalAmountFromOrderDetailList(List<OrderDetailDTO> orderDetailList) {
         int totalAmount = 0;
         for (OrderDetailDTO detail : orderDetailList) {
-            int amount = bookService.getBookById(detail.getBookId()).getSalePrice()
-                        * detail.getQuantity();
+            // 책 가격
+            int bookSalePrice = bookService.getBookById(detail.getBookId()).getSalePrice();
+
+            // 책 가격 계산
+            int amount = bookSalePrice * detail.getQuantity();
 
             // wrap 금액 적용
             if(Objects.nonNull(detail.getWrapId()))
@@ -113,6 +118,12 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         orderRedisTemplate.opsForValue().set(uuid, orderInfo);
     }
 
+    public int getBookDiscountAmountFromDiscountPolicy(int bookSalePrice){
+        int discountAmount = 0;
+
+        return discountAmount;
+    }
+
     @Override
     public OrderResponseDto getOrderResponseFromOrderRequestDtoInRedis(String uuid){
         OrderResponseDto response = new OrderResponseDto();
@@ -134,6 +145,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
          */
         List<OrderDetailDTO> orderDetailList = Objects.requireNonNull(dto).getOrderDetailDTOList();
 
+        // todo: 포인트 사용 금액 적용
         int value = getTotalAmountFromOrderDetailList(orderDetailList);
 
         // OrderName 생성

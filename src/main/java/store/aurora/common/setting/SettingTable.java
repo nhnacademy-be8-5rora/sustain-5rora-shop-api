@@ -15,7 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor @AllArgsConstructor
 public class SettingTable {
     @Id
-    @Column(name = "key_name", nullable = false)
+    @Column(name = "key_name", nullable = false, length = 16)
     private String key;
 
     @Column(name = "value", nullable = false)

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import store.aurora.book.service.BookService;
+import store.aurora.common.setting.service.SettingService;
 import store.aurora.order.dto.*;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.OrderDetail;
@@ -33,26 +34,48 @@ public class OrderProcessServiceImpl implements OrderProcessService {
 
     private final RedisTemplate<String, OrderRequestDto> orderRedisTemplate;
 
+    private final SettingService settingService;
+    private static final String DEFAULT_MIN_AMOUNT_VALUE = "30000";
+    private static final String DEFAULT_DELIVERY_FEE_VALUE = "5000";
+
+
     /*
      *     todo 배송비 로직 수정
      *      배송비 정책이 수정될 경우를 고려해 setting 테이블에서 배송비 관련 정보를 가져오도록 수정해야 함
      *         이 로직으로는 배송비 정책을 수정할 때마다 코드를 수정하고, 서버를 재배포해야 한다.
-     *         그래서 setting 테이블을 작성하여 관리하고자 함
-     *         1단계. setting 테이블에 배송비 관련 정보를 저장하고, 배송비를 가져오는 로직으로 수정
      *         2단계. 매 주문마다 배송비를 setting에서 불러오는 것이 아닌 캐싱하여 사용
      *             2-1. 특정 시간마다 배송비를 캐싱하고, 배송비를 가져올 때 캐싱된 값을 사용
      *             2-2. 배송비 관련 정보가 변경되었을 때 캐싱된 값을 삭제하고, 새로운 값을 캐싱
      */
     @Override
     public int getDeliveryFee(int totalAmount) {
-        int minAmount = 30000;
+        String minAmountKey = "minAmount";
 
-        int deliveryFee = 5000;
-        if(totalAmount >= minAmount){
-            deliveryFee = 0;
+        String minAmountValue;
+        try{
+            minAmountValue = settingService.getSettingValue(minAmountKey);
+        } catch(IllegalArgumentException e){
+            settingService.saveSetting(minAmountKey, DEFAULT_MIN_AMOUNT_VALUE);
+            minAmountValue = settingService.getSettingValue(minAmountKey);
         }
 
-        return deliveryFee;
+        String deliveryFeeKey = "deliveryFee";
+
+        String deliveryValue;
+        try{
+            deliveryValue = settingService.getSettingValue(deliveryFeeKey);
+        } catch(IllegalArgumentException e){
+            settingService.saveSetting(deliveryFeeKey, DEFAULT_DELIVERY_FEE_VALUE);
+            deliveryValue = settingService.getSettingValue(deliveryFeeKey);
+        }
+
+        int minAmount = Integer.parseInt(minAmountValue);
+
+        if(totalAmount >= minAmount){
+            return 0;
+        }
+
+        return Integer.parseInt(deliveryValue);
     }
 
     @Override

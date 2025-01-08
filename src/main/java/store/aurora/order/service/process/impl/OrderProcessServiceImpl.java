@@ -2,12 +2,10 @@ package store.aurora.order.service.process.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import store.aurora.book.service.BookService;
-import store.aurora.order.dto.OrderDTO;
-import store.aurora.order.dto.OrderDetailDTO;
-import store.aurora.order.dto.OrderedPersonInfoDTO;
-import store.aurora.order.dto.ReceiverInfoDTO;
+import store.aurora.order.dto.*;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.OrderDetail;
 import store.aurora.order.entity.Shipment;
@@ -17,9 +15,10 @@ import store.aurora.order.entity.enums.ShipmentState;
 import store.aurora.order.service.*;
 import store.aurora.order.service.process.OrderProcessService;
 import store.aurora.user.entity.User;
-import store.aurora.user.service.UserService;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -31,29 +30,18 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     private final ShipmentInformationService shipmentInformationService;
     private final ShipmentService shipmentService;
     private final WrapService wrapService;
-    private final UserService userService;
 
-    /* todo 배송비 로직 수정
-        이 로직으로는 배송비 정책을 수정할 때마다 코드를 수정하고, 서버를 재배포해야 한다.
-        그래서 setting 테이블을 작성하여 관리하고자 함
+    private final RedisTemplate<String, OrderRequestDto> orderRedisTemplate;
 
-        1단계. setting 테이블에 배송비 관련 정보를 저장하고, 배송비를 가져오는 로직으로 수정
-
-        2단계. 매 주문마다 배송비를 setting에서 불러오는 것이 아닌 캐싱하여 사용
-            2-1. 특정 시간마다 배송비를 캐싱하고, 배송비를 가져올 때 캐싱된 값을 사용
-            2-2. 배송비 관련 정보가 변경되었을 때 캐싱된 값을 삭제하고, 새로운 값을 캐싱
-     */
-    // todo public이어야 할 필요에 대한 고려 ( public이 아닌 private로 변경해도 되는지 확인 필요 )
-    /**
-     * 배송비 계산
-     * 배송비 정책에 의거해 배송비 계산
-     * <pre> 현재: 총 주문 금액이 30,000원 이상일 경우 배송비 무료 </pre>
-     * <pre>
+    /*
+     *     todo 배송비 로직 수정
      *      배송비 정책이 수정될 경우를 고려해 setting 테이블에서 배송비 관련 정보를 가져오도록 수정해야 함
-     *      to_do 참고
-     * </pre>
-     * @param totalAmount 쿠폰을 적용한 총 주문 금액 ( 포인트 적용 전 )
-     * @return 배송비
+     *         이 로직으로는 배송비 정책을 수정할 때마다 코드를 수정하고, 서버를 재배포해야 한다.
+     *         그래서 setting 테이블을 작성하여 관리하고자 함
+     *         1단계. setting 테이블에 배송비 관련 정보를 저장하고, 배송비를 가져오는 로직으로 수정
+     *         2단계. 매 주문마다 배송비를 setting에서 불러오는 것이 아닌 캐싱하여 사용
+     *             2-1. 특정 시간마다 배송비를 캐싱하고, 배송비를 가져올 때 캐싱된 값을 사용
+     *             2-2. 배송비 관련 정보가 변경되었을 때 캐싱된 값을 삭제하고, 새로운 값을 캐싱
      */
     @Override
     public int getDeliveryFee(int totalAmount) {
@@ -67,27 +55,84 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         return deliveryFee;
     }
 
-    // todo public이어야 할 필요에 대한 고려 ( public이 아닌 private로 변경해도 되는지 확인 필요 )
     @Override
     public int getTotalAmountFromOrderDetailList(List<OrderDetailDTO> orderDetailList) {
         int totalAmount = 0;
-        for (OrderDetailDTO orderDetail : orderDetailList) {
-            int amount = bookService.getBookById(orderDetail.getBookId()).getSalePrice() * orderDetail.getQuantity();
-            totalAmount += amount - orderDetail.getDiscountAmount();
+        for (OrderDetailDTO detail : orderDetailList) {
+            int amount = bookService.getBookById(detail.getBookId()).getSalePrice()
+                        * detail.getQuantity();
+
+            // wrap 금액 적용
+            if(Objects.nonNull(detail.getWrapId()))
+                amount += wrapService.getWrap(detail.getWrapId()).getAmount()
+                        * detail.getQuantity();
+
+            // 할인 금액 적용
+            if(Objects.nonNull(detail.getDiscountAmount()))
+                amount -= detail.getDiscountAmount();
+
+            totalAmount += amount;
         }
+
+        // 배송비 계산
+        totalAmount += getDeliveryFee(totalAmount);
+
         return totalAmount;
     }
 
+    @Override
+    public String getOrderUuid(){
+        return UUID.randomUUID().toString();
+    }
+
+    @Override
+    public void saveOrderInfoInRedisWithUuid(String uuid, OrderRequestDto orderInfo){
+        orderRedisTemplate.opsForValue().set(uuid, orderInfo);
+    }
+
+    @Override
+    public OrderResponseDto getOrderResponseFromOrderRequestDtoInRedis(String uuid){
+        OrderResponseDto response = new OrderResponseDto();
+
+        OrderRequestDto dto = orderRedisTemplate.opsForValue().get(uuid);
+
+        // customerKey 생성
+        String customerKey = UUID.randomUUID().toString().replace("-", "");
+
+        // Amount 생성
+        String currency = "KRW";
+
+        /*
+            OrderDetailList 를 통해서 다음 내용 ( value, orderName ) 생성함
+
+            todo: OrderDetailDto마다 쿠폰 할인 금액 적용
+             for-each : orderDetailList
+                discountAmount = coupon 할인가
+         */
+        List<OrderDetailDTO> orderDetailList = Objects.requireNonNull(dto).getOrderDetailDTOList();
+
+        int value = getTotalAmountFromOrderDetailList(orderDetailList);
+
+        // OrderName 생성
+        StringBuilder orderName = new StringBuilder();
+        for(OrderDetailDTO detail : orderDetailList){
+            orderName.append(detail.getBookId())
+                    .append(detail.getQuantity())
+                    .append(Objects.nonNull(detail.getWrapId()) ? detail.getWrapId() : "")
+                    .append(Objects.nonNull(detail.getCouponId()) ? detail.getCouponId() : "");
+        }
+
+
+        // response setting
+        response.setCustomerKey(customerKey);
+        response.setCurrency(currency);
+        response.setValue(value);
+        response.setOrderName(orderName.toString());
+
+        return response;
+    }
+
     // todo Payment 처리 로직 추가
-    // todo nonUserProcess 작성 후 중복 코드 메소드화
-    /**
-     * 사용자 주문 처리
-     * @param order OrderDTO 주문 정보
-     * @param orderDetailList List<OrderDetailDTO> 주문 상세 정보
-     * @param receiverInfo ReceiverInfoDTO 수령인 정보
-     * @param user User 사용자 정보
-     * @param orderedPersonInfo OrderedPersonInfoDTO 주문자 정보
-     */
     @Override
     public void userOrderProcess(OrderDTO order,
                                  List<OrderDetailDTO> orderDetailList,
@@ -108,7 +153,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .user(user)
                 .build();
 
-        orderSuccessProcess(orderService.createOrder(newOrder), orderDetailList, receiverInfo);
+        orderSuccessProcess(newOrder, orderDetailList, receiverInfo);
     }
 
     @Override
@@ -130,7 +175,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .password(orderedPersonInfo.getPassword())
                 .build();
 
-        orderSuccessProcess(orderService.createOrder(newOrder), orderDetailList, receiverInfo);
+        orderSuccessProcess(newOrder, orderDetailList, receiverInfo);
     }
 
     private void orderSuccessProcess(Order order,

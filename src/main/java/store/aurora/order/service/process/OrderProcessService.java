@@ -18,7 +18,7 @@ public interface OrderProcessService {
     int getTotalAmountFromOrderDetailList(List<OrderDetailDTO> orderDetailList);
 
     /**
-     * 사용자 주문 처리
+     * 사용자 주문 내역 저장
      * @param order OrderDTO 주문 정보
      * @param orderDetailList List<OrderDetailDTO> 주문 상세 정보
      * @param receiverInfo ReceiverInfoDTO 수령인 정보
@@ -26,6 +26,13 @@ public interface OrderProcessService {
      * @param orderedPersonInfo OrderedPersonInfoDTO 주문자 정보
      */
     void userOrderProcess(OrderDTO order, List<OrderDetailDTO> orderDetailList, ReceiverInfoDTO receiverInfo, User user, OrderedPersonInfoDTO orderedPersonInfo);
+    /**
+     * 비사용자 주문 내역 저장
+     * @param order OrderDTO 주문 정보
+     * @param orderDetailList List<OrderDetailDTO> 주문 상세 정보
+     * @param receiverInfo ReceiverInfoDTO 수령인 정보
+     * @param orderedPersonInfo OrderedPersonInfoDTO 주문자 정보
+     */
     void nonUserOrderProcess(OrderDTO order, List<OrderDetailDTO> orderDetailList, ReceiverInfoDTO receiverInfo, OrderedPersonInfoDTO orderedPersonInfo);
 
     /**

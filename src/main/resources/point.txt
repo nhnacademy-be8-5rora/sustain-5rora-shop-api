@@ -29,12 +29,13 @@ INSERT INTO point_policies (point_policy_name, point_policy_type, point_policy_v
                                                                                           ('리뷰작성', 'AMOUNT', 200),
                                                                                           ('리뷰작성(사진 포함)', 'AMOUNT', 500);
 
+-- /////////////// point history insert 전 필수 세팅 ////////////////
 
--- 주문 1 (주문 상태 필수 주석 처리)
-INSERT INTO orders (id, preferred_delivery_date, delivery_fee, order_time, total_amount, point_amount, name, order_phone, order_email, user_id)
+-- 주문 1
+INSERT INTO orders (id, preferred_delivery_date, delivery_fee, order_time, total_amount, point_amount, state, name, order_phone, order_email, user_id)
 VALUES
-    (1, '2024-12-30', 3000, '2024-12-25 12:00:00', 50000, 1000, 'Book Order 1', '010-1234-5678', 'apple@example.com', 'apple'),
-    (2, '2024-12-31', 2000, '2024-12-26 14:30:00', 40000, 500, 'Book Order 2', '010-8765-4321', 'apple@example.com', 'apple');
+    (1, '2024-12-30', 3000, '2024-12-25 12:00:00', 50000, 1000, 1, 'Book Order 1', '010-1234-5678', 'apple@example.com', 'apple'),
+    (2, '2024-12-31', 2000, '2024-12-26 14:30:00', 40000, 500, 2,  'Book Order 2', '010-8765-4321', 'apple@example.com', 'apple');
 
 -- Shipment 필수 주석 처리
 
@@ -69,5 +70,5 @@ INSERT INTO point_histories (id, point_amount, point_Type, transaction_date, poi
 -- 포인트 적립 대기 사례
 (4, 300, 'EARNED', '2024-12-28 09:00:00', 2, 'apple', null),
 -- 포인트 적립 성공 추가 사례
-(5, 1500, 'EARNED', '2024-12-29 08:00:00',  1, 'apple', 2),
-(6, 1500, 'EARNED', '2024-12-29 08:00:00',  1, 'hyewon', null);
+(5, 1500, 'EARNED', '2024-12-29 08:00:00',  1, 'apple', 2);
+# (6, 1500, 'EARNED', '2024-12-29 08:00:00',  1, 'hyewon', null);

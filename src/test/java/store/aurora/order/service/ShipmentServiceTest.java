@@ -90,50 +90,6 @@ class ShipmentServiceTest {
         });
     }
 
-//    @Test
-//    void updateShipment() {
-//        Long id = 1L;
-//        Shipment shipment = new Shipment();
-//        shipment.setId(id);
-//        shipment.setState(ShipmentState.PENDING);
-//
-//        when(shipmentRepository.existsById(1L)).thenReturn(true);
-//        when(shipmentRepository.save(shipment)).thenReturn(shipment);
-//
-//        assertDoesNotThrow(() -> shipmentService.updateShipment(shipment));
-//
-//        verify(shipmentRepository, times(1)).save(shipment);
-//    }
-//
-//    @Test
-//    void updateShipmentWithNullShipment() {
-//        assertThrows(IllegalArgumentException.class, () -> {
-//            shipmentService.updateShipment(null);
-//        });
-//    }
-//
-//    @Test
-//    void updateShipmentWithNonExistId() {
-//        Shipment shipment = new Shipment();
-//        shipment.setId(999L);
-//        shipment.setState(ShipmentState.SHIPPED);
-//
-//        when(shipmentRepository.existsById(anyLong())).thenReturn(false);
-//        assertThrows(ShipmentNotFoundException.class, () -> {
-//            shipmentService.updateShipment(shipment);
-//        });
-//    }
-//
-//    @Test
-//    void updateShipmentWithNullState() {
-//        Shipment shipment = new Shipment();
-//
-//        when(shipmentRepository.existsById(anyLong())).thenReturn(true);
-//        assertThrows(IllegalArgumentException.class, () -> {
-//            shipmentService.updateShipment(shipment);
-//        });
-//    }
-
     @Test
     void deleteByShipmentId() {
         when(shipmentRepository.existsById(1L)).thenReturn(true);

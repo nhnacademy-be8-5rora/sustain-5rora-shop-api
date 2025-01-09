@@ -11,10 +11,6 @@ spring:
 #    username: root
 #    password: 3489
 #    driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: jdbc:mysql://localhost:3306/NHN_PROJECT?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-#    username: root
-#    password: 1234
-#    driver-class-name: com.my
 
     dbcp2:
       initial-size: 5                  # 초기 커넥션 수

@@ -134,6 +134,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .state(OrderState.PENDING)
                 .name(orderInfo.getOrdererName())
                 .orderPhone(orderInfo.getOrdererPhone())
+                .orderEmail(orderInfo.getOrdererEmail())
 //                .preferredDeliveryDate(orderInfo.getPreferredDeliveryDate())
                 .user(userService.getUser(orderInfo.getUsername()))
                 .build();
@@ -150,11 +151,16 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         Order newOrder = Order.builder()
                 .deliveryFee(deliveryFee)
                 .orderTime(LocalDateTime.now())
+
                 .totalAmount(amount - deliveryFee + orderInfo.getUsedPoint())
                 .pointAmount(orderInfo.getUsedPoint())
+
                 .state(OrderState.PENDING)
+
                 .name(orderInfo.getOrdererName())
                 .orderPhone(orderInfo.getOrdererPhone())
+                .orderEmail(orderInfo.getOrdererEmail())
+
 //                .preferredDeliveryDate(orderInfo.getPreferredDeliveryDate())
                 .password(orderInfo.getNonMemberPassword())
                 .build();

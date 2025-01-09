@@ -2,22 +2,22 @@ package store.aurora.order.process.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import store.aurora.book.entity.Book;
 import store.aurora.book.service.BookService;
-import store.aurora.common.setting.service.SettingService;
 import store.aurora.order.dto.*;
-import store.aurora.order.entity.Order;
-import store.aurora.order.entity.OrderDetail;
-import store.aurora.order.entity.Shipment;
-import store.aurora.order.entity.ShipmentInformation;
+import store.aurora.order.entity.*;
 import store.aurora.order.entity.enums.OrderState;
+import store.aurora.order.entity.enums.PaymentState;
 import store.aurora.order.entity.enums.ShipmentState;
+import store.aurora.order.process.service.DeliveryFeeService;
+import store.aurora.order.process.service.OrderInfoService;
 import store.aurora.order.service.*;
 import store.aurora.order.process.service.OrderProcessService;
-import store.aurora.user.entity.User;
+import store.aurora.user.service.UserService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -33,26 +33,17 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     private final ShipmentInformationService shipmentInformationService;
     private final ShipmentService shipmentService;
     private final WrapService wrapService;
-    private final SettingService settingService;
-    private final RedisTemplate<String, OrderRequestDto> orderRedisTemplate;
+    private final DeliveryFeeService deliveryFeeService;
+    private final OrderInfoService orderInfoService;
+    private final UserService userService;
+    private final PaymentService paymentService;
 
-    /*
-     *     todo 배송비 로직 수정
-     *      배송비 정책이 수정될 경우를 고려해 setting 테이블에서 배송비 관련 정보를 가져오도록 수정해야 함
-     *         이 로직으로는 배송비 정책을 수정할 때마다 코드를 수정하고, 서버를 재배포해야 한다.
-     *         2단계. 매 주문마다 배송비를 setting에서 불러오는 것이 아닌 캐싱하여 사용
-     *             2-1. 특정 시간마다 배송비를 캐싱하고, 배송비를 가져올 때 캐싱된 값을 사용
-     *             2-2. 배송비 관련 정보가 변경되었을 때 캐싱된 값을 삭제하고, 새로운 값을 캐싱
-     */
     @Override
-    public int getDeliveryFee(int totalAmount) {
-        int minAmount = settingService.getMinAmount();
-        if(totalAmount >= minAmount){
-            return 0;
-        }
-        return settingService.getDeliveryFee();
+    public String getOrderUuid(){
+        return UUID.randomUUID().toString();
     }
 
+    // todo: point 사용량 파라미터로 받아서 적용해야 함
     @Override
     public int getTotalAmountFromOrderDetailList(List<OrderDetailDTO> orderDetailList) {
         int totalAmount = 0;
@@ -76,37 +67,28 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         }
 
         // 배송비 계산
-        totalAmount += getDeliveryFee(totalAmount);
+        totalAmount += deliveryFeeService.getDeliveryFee(totalAmount);
 
         return totalAmount;
     }
 
     @Override
-    public String getOrderUuid(){
-        return UUID.randomUUID().toString();
-    }
-
-    @Override
     public void saveOrderInfoInRedisWithUuid(String uuid, OrderRequestDto orderInfo){
-        orderRedisTemplate.opsForValue().set(uuid, orderInfo);
+        orderInfoService.saveOrderInfoInRedisWithUuid(uuid, orderInfo);
     }
 
+    // todo: Coupon api 에 요청하는 로직 보내서 할인 금액 계산 / 계산된 할인 금액 받아오기
     public int getBookDiscountAmountFromDiscountPolicy(int bookSalePrice){
-        int discountAmount = 0;
-
-        return discountAmount;
+        return bookSalePrice * 10 / 100;
     }
 
     @Override
     public OrderResponseDto getOrderResponseFromOrderRequestDtoInRedis(String uuid){
         OrderResponseDto response = new OrderResponseDto();
 
-        OrderRequestDto dto = orderRedisTemplate.opsForValue().get(uuid);
+        OrderRequestDto dto = orderInfoService.getOrderInfoFromRedis(uuid);
 
-        // customerKey 생성
         String customerKey = UUID.randomUUID().toString();
-
-        // Amount 생성
         String currency = "KRW";
 
         /*
@@ -121,7 +103,6 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         // todo: 포인트 사용 금액 적용
         int value = getTotalAmountFromOrderDetailList(orderDetailList);
 
-        // OrderName 생성
         StringBuilder orderName = new StringBuilder();
         for(OrderDetailDTO detail : orderDetailList){
             orderName.append(detail.getBookId())
@@ -129,7 +110,6 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                     .append(Objects.nonNull(detail.getWrapId()) ? detail.getWrapId() : "")
                     .append(Objects.nonNull(detail.getCouponId()) ? detail.getCouponId() : "");
         }
-
 
         // response setting
         response.setCustomerKey(customerKey);
@@ -140,85 +120,95 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         return response;
     }
 
-    // todo Payment 처리 로직 추가
-    @Override
-    public void userOrderProcess(OrderDTO order,
-                                 List<OrderDetailDTO> orderDetailList,
-                                 ReceiverInfoDTO receiverInfo,
-                                 User user,
-                                 OrderedPersonInfoDTO orderedPersonInfo){
+    // todo-3 장바구니 물품 주문한 경우, 주문한 책 장바구니에서 지우는 로직 추가
+    public void userOrderProcess(String redisOrderId, String paymentKey, int amount){
+        OrderRequestDto orderInfo = orderInfoService.getOrderInfoFromRedis(redisOrderId);
 
-        int totalAmount = getTotalAmountFromOrderDetailList(orderDetailList);
+        int deliveryFee = deliveryFeeService.getDeliveryFee(amount);
+
         Order newOrder = Order.builder()
-                .deliveryFee(getDeliveryFee(totalAmount))
-                .orderTime(order.getOrderTime())
-                .totalAmount(0)
-                .pointAmount(order.getPointAmount())
+                .deliveryFee(deliveryFee)
+                .orderTime(LocalDateTime.now())
+                .totalAmount(amount - deliveryFee + orderInfo.getUsedPoint())
+                .pointAmount(orderInfo.getUsedPoint())
                 .state(OrderState.PENDING)
-                .name(orderedPersonInfo.getName())
-                .orderPhone(orderedPersonInfo.getPhone())
-                .preferredDeliveryDate(order.getPreferredDeliveryDate())
-                .user(user)
+                .name(orderInfo.getOrdererName())
+                .orderPhone(orderInfo.getOrdererPhone())
+//                .preferredDeliveryDate(orderInfo.getPreferredDeliveryDate())
+                .user(userService.getUser(orderInfo.getUsername()))
                 .build();
 
-        orderSuccessProcess(newOrder, orderDetailList, receiverInfo);
+        saveInformationOfOrderWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
     }
 
     @Override
-    public void nonUserOrderProcess(OrderDTO order,
-                                    List<OrderDetailDTO> orderDetailList,
-                                    ReceiverInfoDTO receiverInfo,
-                                    OrderedPersonInfoDTO orderedPersonInfo){
+    public void nonUserOrderProcess(String redisOrderId, String paymentKey, int amount){
+        OrderRequestDto orderInfo = orderInfoService.getOrderInfoFromRedis(redisOrderId);
 
-        int totalAmount = getTotalAmountFromOrderDetailList(orderDetailList);
+        int deliveryFee = deliveryFeeService.getDeliveryFee(amount);
+
         Order newOrder = Order.builder()
-                .deliveryFee(getDeliveryFee(totalAmount))
-                .orderTime(order.getOrderTime())
-                .totalAmount(0)
-                .pointAmount(order.getPointAmount())
+                .deliveryFee(deliveryFee)
+                .orderTime(LocalDateTime.now())
+                .totalAmount(amount - deliveryFee + orderInfo.getUsedPoint())
+                .pointAmount(orderInfo.getUsedPoint())
                 .state(OrderState.PENDING)
-                .name(orderedPersonInfo.getName())
-                .orderPhone(orderedPersonInfo.getPhone())
-                .preferredDeliveryDate(order.getPreferredDeliveryDate())
-                .password(orderedPersonInfo.getPassword())
+                .name(orderInfo.getOrdererName())
+                .orderPhone(orderInfo.getOrdererPhone())
+//                .preferredDeliveryDate(orderInfo.getPreferredDeliveryDate())
+                .password(orderInfo.getNonMemberPassword())
                 .build();
 
-        orderSuccessProcess(newOrder, orderDetailList, receiverInfo);
+        saveInformationOfOrderWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
     }
 
-    private void orderSuccessProcess(Order order,
-                                     List<OrderDetailDTO> orderDetailList,
-                                     ReceiverInfoDTO receiverInfo){
-
+    private void saveInformationOfOrderWhenOrderComplete(Order order, String paymentKey, int amount, OrderRequestDto orderInfo){
         Order createdOrder = orderService.createOrder(order);
 
-        Shipment shipment = Shipment.builder()
-                .state(ShipmentState.PENDING)
-                .build();
-        shipment = shipmentService.createShipment(shipment);
+        // 배송 정보 생성
+        Shipment shipment = shipmentService.createShipment(
+                Shipment.builder()
+                        .state(ShipmentState.PENDING)
+                        .build()
+        );
 
-        for (OrderDetailDTO detailDTO : orderDetailList) {
+        // Order detail 생성
+        for (OrderDetailDTO detailDTO : orderInfo.getOrderDetailDTOList()) {
+            Book book = bookService.getBookById(detailDTO.getBookId());
+
             OrderDetail detail = OrderDetail.builder()
                     .order(createdOrder)
                     .state(createdOrder.getState())
-                    .amountDetail(bookService.getBookById(detailDTO.getBookId()).getSalePrice() * detailDTO.getQuantity())
+                    .amountDetail(book.getSalePrice())
                     .quantity(detailDTO.getQuantity())
                     .wrap(wrapService.getWrap(detailDTO.getWrapId()))
                     .couponId(detailDTO.getCouponId())
-                    .book(bookService.getBookById(detailDTO.getBookId()))
+                    .book(book)
                     .shipment(shipment)
                     .build();
 
             orderDetailService.createOrderDetail(detail);
         }
 
+        // 배송지 정보 생성
         ShipmentInformation info = ShipmentInformation.builder()
                 .order(createdOrder)
-                .receiverName(receiverInfo.getName())
-                .receiverPhone(receiverInfo.getPhone())
-                .receiverAddress(receiverInfo.getAddress())
+                .receiverName(orderInfo.getReceiverName())
+                .receiverPhone(orderInfo.getReceiverPhone())
+                .receiverAddress(orderInfo.getReceiverAddress())
                 .build();
 
         shipmentInformationService.createShipmentInformation(info);
+
+        // Payment Key 에 결제 api 이름 추가? (ex. TOSS_1234)
+        Payment payment = Payment.builder()
+                .amount(amount)
+                .paymentDatetime(createdOrder.getOrderTime())
+                .status(PaymentState.COMPLETED)
+                .order(createdOrder)
+                .paymentKey(paymentKey)
+                .build();
+
+        paymentService.createPayment(payment);
     }
 }

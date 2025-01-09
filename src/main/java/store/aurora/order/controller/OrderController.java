@@ -7,6 +7,8 @@ import store.aurora.order.dto.OrderResponseDto;
 import store.aurora.order.dto.OrderUuidAndRedirectUrlDto;
 import store.aurora.order.process.service.OrderProcessService;
 
+import java.util.Objects;
+
 @RestController
 @RequestMapping("/api/order")
 @RequiredArgsConstructor
@@ -14,6 +16,7 @@ public class OrderController {
 
     private final OrderProcessService orderProcessService;
 
+    // todo : 에러 처리 및 예외 처리 추가
     @PostMapping("/save-order-info")
     public OrderUuidAndRedirectUrlDto createOrderUuidAndResponseUuid(
             @RequestBody OrderRequestDto orderRequestDto
@@ -34,5 +37,18 @@ public class OrderController {
     @GetMapping("/{order-id}/get-order-info")
     public OrderResponseDto getOrderInfo(@PathVariable(name="order-id") String orderId){
         return orderProcessService.getOrderResponseFromOrderRequestDtoInRedis(orderId);
+    }
+
+    @PostMapping("/order-complete")
+    public void orderComplete(
+            @RequestParam(name = "is-guest", required = false) Boolean isGuest,
+            @RequestBody String orderId,
+            @RequestBody String paymentKey,
+            @RequestBody int amount
+    ){
+        if(Objects.nonNull(isGuest) && Boolean.TRUE.equals(isGuest))
+            orderProcessService.nonUserOrderProcess(orderId, paymentKey, amount);
+        else
+            orderProcessService.userOrderProcess(orderId, paymentKey, amount);
     }
 }

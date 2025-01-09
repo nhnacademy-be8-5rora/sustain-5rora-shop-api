@@ -5,11 +5,9 @@ import com.querydsl.core.Tuple;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import store.aurora.book.dto.category.BookCategoryDto;
-import store.aurora.book.dto.category.CategoryResponseDTO;
 import store.aurora.book.dto.BookDetailsDto;
 import store.aurora.book.dto.BookImageDto;
 import store.aurora.book.dto.ReviewDto;
-import store.aurora.book.entity.Book;
 import store.aurora.search.dto.BookSearchEntityDTO;
 
 import java.util.List;

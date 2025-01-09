@@ -314,5 +314,38 @@ class SearchControllerTest {
         verify(searchService, times(1)).findBooksByCategoryWithDetails(null, 0L, pageRequest);
     }
 
+    @DisplayName("카테고리 검색 시 잘못된 카테고리 ID 입력 시 BadRequest 반환")
+    @Test
+    void searchWithInvalidCategoryId_ReturnsBadRequest() throws Exception {
+        String type = "category";
+        String keyword = "invalid";  // 잘못된 카테고리 ID 입력
+        int pageNum = 1;
+
+        mockMvc.perform(get(BASE_URL)
+                        .param("type", type)
+                        .param("keyword", keyword)
+                        .param("pageNum", String.valueOf(pageNum))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest()); // 잘못된 요청이므로 400 상태코드
+
+        verifyNoInteractions(searchService); // 예외 발생 시 searchService 호출되지 않음
+    }
+
+    @DisplayName("잘못된 pageNum 입력 시 BadRequest 반환")
+    @Test
+    void searchWithInvalidPageNumReturnsBadRequest() throws Exception {
+        String type = "title";
+        String keyword = "t";  // 잘못된 카테고리 ID 입력
+        String pageNum = "a";
+
+        mockMvc.perform(get(BASE_URL)
+                        .param("type", type)
+                        .param("keyword", keyword)
+                        .param("pageNum", String.valueOf(pageNum))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest()); // 잘못된 요청이므로 400 상태코드
+
+        verifyNoInteractions(searchService); // 예외 발생 시 searchService 호출되지 않음
+    }
 
 }

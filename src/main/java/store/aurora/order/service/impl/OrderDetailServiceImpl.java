@@ -24,10 +24,12 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     private final ShipmentService shipmentService;
     private final BookService bookService;
 
+    private static final String ID_ARGUMENT_IS_NULL = "OrderDetailId is null";
+
     @Override
     public boolean isExist(Long orderDetailId) {
         if(Objects.isNull(orderDetailId)) {
-            throw new IllegalArgumentException("OrderDetailId is null");
+            throw new IllegalArgumentException(ID_ARGUMENT_IS_NULL);
         }
         return orderDetailRepository.existsById(orderDetailId);
     }
@@ -41,7 +43,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     @Override
     public OrderDetail getOrderDetail(Long orderDetailId) {
         if(Objects.isNull(orderDetailId)) {
-            throw new IllegalArgumentException("OrderDetailId is null");
+            throw new IllegalArgumentException(ID_ARGUMENT_IS_NULL);
         }
         if(!isExist(orderDetailId)) {
             throw new OrderDetailNotFoundException(orderDetailId);
@@ -80,7 +82,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     @Override
     public void deleteOrderDetailById(Long orderDetailId) {
         if(Objects.isNull(orderDetailId)) {
-            throw new IllegalArgumentException("OrderDetailId is null");
+            throw new IllegalArgumentException(ID_ARGUMENT_IS_NULL);
         }
         if(!isExist(orderDetailId)) {
             throw new OrderDetailNotFoundException(orderDetailId);
@@ -90,7 +92,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
 
     private void validate(OrderDetail orderDetail){
         if (Objects.isNull(orderDetail)) {
-            throw new IllegalArgumentException("OrderDetail is null");
+            throw new IllegalArgumentException(ID_ARGUMENT_IS_NULL);
         }
         if(Objects.isNull(orderDetail.getOrder())) {
             throw new IllegalArgumentException("Order must not be null");

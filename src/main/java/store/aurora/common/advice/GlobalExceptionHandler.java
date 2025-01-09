@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import store.aurora.common.dto.ErrorResponseDto;
 import store.aurora.common.dto.ValidationErrorResponse;
 import store.aurora.common.exception.DataAlreadyExistsException;
+import store.aurora.common.exception.DataLimitExceededException;
 import store.aurora.common.exception.DataNotFoundException;
+import store.aurora.file.ObjectStorageException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,6 +27,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DataAlreadyExistsException.class)
     public ResponseEntity<ErrorResponseDto> handleAlreadyException(Exception e) {
         return createResponseEntity(e, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(DataLimitExceededException.class)
+    public ResponseEntity<ErrorResponseDto> handleAlreadyException(DataLimitExceededException e) {
+        return createResponseEntity(e, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -48,6 +55,11 @@ public class GlobalExceptionHandler {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
         return createResponseEntity(ex, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(ObjectStorageException.class)
+    public ResponseEntity<ErrorResponseDto> handleObjectStorageException(ObjectStorageException e) {
+        return createResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private ResponseEntity<ErrorResponseDto> createResponseEntity(Exception e, HttpStatus status) {

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,15 +33,14 @@ import store.aurora.book.exception.BookNotFoundException;
 import store.aurora.book.mapper.BookMapper;
 import store.aurora.book.repository.*;
 import store.aurora.book.repository.category.CategoryRepository;
-import store.aurora.book.repository.tag.TagRepository;
 import store.aurora.book.service.*;
-import store.aurora.book.service.category.BookCategoryService;
 import store.aurora.book.service.tag.TagService;
 import store.aurora.book.util.AladinBookClient;
 import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.search.dto.BookSearchResponseDTO;
 //import store.aurora.file.FileStorageService;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -53,14 +53,9 @@ import static org.springframework.data.domain.Page.empty;
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final LikeRepository likeRepository;
-    private final PublisherService publisherService;
-    private final SeriesService seriesService;
-    private final BookCategoryService bookCategoryService;
     private final TagService tagService;
-    private final TagRepository tagRepository;
     private final BookImageRepository bookImageRepository;
     private final BookAuthorService bookAuthorService;
-    private final List<BookRequestDto> cachedBooks = new ArrayList<>();
     private final AladinBookClient aladinBookClient;
     private final ObjectMapper objectMapper;
     private final BookImageService bookImageService;
@@ -68,6 +63,8 @@ public class BookServiceImpl implements BookService {
     private final SeriesRepository seriesRepository;
     private final CategoryRepository categoryRepository;
     private final BookMapper bookMapper;
+    private final RedisTemplate<String, Object> redisTemplate;
+
     private static final Logger USER_LOG = LoggerFactory.getLogger("user-logger");
 
     @Value("${aladin.api.ttb-key}")
@@ -76,24 +73,49 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public List<BookRequestDto> searchBooks(String query, String queryType, String searchTarget, int start) {
+        String cacheKey = "search:" + query + ":type:" + queryType + ":target:" + searchTarget + ":page:" + start;
+
+        // Redis Hash에서 데이터 조회
+        Map<Object, Object> cachedBooks = redisTemplate.opsForHash().entries(cacheKey);
+        if (!cachedBooks.isEmpty()) {
+            return cachedBooks.values().stream()
+                    .map(BookRequestDto.class::cast)
+                    .toList();
+        }
+
         try {
-            // Aladin API 호출
+            // 알라딘 API 호출
             String response = aladinBookClient.searchBooks(
                     ttbKey, query, queryType, 50, start, searchTarget, "js", "20131101"
             );
-            // API 응답 매핑
+            if (response == null || response.isEmpty()) {
+                throw new IllegalArgumentException("API response is empty");
+            }
             AladinApiResponse apiResponse = objectMapper.readValue(response, AladinApiResponse.class);
-            // 캐싱에 저장
-
+            if (apiResponse.getItems() == null) {
+                throw new IllegalArgumentException("API response does not contain valid items");
+            }
             List<BookRequestDto> books = apiResponse.getItems();
-            cachedBooks.clear();
-            cachedBooks.addAll(books);
+
+            // Redis Hash에 데이터 저장
+            Map<String, BookRequestDto> bookMap = books.stream()
+                    .collect(Collectors.toMap(BookRequestDto::getIsbn13, book -> book));
+            redisTemplate.opsForHash().putAll(cacheKey, bookMap);
+            redisTemplate.expire(cacheKey, Duration.ofMinutes(30));
+
+            for (BookRequestDto book : books) {
+                if (book.getIsbn13() != null) {
+                    String bookCacheKey = "book:" + book.getIsbn13();
+                    redisTemplate.opsForValue().set(bookCacheKey, book, Duration.ofMinutes(30));
+                }
+            }
 
             return books;
         } catch (Exception e) {
             throw new IllegalArgumentException("Failed to parse API response", e);
         }
     }
+
     @Transactional
     @Override
     public void saveDirectBook(BookRequestDto bookDto, MultipartFile coverImage, List<MultipartFile> additionalImages) {
@@ -154,71 +176,47 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public BookRequestDto findBookRequestDtoById(String isbn13) {
-        return cachedBooks.stream()
-                .filter(book -> book.getIsbn13().equals(isbn13))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Book not found"));
+    public List<BookRequestDto> getPageData(String query, int start) {
+        String cacheKey = "search:" + query + ":page:" + start;
+        List<BookRequestDto> books = (List<BookRequestDto>) redisTemplate.opsForValue().get(cacheKey);
+        if (books == null) {
+            throw new IllegalArgumentException("Data not found in cache");
+        }
+        return books;
+    }
+
+    @Override
+    public BookRequestDto getBookDetailsByIsbn(String isbn13) {
+        String bookCacheKey = "book:" + isbn13;
+        // Redis에서 개별 책 데이터 조회
+        BookRequestDto book = (BookRequestDto) redisTemplate.opsForValue().get(bookCacheKey);
+
+        if (book == null) {
+            try {
+                // 알라딘 API 호출
+                String response = aladinBookClient.getBookDetails(ttbKey, "ISBN13", isbn13, "js", "20131101");
+                AladinApiResponse apiResponse = objectMapper.readValue(response, AladinApiResponse.class);
+
+                if (apiResponse.getItems() != null && !apiResponse.getItems().isEmpty()) {
+                    book = apiResponse.getItems().getFirst();
+
+                    // Redis에 저장
+                    redisTemplate.opsForValue().set(bookCacheKey, book, Duration.ofMinutes(30));
+                } else {
+                    throw new IllegalArgumentException("No book found in external API for ISBN: " + isbn13);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to fetch book details from external API.", e);
+            }
+        }
+
+        return book;
     }
 
     @Override
     public Page<BookResponseDto> getAllBooks(Pageable pageable) {
         return bookRepository.findAll(pageable)
                 .map(this::convertToDto);
-    }
-
-    private Book convertToEntity(BookRequestDto bookDto) {
-        return bookMapper.toEntity(bookDto);
-    }
-
-    private BookResponseDto convertToDto(Book book) {
-        return bookMapper.toResponseDto(book);
-    }
-
-    private void updateBookInfo(Book book, BookRequestDto bookDto) {
-        book.setTitle(bookDto.getTitle());
-        book.setExplanation(bookDto.getDescription());
-        book.setContents(bookDto.getContents());
-        book.setIsbn(bookDto.getIsbn13());
-        book.setSalePrice(bookDto.getPriceSales());
-        book.setRegularPrice(bookDto.getPriceStandard());
-        book.setPublishDate(bookDto.getPubDate() != null ?
-                LocalDate.parse(bookDto.getPubDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd")) : null);
-        book.setStock(bookDto.getStock());
-        book.setSale(bookDto.getIsForSale());
-        book.setPackaging(bookDto.getIsPackaged());
-
-        // Publisher 업데이트
-        Publisher publisher = publisherRepository.findByName(bookDto.getPublisher())
-                .orElseGet(() -> publisherRepository.save(new Publisher(bookDto.getPublisher())));
-        book.setPublisher(publisher);
-
-        // Series 업데이트
-        if (bookDto.getSeriesInfo() != null && !bookDto.getSeriesInfo().getSeriesName().isBlank()) {
-            Series series = seriesRepository.findByName(bookDto.getSeriesInfo().getSeriesName())
-                    .orElseGet(() -> seriesRepository.save(new Series(bookDto.getSeriesInfo().getSeriesName())));
-            book.setSeries(series);
-        }
-
-        // Category 업데이트
-        List<Category> categories = categoryRepository.findAllById(bookDto.getCategoryIds());
-        book.clearBookCategories(); // 기존 카테고리 제거
-        for (Category category : categories) {
-            BookCategory bookCategory = new BookCategory();
-            bookCategory.setCategory(category);
-            book.addBookCategory(bookCategory);
-        }
-
-        // 7. 태그 업데이트
-        if (bookDto.getTags() != null && !bookDto.getTags().isEmpty()) {
-            List<Tag> tags = tagService.getOrCreateTagsByName(bookDto.getTags());
-            book.clearBookTags();
-            for (Tag tag : tags) {
-                BookTag bookTag = new BookTag();
-                bookTag.setTag(tag);
-                book.addBookTag(bookTag);
-            }
-        }
     }
 
     @Transactional(readOnly = true)
@@ -354,6 +352,62 @@ public class BookServiceImpl implements BookService {
         Page<BookSearchResponseDTO> bookSearchResponseDTOPage = books.map(BookSearchResponseDTO::new);
 
         return bookSearchResponseDTOPage.getContent().isEmpty() ? null : bookSearchResponseDTOPage.getContent().get(0);
+    }
+
+
+
+    private Book convertToEntity(BookRequestDto bookDto) {
+        return bookMapper.toEntity(bookDto);
+    }
+
+    private BookResponseDto convertToDto(Book book) {
+        return bookMapper.toResponseDto(book);
+    }
+
+    private void updateBookInfo(Book book, BookRequestDto bookDto) {
+        book.setTitle(bookDto.getTitle());
+        book.setExplanation(bookDto.getDescription());
+        book.setContents(bookDto.getContents());
+        book.setIsbn(bookDto.getIsbn13());
+        book.setSalePrice(bookDto.getPriceSales());
+        book.setRegularPrice(bookDto.getPriceStandard());
+        book.setPublishDate(bookDto.getPubDate() != null ?
+                LocalDate.parse(bookDto.getPubDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd")) : null);
+        book.setStock(bookDto.getStock());
+        book.setSale(bookDto.getIsForSale());
+        book.setPackaging(bookDto.getIsPackaged());
+
+        // Publisher 업데이트
+        Publisher publisher = publisherRepository.findByName(bookDto.getPublisher())
+                .orElseGet(() -> publisherRepository.save(new Publisher(bookDto.getPublisher())));
+        book.setPublisher(publisher);
+
+        // Series 업데이트
+        if (bookDto.getSeriesInfo() != null && !bookDto.getSeriesInfo().getSeriesName().isBlank()) {
+            Series series = seriesRepository.findByName(bookDto.getSeriesInfo().getSeriesName())
+                    .orElseGet(() -> seriesRepository.save(new Series(bookDto.getSeriesInfo().getSeriesName())));
+            book.setSeries(series);
+        }
+
+        // Category 업데이트
+        List<Category> categories = categoryRepository.findAllById(bookDto.getCategoryIds());
+        book.clearBookCategories(); // 기존 카테고리 제거
+        for (Category category : categories) {
+            BookCategory bookCategory = new BookCategory();
+            bookCategory.setCategory(category);
+            book.addBookCategory(bookCategory);
+        }
+
+        // 7. 태그 업데이트
+        if (bookDto.getTags() != null && !bookDto.getTags().isEmpty()) {
+            List<Tag> tags = tagService.getOrCreateTagsByName(bookDto.getTags());
+            book.clearBookTags();
+            for (Tag tag : tags) {
+                BookTag bookTag = new BookTag();
+                bookTag.setTag(tag);
+                book.addBookTag(bookTag);
+            }
+        }
     }
 
 }

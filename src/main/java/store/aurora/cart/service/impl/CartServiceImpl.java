@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.BookInfoDTO;
@@ -42,7 +41,7 @@ public class CartServiceImpl implements CartService {
     private final UserService userService;
     private final BookService bookService;
 
-    private static final Logger USER_LOG = LoggerFactory.getLogger("user-logger");
+    private static final Logger LOG = LoggerFactory.getLogger("user-logger");
 
     public CartServiceImpl(CartRepository cartRepository, CartItemRepository cartItemRepository, UserService userService, BookService bookService) {
         this.cartRepository = cartRepository;
@@ -95,12 +94,12 @@ public class CartServiceImpl implements CartService {
 
         // 아이템이 존재하지 않는 경우
         if (itemToRemove.isEmpty()) {
-            USER_LOG.error("Attempted to delete a non-existent cart item: userId={}, bookId={}", userId, bookId);
+            LOG.error("Attempted to delete a non-existent cart item: userId={}, bookId={}", userId, bookId);
             throw new CartItemNotFoundException(userId, bookId);
         }
 
         cart.getCartItems().remove(itemToRemove.get());
-        USER_LOG.info("Cart item deleted successfully: userId={}, bookId={}", userId, bookId);
+        LOG.info("Cart item deleted successfully: userId={}, bookId={}", userId, bookId);
     }
 
     @Override
@@ -161,7 +160,7 @@ public class CartServiceImpl implements CartService {
         return getBookInfo(cartItems);
     }
 
-    // todo : private-> 트랜잭션 전파되는지
+    // todo : private-> 트랜잭션 전파되는지 / spring cache
     private Map<String, Object> getBookInfo(List<CartDTO> cartItems) {
         List<Long> bookIds = cartItems.stream()
                 .map(CartDTO::getBookId)
@@ -202,10 +201,8 @@ public class CartServiceImpl implements CartService {
                         // JSON 파싱 (ObjectMapper 사용 예시)
                         return objectMapper.readValue(decodedCartJson, new TypeReference<List<CartItemDTO>>(){});
 //                        return objectMapper.readValue(cookie.getValue(), objectMapper.getTypeFactory().constructCollectionType(List.class, CartItemResponseDTO.class));
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        LOG.error("An error occurred while executing someMethod: {}", e.getMessage(), e);
                     }
                 }
             }

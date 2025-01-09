@@ -1,5 +1,9 @@
 package store.aurora.review.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -12,8 +16,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.review.dto.ReviewRequest;
+import store.aurora.review.dto.ReviewResponse;
 import store.aurora.review.entity.Review;
 import store.aurora.review.service.ReviewService;
+import store.aurora.user.entity.User;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,12 +34,19 @@ public class ReviewController {
 
     // 리뷰 등록
     @PostMapping
-    public ResponseEntity<String> createReview(@RequestBody @Valid ReviewRequest request,
+    @Operation(summary = "리뷰 등록", description = "리뷰를 등록합니다.")
+    @ApiResponse(responseCode = "201", description = "성공",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = Review.class)))
+    @ApiResponse(responseCode = "403", description = "도서를 주문하지 않음")
+    @ApiResponse(responseCode = "409", description = "리뷰를 이미 작성함")
+    @ApiResponse(responseCode = "500", description = "서버 오류")
+    public ResponseEntity<String> createReview(@ModelAttribute @Valid ReviewRequest request,
+                                               @RequestParam(required = false) List<MultipartFile> files,
                                                @RequestParam Long bookId,
                                                @RequestParam String userId) {
         try {
-//            Review review = reviewService.saveReview(content, rating, files);
-            reviewService.saveReview(request, bookId, userId);
+            reviewService.saveReview(request, files, bookId, userId);
             return ResponseEntity.status(201).body("Upload OK"); //body(review);
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -43,26 +56,45 @@ public class ReviewController {
 
     // 도서 ID로 리뷰 조회
     @GetMapping("/book/{bookId}")
-    public ResponseEntity<List<Review>> getReviewsByBookId(@PathVariable Long bookId) {
-        List<Review> reviews = reviewService.getReviewsByBookId(bookId);
+    @Operation(summary = "도서 ID로 리뷰 조회", description = "해당 bookId의 도서의 리뷰 리스트를 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "성공",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = Review.class)))
+    @ApiResponse(responseCode = "404", description = "해당 도서를 찾을 수 없음")
+    @ApiResponse(responseCode = "500", description = "서버 오류")
+    public ResponseEntity<List<ReviewResponse>> getReviewsByBookId(@PathVariable Long bookId) {
+        List<ReviewResponse> reviews = reviewService.getReviewsByBookId(bookId);
         return ResponseEntity.ok(reviews);
     }
 
     // 사용자 ID로 리뷰 조회
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Review>> getReviewsByUserId(@PathVariable String userId) {
-        List<Review> reviews = reviewService.getReviewsByUserId(userId);
+    @Operation(summary = "사용자 ID로 리뷰 조회", description = "해당 userId의 사용자가 작성한 리뷰 리스트를 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "성공",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = Review.class)))
+    @ApiResponse(responseCode = "404", description = "해당 유저를 찾을 수 없음")
+    @ApiResponse(responseCode = "500", description = "서버 오류")
+    public ResponseEntity<List<ReviewResponse>> getReviewsByUserId(@PathVariable String userId) {
+        List<ReviewResponse> reviews = reviewService.getReviewsByUserId(userId);
         return ResponseEntity.ok(reviews);
     }
 
     // 리뷰 수정
     @PutMapping("/{reviewId}/edit")
+    @Operation(summary = "리뷰 수정", description = "리뷰를 수정합니다.")
+    @ApiResponse(responseCode = "200", description = "성공",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = Review.class)))
+    @ApiResponse(responseCode = "404", description = "해당 (리뷰/도서/유저)가 존재하지 않음")
+    @ApiResponse(responseCode = "500", description = "서버 오류")
     public ResponseEntity<String> updateReview(@PathVariable Long reviewId,
-                                               @RequestBody @Valid ReviewRequest request,
+                                               @ModelAttribute @Valid ReviewRequest request,
+                                               @RequestParam(required = false) List<MultipartFile> files,
                                                @RequestParam Long bookId,
                                                @RequestParam String userId) {
         try {
-            reviewService.updateReview(reviewId, request, bookId, userId);
+            reviewService.updateReview(reviewId, request, files, bookId, userId);
             return ResponseEntity.status(200).body("Review updated successfully");
         } catch (IOException e) {
             log.error(e.getMessage());

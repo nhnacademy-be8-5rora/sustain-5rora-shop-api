@@ -7,13 +7,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import store.aurora.book.dto.category.CategoryDTO;
 import store.aurora.book.dto.category.CategoryRequestDTO;
 import store.aurora.book.dto.category.CategoryResponseDTO;
 import store.aurora.book.dto.response.BookResponseDTO;
 import store.aurora.book.entity.Book;
-import store.aurora.book.entity.category.Category;
-//import store.aurora.book.mapper.CategoryMapper;
+
 import store.aurora.book.service.category.CategoryService;
 
 import java.util.List;
@@ -27,33 +25,20 @@ public class CategoryController {
     private final CategoryService categoryService;
 
 
-    @GetMapping("/root/paged")
-    public ResponseEntity<Page<CategoryResponseDTO>> getPagedRootCategories(Pageable pageable) {
-        return ResponseEntity.ok(categoryService.getPagedRootCategories(pageable));
-    }
-
-    @GetMapping("/{parentId}/children/paged")
-    public ResponseEntity<Page<CategoryResponseDTO>> getPagedChildrenCategories(@PathVariable Long parentId,
-                                                                                Pageable pageable) {
-        return ResponseEntity.ok(categoryService.getPagedChildrenCategories(parentId, pageable));
-    }
-
-
     @GetMapping("/root")
-    public ResponseEntity<List<CategoryResponseDTO>> getCategories() {
-        return ResponseEntity.ok(categoryService.getCategories());
+    public ResponseEntity<Page<CategoryResponseDTO>> getRootCategories(Pageable pageable) {
+        return ResponseEntity.ok(categoryService.getRootCategories(pageable));
+    }
+
+    @GetMapping("/{parentId}/children")
+    public ResponseEntity<Page<CategoryResponseDTO>> getChildrenCategories(@PathVariable Long parentId,
+                                                                                Pageable pageable) {
+        return ResponseEntity.ok(categoryService.getChildrenCategories(parentId, pageable));
     }
 
     @GetMapping
-    public ResponseEntity<List<CategoryResponseDTO>> getAllCategories() {
-        return ResponseEntity.ok(categoryService.getAllCategories());
-    }
-
-    // 계층형 카테고리 데이터 반환
-    @GetMapping("/hierarchy")
-    public ResponseEntity<List<CategoryResponseDTO>> getCategoryHierarchy() {
-        List<CategoryResponseDTO> hierarchy = categoryService.getCategoryHierarchy();
-        return ResponseEntity.ok(hierarchy);
+    public ResponseEntity<List<CategoryResponseDTO>> getCategories() {
+        return ResponseEntity.ok(categoryService.getCategories());
     }
 
     @PostMapping
@@ -86,8 +71,8 @@ public class CategoryController {
 
 
     @GetMapping("/{categoryId}")
-    public ResponseEntity<CategoryDTO> getCategoriesByParentId(@PathVariable Long categoryId) {
-        CategoryDTO categoryList = categoryService.findById(Objects.requireNonNullElse(categoryId, 0L));
+    public ResponseEntity<CategoryResponseDTO> getCategoriesByParentId(@PathVariable Long categoryId) {
+        CategoryResponseDTO categoryList = categoryService.findById(Objects.requireNonNullElse(categoryId, 0L));
         return ResponseEntity.ok(categoryList);
     }
 }

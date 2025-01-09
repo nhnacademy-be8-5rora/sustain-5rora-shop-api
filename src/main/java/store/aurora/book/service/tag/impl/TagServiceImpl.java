@@ -25,19 +25,6 @@ public class TagServiceImpl implements TagService {
     private final TagRepository tagRepository;
     private final BookTagRepository bookTagRepository;
 
-    @Transactional
-    @Override
-    public TagResponseDto createTag(TagRequestDto requestDto) {
-        if (tagRepository.findByName(requestDto.getName()).isPresent()) {
-            throw new IllegalArgumentException("이미 존재하는 태그입니다.");
-        }
-        Tag tag = new Tag();
-        tag.setName(requestDto.getName());
-        tag = tagRepository.save(tag);
-
-        return mapToResponseDto(tag);
-    }
-
     @Transactional(readOnly = true)
     @Override
     public List<TagResponseDto> searchTags(String keyword) {
@@ -48,15 +35,7 @@ public class TagServiceImpl implements TagService {
     }
 
     @Override
-    public List<TagResponseDto> getAllTags() {
-        return tagRepository.findAll()
-                .stream()
-                .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public Page<TagResponseDto> getAllTags(Pageable pageable) {
+    public Page<TagResponseDto> getTags(Pageable pageable) {
         return tagRepository.findAll(pageable)
                 .map(this::mapToResponseDto);
     }
@@ -65,6 +44,19 @@ public class TagServiceImpl implements TagService {
     public TagResponseDto getTagById(Long id) {
         Tag tag = tagRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("태그를 찾을 수 없습니다."));
+        return mapToResponseDto(tag);
+    }
+
+    @Transactional
+    @Override
+    public TagResponseDto createTag(TagRequestDto requestDto) {
+        if (tagRepository.findByName(requestDto.getName()).isPresent()) {
+            throw new IllegalArgumentException("이미 존재하는 태그입니다.");
+        }
+        Tag tag = new Tag();
+        tag.setName(requestDto.getName());
+        tag = tagRepository.save(tag);
+
         return mapToResponseDto(tag);
     }
 
@@ -86,6 +78,7 @@ public class TagServiceImpl implements TagService {
         }
         tagRepository.deleteById(id);
     }
+
     @Transactional
     @Override
     public List<Tag> getOrCreateTagsByName(String tags) {
@@ -112,6 +105,16 @@ public class TagServiceImpl implements TagService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public String getFormattedTags(Book book) {
+        List<BookTag> bookTags = bookTagRepository.findByBook(book);
+
+        return bookTags.stream()
+                .map(bookTag -> bookTag.getTag().getName())
+                .collect(Collectors.joining(", "));
+    }
+
     private List<String> parseTags(String tags) {
         if (tags == null || tags.isBlank()) {
             return Collections.emptyList();
@@ -121,16 +124,6 @@ public class TagServiceImpl implements TagService {
                 .map(String::trim) // 공백 제거
                 .filter(tag -> !tag.isEmpty()) // 빈 태그 제거
                 .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    @Override
-    public String getFormattedTags(Book book) {
-        List<BookTag> bookTags = bookTagRepository.findByBook(book);
-
-        return bookTags.stream()
-                .map(bookTag -> bookTag.getTag().getName())
-                .collect(Collectors.joining(", "));
     }
 
     private TagResponseDto mapToResponseDto(Tag tag) {

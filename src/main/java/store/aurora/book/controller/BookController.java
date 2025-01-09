@@ -1,5 +1,6 @@
 package store.aurora.book.controller;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,7 +19,9 @@ import store.aurora.book.service.BookImageService;
 import store.aurora.book.service.BookService;
 import store.aurora.search.dto.BookSearchResponseDTO;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -26,23 +29,21 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BookController {
     private final BookService bookService;
-    private final BookImageService bookImageService;
-    private final BookAuthorService bookAuthorService;
 
     // 도서 검색 API
     @GetMapping("/aladin/search")
     public ResponseEntity<List<BookRequestDto>> searchBooks(@RequestParam String query,
-                                                     @RequestParam String queryType,
-                                                     @RequestParam String searchTarget,
-                                                     @RequestParam(defaultValue = "1") int start) {
+                                                            @RequestParam String queryType,
+                                                            @RequestParam String searchTarget,
+                                                            @RequestParam(defaultValue = "1") int start) {
         List<BookRequestDto> books = bookService.searchBooks(query, queryType, searchTarget, start);
         return ResponseEntity.ok(books);
     }
-    // 특정 도서 정보 제공 API
-    @GetMapping("/aladin/{bookId}")
-    public ResponseEntity<BookRequestDto> getBookById(@PathVariable String bookId) {
-        BookRequestDto selectedBook = bookService.findBookRequestDtoById(bookId);
-        return ResponseEntity.ok(selectedBook);
+//     특정 도서 정보 제공 API
+    @GetMapping("/aladin/{isbn13}")
+    public ResponseEntity<BookRequestDto> getBookDetailsByIsbn(@PathVariable String isbn13) {
+        BookRequestDto book = bookService.getBookDetailsByIsbn(isbn13);
+        return ResponseEntity.ok(book);
     }
 
     // API 도서 등록
@@ -75,7 +76,7 @@ public class BookController {
                                          @ModelAttribute BookRequestDto bookDto,
                                          @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
                                          @RequestPart(value = "additionalImages", required = false) List<MultipartFile> additionalImages,
-                                         @RequestPart(value = "deleteImages", required = false) List<Long> deleteImageIds) {
+                                         @RequestParam(value = "deleteImages", required = false) List<Long> deleteImageIds) {
         bookService.updateBook(bookId, bookDto, coverImage, additionalImages, deleteImageIds);
         return ResponseEntity.noContent().build(); // 수정 후 응답으로 No Content 반환
     }

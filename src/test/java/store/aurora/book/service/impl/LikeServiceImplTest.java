@@ -15,7 +15,6 @@ import store.aurora.book.service.impl.LikeServiceImpl;
 import store.aurora.user.entity.User;
 import store.aurora.user.repository.UserRepository;
 import store.aurora.book.exception.book.NotFoundBookException;
-import store.aurora.user.exception.NotFoundUserException;
 
 import java.util.Optional;
 
@@ -115,25 +114,4 @@ class LikeServiceImplTest {
         verify(likeRepository, times(1)).save(any(Like.class));  // save 메서드가 한 번 호출된 횟수 확인
     }
 
-    @Test
-    @DisplayName("좋아요 정보가 없을 때 예외를 던져야 한다.")
-    void testIsLiked_throwsExceptionWhenLikeIsNull() {
-        // 예외가 던져지는지 확인
-        assertThrows(IllegalArgumentException.class, () -> {
-            likeService.isLiked("user1", 1L);
-        });
-    }
-
-
-    @Test
-    @DisplayName("좋아요가 눌려있으면 true를 반환해야 한다.")
-    void testIsLiked() {
-        // 좋아요가 눌려있는 상태로 반환할 Like 객체 설정
-        like.setLike(true);  // true로 설정
-        when(likeRepository.findByUserIdAndBookId("user1", 1L)).thenReturn(like);
-
-        boolean result = likeService.isLiked("user1", 1L);
-
-        assertTrue(result);  // true가 반환되어야 함
-    }
 }

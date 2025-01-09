@@ -26,7 +26,6 @@ public class BookAuthorServiceImpl implements BookAuthorService {
     @Transactional
     @Override
     public void parseAndSaveBookAuthors(Book book, String authorsString) {
-        validateAuthorsString(authorsString); // 유효성 검증 추가
         List<BookAuthor> bookAuthors = parseAuthors(book, authorsString);
         bookAuthorRepository.saveAll(bookAuthors);
     }

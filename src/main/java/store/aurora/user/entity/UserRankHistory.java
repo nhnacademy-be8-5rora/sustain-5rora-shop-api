@@ -24,16 +24,15 @@ public class UserRankHistory {
     private String changeReason;
 
     @Column(name = "changed_at", nullable = false)
-    private LocalDateTime changedAt;
-
+    private LocalDateTime changedAt = LocalDateTime.now();
 
     // 유저 엔터티와 다대일 연결
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "user_id")
     private User user;
 
     // 회원등급 엔터티와 다대일 연결
-    @ManyToOne
+    @ManyToOne(optional = false)
     @JoinColumn(name = "rank_id")
     private UserRank userRank;
 }

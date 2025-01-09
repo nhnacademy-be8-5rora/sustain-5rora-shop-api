@@ -45,21 +45,18 @@ public interface OrderProcessService {
     OrderResponseDto getOrderResponseFromOrderRequestDtoInRedis(String uuid);
 
     /**
-     * 사용자 주문 내역 저장
-     * @param order OrderDTO 주문 정보
-     * @param orderDetailList List<OrderDetailDTO> 주문 상세 정보
-     * @param receiverInfo ReceiverInfoDTO 수령인 정보
-     * @param user User 사용자 정보
-     * @param orderedPersonInfo OrderedPersonInfoDTO 주문자 정보
+     * 회원 주문 내역 저장
+     * @param redisOrderId 레디스 저장된 정보의 키
+     * @param paymentKey 결제 키
+     * @param amount 결제 금액
      */
-    void userOrderProcess(OrderDTO order, List<OrderDetailDTO> orderDetailList, ReceiverInfoDTO receiverInfo, User user, OrderedPersonInfoDTO orderedPersonInfo);
-    /**
-     * 비사용자 주문 내역 저장
-     * @param order OrderDTO 주문 정보
-     * @param orderDetailList List<OrderDetailDTO> 주문 상세 정보
-     * @param receiverInfo ReceiverInfoDTO 수령인 정보
-     * @param orderedPersonInfo OrderedPersonInfoDTO 주문자 정보
-     */
-    void nonUserOrderProcess(OrderDTO order, List<OrderDetailDTO> orderDetailList, ReceiverInfoDTO receiverInfo, OrderedPersonInfoDTO orderedPersonInfo);
+    void userOrderProcess(String redisOrderId, String paymentKey, int amount);
 
+    /**
+     * 비회원 주문 내역 저장
+     * @param redisOrderId 레디스 저장된 정보의 키
+     * @param paymentKey 결제 키
+     * @param amount 결제 금액
+     */
+    void nonUserOrderProcess(String redisOrderId, String paymentKey, int amount);
 }

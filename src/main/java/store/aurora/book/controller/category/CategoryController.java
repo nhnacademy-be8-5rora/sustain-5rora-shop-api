@@ -7,13 +7,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import store.aurora.book.dto.category.CategoryDTO;
 import store.aurora.book.dto.category.CategoryRequestDTO;
 import store.aurora.book.dto.category.CategoryResponseDTO;
 import store.aurora.book.dto.response.BookResponseDTO;
 import store.aurora.book.entity.Book;
-import store.aurora.book.entity.category.Category;
-//import store.aurora.book.mapper.CategoryMapper;
+
 import store.aurora.book.service.category.CategoryService;
 
 import java.util.List;
@@ -73,8 +71,8 @@ public class CategoryController {
 
 
     @GetMapping("/{categoryId}")
-    public ResponseEntity<CategoryDTO> getCategoriesByParentId(@PathVariable Long categoryId) {
-        CategoryDTO categoryList = categoryService.findById(Objects.requireNonNullElse(categoryId, 0L));
+    public ResponseEntity<CategoryResponseDTO> getCategoriesByParentId(@PathVariable Long categoryId) {
+        CategoryResponseDTO categoryList = categoryService.findById(Objects.requireNonNullElse(categoryId, 0L));
         return ResponseEntity.ok(categoryList);
     }
 }

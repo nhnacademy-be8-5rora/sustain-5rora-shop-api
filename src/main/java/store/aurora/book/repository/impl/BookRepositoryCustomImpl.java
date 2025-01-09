@@ -103,13 +103,15 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 ? new OrderSpecifier<>(Order.DESC, (Expression<Long>) orderByExpression)
                 : new OrderSpecifier<>(Order.ASC, (Expression<Long>) orderByExpression);
 
-
+        // 데이터 조회
         List<Tuple> results = from(book)
                 .leftJoin(book.publisher, publisher)
                 .where(titleCondition)
                 .where(reviewCountCondition)
                 .orderBy(orderSpecifier)
                 .groupBy(book.id, book.title, book.regularPrice, book.salePrice, book.publishDate, publisher.name)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .select(
                         book.id,
                         book.title,
@@ -575,6 +577,8 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .where(book.id.in(bookId)) // bookId에 포함된 책만 조회
                 .where(reviewCountCondition) // reviewCountCondition을 where 절에 추가
                 .groupBy(book.id, book.title, book.regularPrice, book.salePrice, book.publishDate, publisher.name)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .select(
                         book.id,
                         book.title,

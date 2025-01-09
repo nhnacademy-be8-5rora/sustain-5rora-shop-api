@@ -1,0 +1,17 @@
+-- 주문 상세 데이터 삽입
+INSERT INTO order_details (id, state, order_id, amount_detail, quantity, shipment_id, coupon_id, book_id, refund_or_cancel_date) VALUES
+(1, 1, 1, 33000, 1, 1,101, 4, NULL),  -- Clean Code
+(2, 1,1, 45000, 1, 1, 102, 5, NULL), -- Effective Java
+-- 주문 2의 상세 데이터
+(3, 1, 2, 55000, 1, 1,NULL, 6, NULL);  -- Design Patterns
+
+-- 주문 데이터 삽입
+INSERT INTO orders (id, state, preferred_delivery_date, delivery_fee, order_time, total_amount, point_amount, name, order_phone, order_email, user_id)
+VALUES
+    (1, 1,'2024-12-30', 3000, '2024-12-25 12:00:00', 50000, 1000, 'Book Order 1', '010-1234-5678', 'apple@example.com', 'asdf'),
+    (2, 1,'2024-12-31', 2000, '2024-12-26 14:30:00', 40000, 500, 'Book Order 2', '010-8765-4321', 'apple@example.com', 'qwer');
+
+-- 배송 데이터 삽입
+insert into shipments (tracking_number, shipment_companies_code, shipment_datetime, state) values
+    ('1234567890', 2, NOW(), 2);
+

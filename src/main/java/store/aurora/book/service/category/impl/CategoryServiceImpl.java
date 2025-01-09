@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store.aurora.book.dto.category.CategoryDTO;
 import store.aurora.book.dto.category.CategoryRequestDTO;
 import store.aurora.book.dto.category.CategoryResponseDTO;
 import store.aurora.book.entity.Book;
@@ -119,11 +118,20 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CategoryDTO findById(Long categoryId) {
+    @Transactional
+    public CategoryResponseDTO findById(Long categoryId) {
         Optional<Category> category = categoryRepository.findById(categoryId);
-        CategoryDTO categoryDTO = null;
+        CategoryResponseDTO categoryDTO = null;
         if(category.isPresent()) {
-            categoryDTO= new CategoryDTO(category.get().getId(), category.get().getName(), convertChildrenToDTO(category.get().getChildren()));
+            Category categoryEntity = category.get();
+            categoryDTO = new CategoryResponseDTO(
+                    categoryEntity.getId(),
+                    categoryEntity.getName(),
+                    categoryEntity.getParent() != null ? categoryEntity.getParent().getId() : null,
+                    categoryEntity.getParent() != null ? categoryEntity.getParent().getName() : null,
+                    categoryEntity.getDepth(),
+                    convertChildrenToResponseDTO(categoryEntity.getChildren())
+            );
         }
         return categoryDTO;
     }
@@ -175,15 +183,6 @@ public class CategoryServiceImpl implements CategoryService {
                 ))
                 .collect(Collectors.toList());
     }
-
-    // 자식 카테고리를 CategoryDTO로 변환하는 메서드
-    private List<CategoryDTO> convertChildrenToDTO(List<Category> children) {
-        return children.stream()
-                .map(child -> new CategoryDTO(child.getId(), child.getName(), convertChildrenToDTO(child.getChildren())))
-                .collect(Collectors.toList());
-    }
-
-
 
     private void validateCategoryName(String name) {
         if (name == null || name.trim().isEmpty()) {

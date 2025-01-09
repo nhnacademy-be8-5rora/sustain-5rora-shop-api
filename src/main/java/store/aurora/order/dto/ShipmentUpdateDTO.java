@@ -5,13 +5,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
-public class OrderDTO {
-    private LocalDate preferredDeliveryDate;
-    private LocalDateTime orderTime;
-    private Integer pointAmount;
+public class ShipmentUpdateDTO {
+    private Long id;
+    private String state;
+    private String trackingNumber;
+    private String shippingCompany;
+    private LocalDateTime shipmentDateTime;
 }

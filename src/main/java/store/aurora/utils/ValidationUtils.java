@@ -20,4 +20,8 @@ public class ValidationUtils {
     public static <T> Page<T> emptyPage(Pageable pageable) {
         return new PageImpl<>(Collections.emptyList(), pageable, 0);
     }
+
+    private ValidationUtils() {
+
+    }
 }

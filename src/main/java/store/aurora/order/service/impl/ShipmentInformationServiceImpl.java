@@ -19,10 +19,12 @@ public class ShipmentInformationServiceImpl implements ShipmentInformationServic
     private final ShipmentInformationRepository shipmentInformationRepository;
     private final OrderService orderService;
 
+    private static final String ID_ARGUMENT_IS_NULL = "OrderId is null";
+
     @Override
     public boolean isExist(Long orderId) {
         if(Objects.isNull(orderId)){
-            throw new IllegalArgumentException("OrderId is null");
+            throw new IllegalArgumentException(ID_ARGUMENT_IS_NULL);
         }
         return shipmentInformationRepository.existsById(orderId);
     }
@@ -33,7 +35,6 @@ public class ShipmentInformationServiceImpl implements ShipmentInformationServic
             throw new ShipmentInformationAlreadyExistsException(shipmentInformation.getOrderId());
         }
         if(!Objects.isNull(shipmentInformation.getOrder())){
-            // todo: order를 설정하는건 좋은 방법이 아닌 것 같음, 수정 필요
             shipmentInformation.setOrder(orderService.getOrder(shipmentInformation.getOrderId()));
         }
         shipmentInformationRepository.save(shipmentInformation);
@@ -42,7 +43,7 @@ public class ShipmentInformationServiceImpl implements ShipmentInformationServic
     @Override
     public ShipmentInformation getShipmentInformation(Long orderId) {
         if(Objects.isNull(orderId)){
-            throw new IllegalArgumentException("OrderId is null");
+            throw new IllegalArgumentException(ID_ARGUMENT_IS_NULL);
         }
         if(!orderService.isExist(orderId)){
             throw new OrderNotFoundException(orderId);
@@ -58,7 +59,7 @@ public class ShipmentInformationServiceImpl implements ShipmentInformationServic
     @Override
     public void updateShipmentInformation(ShipmentInformation shipmentInformation) {
         if(Objects.isNull(shipmentInformation.getOrderId())){
-            throw new IllegalArgumentException("OrderId is null");
+            throw new IllegalArgumentException(ID_ARGUMENT_IS_NULL);
         }
         if(!orderService.isExist(shipmentInformation.getOrderId())){
             throw new OrderNotFoundException(shipmentInformation.getOrderId());
@@ -74,7 +75,7 @@ public class ShipmentInformationServiceImpl implements ShipmentInformationServic
     @Override
     public void deleteShipmentInformationById(Long orderId) {
         if(Objects.isNull(orderId)){
-            throw new IllegalArgumentException("OrderId is null");
+            throw new IllegalArgumentException(ID_ARGUMENT_IS_NULL);
         }
         if(!orderService.isExist(orderId)){
             throw new OrderNotFoundException(orderId);
@@ -94,7 +95,7 @@ public class ShipmentInformationServiceImpl implements ShipmentInformationServic
     private boolean validateShipmentInformation(ShipmentInformation info) {
         Long orderId = info.getOrderId();
         if(Objects.isNull(orderId)){
-            throw new IllegalArgumentException("OrderId is null");
+            throw new IllegalArgumentException(ID_ARGUMENT_IS_NULL);
         }
 
         if(!orderService.isExist(orderId)) {

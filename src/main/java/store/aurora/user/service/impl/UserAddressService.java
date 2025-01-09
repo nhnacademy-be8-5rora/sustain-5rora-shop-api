@@ -3,10 +3,9 @@ package store.aurora.user.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store.aurora.common.exception.DataAlreadyExistsException;
 import store.aurora.user.entity.Address;
-import store.aurora.user.entity.User;
 import store.aurora.user.entity.UserAddress;
+import store.aurora.user.exception.AddressLimitExceededException;
 import store.aurora.user.exception.UserAddressAlreadyExistsException;
 import store.aurora.user.exception.UserAddressNotFoundException;
 import store.aurora.user.repository.UserAddressRepository;
@@ -22,7 +21,14 @@ public class UserAddressService {
     private final UserService userService;
 
     @Transactional
-    public void addUserAddress(String receiver, String roadAddress, String addrDetail, String userId) {
+    public void addUserAddress(String nickname, String receiver, String roadAddress, String addrDetail, String userId) {
+        // 사용자의 기존 주소 수를 확인
+        int userAddressCount = userAddressRepository.countByUserId(userId);
+
+        if (userAddressCount >= 10) {
+            throw new AddressLimitExceededException();
+        }
+
         // Address 엔터티 저장 또는 가져오기
         Address address = addressService.saveOrGetAddress(roadAddress);
 
@@ -36,7 +42,7 @@ public class UserAddressService {
         }
 
         userAddressRepository.save(
-                new UserAddress(addrDetail, address, receiver, userService.getUser(userId)));
+                new UserAddress(nickname, addrDetail, address, receiver, userService.getUser(userId)));
     }
 
     public List<UserAddress> getUserAddresses(String userId) {

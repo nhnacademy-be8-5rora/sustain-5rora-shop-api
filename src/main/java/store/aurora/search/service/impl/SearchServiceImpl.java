@@ -17,8 +17,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import static store.aurora.utils.ValidationUtils.*;
-
 @Service
 @Transactional(isolation = Isolation.REPEATABLE_READ)
 @RequiredArgsConstructor
@@ -31,7 +29,7 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public Page<BookSearchResponseDTO> findBooksByTitleWithDetails(String userId, String title, Pageable pageable) {
         if (Objects.isNull(title)) {
-            return emptyPage(pageable);
+            return Page.empty(pageable);
         }
 
         // EntityDTO를 가져오는 메소드 호출
@@ -63,7 +61,7 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public Page<BookSearchResponseDTO> findBooksByAuthorNameWithDetails(String userId, String name, Pageable pageable) {
         if (Objects.isNull(name) || name.isBlank()) {
-            return emptyPage(pageable);
+            return Page.empty(pageable);
         }
 
         // Author name으로 책을 검색한 결과를 가져옵니다.
@@ -95,7 +93,7 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public Page<BookSearchResponseDTO> findBooksByCategoryWithDetails(String userId, Long categoryId, Pageable pageable) {
         if (Objects.isNull(categoryId)) {
-            return emptyPage(pageable);
+            return Page.empty(pageable);
         }
 
         Page<BookSearchEntityDTO> bookSearchEntityDTOPage = bookRepository.findBooksByCategoryWithDetails(categoryId, pageable);

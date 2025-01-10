@@ -246,18 +246,18 @@ public class BookServiceTest {
         verify(bookRepository, never()).findBookByIdIn(any(), any()); // 책을 찾는 메서드는 호출되지 않음
     }
     @Test
-    @DisplayName("가장 많이 팔린 책이 없을 경우 null을 반환해야 한다")
+    @DisplayName("가장 많이 팔린 책이 없을 경우 빈 책을 반환해야 한다")
     void testFindMostSeller_whenNoMostSoldBook() {
         // bookRepository.findMostSoldBook()이 null을 반환할 때
         when(bookRepository.findMostSoldBook()).thenReturn(null);
 
         Optional<BookSearchResponseDTO> result = bookService.findMostSeller();
 
-        assertNull(result, "가장 많이 팔린 책이 없을 경우 null을 반환해야 한다");
+        assertTrue(result.isEmpty(), "책이 없으면 Optional이 비어 있어야 한다");
     }
 
     @Test
-    @DisplayName("주어진 book ID에 대한 책을 찾을 수 없을 경우 null을 반환해야 한다")
+    @DisplayName("주어진 book ID에 대한 책을 찾을 수 없을 경우 Optional이 비어 있어야 한다")
     void testFindMostSeller_whenNoBookFoundForBookId() {
         // bookRepository.findMostSoldBook()이 값을 반환하는 경우
         when(bookRepository.findMostSoldBook()).thenReturn(bookIdTuple);
@@ -270,7 +270,7 @@ public class BookServiceTest {
 
         Optional<BookSearchResponseDTO>  result = bookService.findMostSeller();
 
-        assertNull(result, "주어진 book ID에 대한 책을 찾을 수 없을 경우 null을 반환해야 한다");
+        assertTrue(result.isEmpty(), "책이 없으면 Optional이 비어 있어야 한다");
     }
 
     @Test

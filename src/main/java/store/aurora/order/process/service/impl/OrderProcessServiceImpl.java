@@ -142,6 +142,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         saveInformationOfOrderWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
     }
 
+    // todo: 비밀번호 passwordEncoder 적용
     @Override
     public void nonUserOrderProcess(String redisOrderId, String paymentKey, int amount){
         OrderRequestDto orderInfo = orderInfoService.getOrderInfoFromRedis(redisOrderId);

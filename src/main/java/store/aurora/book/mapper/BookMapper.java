@@ -1,7 +1,9 @@
 package store.aurora.book.mapper;
 
+import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import store.aurora.book.dto.aladin.AladinBookDto;
 import store.aurora.book.dto.aladin.BookDetailDto;
 import store.aurora.book.dto.aladin.BookRequestDto;
 import store.aurora.book.dto.aladin.BookResponseDto;
@@ -37,11 +39,11 @@ public class BookMapper {
         Book book = new Book();
         book.setTitle(bookDto.getTitle());
         book.setExplanation(bookDto.getDescription());
-        book.setContents(bookDto.getContents());
+        book.setContents(!StringUtils.isBlank(bookDto.getContents())? bookDto.getContents() : null);
         book.setIsbn(bookDto.getIsbn13());
         book.setSalePrice(bookDto.getPriceSales());
         book.setRegularPrice(bookDto.getPriceStandard());
-        book.setPublishDate(bookDto.getPubDate() != null && !bookDto.getPubDate().isBlank()
+        book.setPublishDate(!StringUtils.isBlank(bookDto.getPubDate())
                 ? LocalDate.parse(bookDto.getPubDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd")) : null);
         book.setStock(bookDto.getStock());
         book.setSale(bookDto.getIsForSale());
@@ -51,8 +53,8 @@ public class BookMapper {
         book.setPublisher(publisherService.getOrCreatePublisher(bookDto.getPublisher()));
 
         // Series
-        if (bookDto.getSeriesInfo() != null && !bookDto.getSeriesInfo().getSeriesName().isBlank()) {
-            book.setSeries(seriesService.getOrCreateSeries(bookDto.getSeriesInfo().getSeriesName()));
+        if (!StringUtils.isBlank(bookDto.getSeriesName())) {
+            book.setSeries(seriesService.getOrCreateSeries(bookDto.getSeriesName()));
         }
 
         // Categories
@@ -60,7 +62,7 @@ public class BookMapper {
         bookCategories.forEach(book::addBookCategory);
 
         // Tags
-        if (bookDto.getTags() != null && !bookDto.getTags().isBlank()) {
+        if (!StringUtils.isBlank(bookDto.getTags())) {
             // 태그 파싱 및 생성/조회
             List<Tag> tags = tagService.getOrCreateTagsByName(bookDto.getTags());
 
@@ -112,6 +114,7 @@ public class BookMapper {
         bookDetailDto.setStock(book.getStock());
         bookDetailDto.setIsForSale(book.isSale());
         bookDetailDto.setIsPackaged(book.isPackaging());
+        bookDetailDto.setSeriesName(book.getSeries() != null ? book.getSeries().getName() : null);
         bookDetailDto.setCategoryIds(book.getBookCategories().stream()
                 .map(category -> category.getCategory().getId())
                 .toList());

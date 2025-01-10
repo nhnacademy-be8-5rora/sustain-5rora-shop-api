@@ -235,12 +235,12 @@ public class BookServiceImpl implements BookService {
 
         if (books.isEmpty()) {
             USER_LOG.info("No books found for the given book ID: {}", bookId);
-            return null;
+            return Optional.empty();
         }
 
         Page<BookSearchResponseDTO> bookSearchResponseDTOPage = books.map(BookSearchResponseDTO::new);
 
-        return bookSearchResponseDTOPage.getContent().isEmpty() ? null : Optional.ofNullable(bookSearchResponseDTOPage.getContent().getFirst());
+        return bookSearchResponseDTOPage.getContent().isEmpty() ? Optional.empty() : Optional.ofNullable(bookSearchResponseDTOPage.getContent().getFirst());
     }
 
 

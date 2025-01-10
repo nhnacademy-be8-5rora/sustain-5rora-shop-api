@@ -31,13 +31,13 @@ class PointPolicyServiceTest {
 
     // Given
     Integer policyId = 1;
-    PointPolicy policy = new PointPolicy("Policy1", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
+    PointPolicy policy = new PointPolicy(1, "Policy1", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
 
     @Test
     @DisplayName("getAllPointPolicies: Should return all point policies")
     void testGetAllPointPolicies() {
         // Given
-        PointPolicy policy2 = new PointPolicy("Policy2", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(5.0));
+        PointPolicy policy2 = new PointPolicy(2, "Policy2", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(5.0));
         when(pointPolicyRepository.findAll()).thenReturn(List.of(policy, policy2));
 
         // When

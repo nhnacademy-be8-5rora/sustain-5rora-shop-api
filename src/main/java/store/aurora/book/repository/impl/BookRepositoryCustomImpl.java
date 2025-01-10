@@ -48,7 +48,6 @@ import static store.aurora.order.entity.QOrder.order;
 
 
 
-import static store.aurora.utils.ValidationUtils.*;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -71,7 +70,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
     public Page<BookSearchEntityDTO> findBooksByTitleWithDetails(String title, Pageable pageable) {
         // title이 null이거나 공백인 경우 빈 페이지 반환
         if (Objects.isNull(title)) {
-            return emptyPage(pageable);
+            return Page.empty(pageable);  // Pageable 정보와 함께 빈 페이지 반환
         }
 
         // 필터링 조건 정의
@@ -161,7 +160,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
     @Override
     public Page<BookSearchEntityDTO> findBooksByAuthorNameWithDetails(String name, Pageable pageable) {
         if (Objects.isNull(name) || name.isBlank()) {
-            return emptyPage(pageable);
+            return Page.empty(pageable);
         }
 
         // 리뷰 개수
@@ -261,7 +260,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
     @Override
     public Page<BookSearchEntityDTO> findBooksByCategoryWithDetails(Long categoryId, Pageable pageable) {
         if (categoryId == null) {
-            return emptyPage(pageable);
+            return Page.empty(pageable);
         }
 
         // 최하위 카테고리일 경우 해당 카테고리만 가져오고, 그렇지 않으면 해당 카테고리와 하위 카테고리들을 모두 가져오기

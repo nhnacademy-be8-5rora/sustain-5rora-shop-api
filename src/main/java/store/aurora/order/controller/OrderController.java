@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import store.aurora.order.dto.OrderRequestDto;
 import store.aurora.order.dto.OrderResponseDto;
 import store.aurora.order.dto.OrderUuidAndRedirectUrlDto;
+import store.aurora.order.process.dto.OrderCompleteRequestDto;
 import store.aurora.order.process.service.OrderProcessService;
 
 import java.util.Objects;
@@ -39,16 +40,14 @@ public class OrderController {
         return orderProcessService.getOrderResponseFromOrderRequestDtoInRedis(orderId);
     }
 
+    // todo: ResponseDTO 추가
     @PostMapping("/order-complete")
     public void orderComplete(
-            @RequestParam(name = "is-guest", required = false) Boolean isGuest,
-            @RequestBody String orderId,
-            @RequestBody String paymentKey,
-            @RequestBody int amount
-    ){
-        if(Objects.nonNull(isGuest) && Boolean.TRUE.equals(isGuest))
-            orderProcessService.nonUserOrderProcess(orderId, paymentKey, amount);
+            @RequestBody OrderCompleteRequestDto dto
+            ){
+        if(Objects.nonNull(dto.getIsGuest()) && Boolean.TRUE.equals(dto.getIsGuest()))
+            orderProcessService.nonUserOrderProcess(dto.getOrderId(), dto.getPaymentKey(), dto.getAmount());
         else
-            orderProcessService.userOrderProcess(orderId, paymentKey, amount);
+            orderProcessService.userOrderProcess(dto.getOrderId(), dto.getPaymentKey(), dto.getAmount());
     }
 }

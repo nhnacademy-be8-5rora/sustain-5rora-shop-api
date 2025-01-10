@@ -1,6 +1,6 @@
 package store.aurora.book.controller;
 
-import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,14 +14,11 @@ import store.aurora.book.dto.BookDetailsDto;
 import store.aurora.book.dto.aladin.BookDetailDto;
 import store.aurora.book.dto.aladin.BookRequestDto;
 import store.aurora.book.dto.aladin.BookResponseDto;
-import store.aurora.book.service.BookAuthorService;
-import store.aurora.book.service.BookImageService;
+
 import store.aurora.book.service.BookService;
 import store.aurora.search.dto.BookSearchResponseDTO;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 @RestController
@@ -30,38 +27,13 @@ import java.util.Map;
 public class BookController {
     private final BookService bookService;
 
-    // 도서 검색 API
-    @GetMapping("/aladin/search")
-    public ResponseEntity<List<BookRequestDto>> searchBooks(@RequestParam String query,
-                                                            @RequestParam String queryType,
-                                                            @RequestParam String searchTarget,
-                                                            @RequestParam(defaultValue = "1") int start) {
-        List<BookRequestDto> books = bookService.searchBooks(query, queryType, searchTarget, start);
-        return ResponseEntity.ok(books);
-    }
-//     특정 도서 정보 제공 API
-    @GetMapping("/aladin/{isbn13}")
-    public ResponseEntity<BookRequestDto> getBookDetailsByIsbn(@PathVariable String isbn13) {
-        BookRequestDto book = bookService.getBookDetailsByIsbn(isbn13);
-        return ResponseEntity.ok(book);
-    }
-
-    // API 도서 등록
-    @PostMapping("/aladin/register")
-    public ResponseEntity<Void> registerApiBook(@ModelAttribute BookRequestDto bookDto,
-                                                @RequestPart(value = "additionalImages", required = false) List<MultipartFile> additionalImages
-    ) {
-        bookService.saveBookFromApi(bookDto, additionalImages);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
-
     // 직접 도서 등록
-    @PostMapping(value = "/direct/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> registerDirectBook(@ModelAttribute BookRequestDto bookDto,
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> registerDirectBook(@Valid @ModelAttribute BookRequestDto bookDto,
                                                    @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
                                                    @RequestPart(value = "additionalImages", required = false) List<MultipartFile> additionalImages
     ) {
-        bookService.saveDirectBook(bookDto, coverImage, additionalImages);
+        bookService.saveBook(bookDto, coverImage, additionalImages);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -73,12 +45,12 @@ public class BookController {
 
     @PutMapping(value = "/{bookId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> editBook(@PathVariable Long bookId,
-                                         @ModelAttribute BookRequestDto bookDto,
+                                         @Valid @ModelAttribute BookRequestDto bookDto,
                                          @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
                                          @RequestPart(value = "additionalImages", required = false) List<MultipartFile> additionalImages,
                                          @RequestParam(value = "deleteImages", required = false) List<Long> deleteImageIds) {
         bookService.updateBook(bookId, bookDto, coverImage, additionalImages, deleteImageIds);
-        return ResponseEntity.noContent().build(); // 수정 후 응답으로 No Content 반환
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{bookId}/edit")

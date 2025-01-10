@@ -222,7 +222,7 @@ public class BookServiceImpl implements BookService {
         Tuple bookIdTuple = bookRepository.findMostSoldBook();
         if (bookIdTuple == null) {
             // bookIdTuple이 null일 경우 로그를 남기고 빈 값 반환
-            USER_LOG.error("No most sold book found for last month.");
+            USER_LOG.info("No most sold book found for last month.");
             return null;
         }
 
@@ -234,7 +234,7 @@ public class BookServiceImpl implements BookService {
         Page<BookSearchEntityDTO> books = bookRepository.findBookByIdIn(bookIds, pageable);
 
         if (books.isEmpty()) {
-            USER_LOG.error("No books found for the given book ID: {}", bookId);
+            USER_LOG.info("No books found for the given book ID: {}", bookId);
             return null;
         }
 

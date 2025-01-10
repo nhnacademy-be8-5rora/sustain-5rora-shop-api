@@ -19,6 +19,7 @@ import store.aurora.book.service.BookService;
 import store.aurora.search.dto.BookSearchResponseDTO;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @RestController
@@ -81,9 +82,19 @@ public class BookController {
     }
 
     @GetMapping("/most")
-    public ResponseEntity<BookSearchResponseDTO> getBooksByMost()
-    {
-        BookSearchResponseDTO book = bookService.findMostSeller();
-        return ResponseEntity.ok(book);
+    public ResponseEntity<BookSearchResponseDTO> getBooksByMost() {
+        Optional<BookSearchResponseDTO> book = bookService.findMostSeller();
+
+        // 책이 있으면 200 OK와 책 정보 반환
+        if (book.isPresent()) {
+            return ResponseEntity.ok(book.get());
+        }
+
+        // 책이 없으면 200 OK와 함께 '책을 찾을 수 없음' 메시지 반환
+        BookSearchResponseDTO notFoundResponse = new BookSearchResponseDTO();
+        notFoundResponse.setTitle("책을 찾을 수 없습니다.");
+        return ResponseEntity.ok(notFoundResponse);  // 책이 없으면 응답 본문에 "책을 찾을 수 없습니다." 메시지 포함
     }
+
+
 }

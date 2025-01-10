@@ -10,6 +10,7 @@ import store.aurora.book.entity.Book;
 import store.aurora.search.dto.BookSearchResponseDTO;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface BookService {
 
@@ -34,7 +35,7 @@ public interface BookService {
 
     Page<BookSearchResponseDTO> getBooksByLike(String userId, Pageable pageable);
 
-    BookSearchResponseDTO findMostSeller();
+    Optional<BookSearchResponseDTO> findMostSeller();
 
 
 }

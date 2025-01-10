@@ -142,6 +142,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         saveInformationOfOrderWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
     }
 
+    // todo: 비밀번호 passwordEncoder 적용
     @Override
     public void nonUserOrderProcess(String redisOrderId, String paymentKey, int amount){
         OrderRequestDto orderInfo = orderInfoService.getOrderInfoFromRedis(redisOrderId);
@@ -181,13 +182,14 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         // Order detail 생성
         for (OrderDetailDTO detailDTO : orderInfo.getOrderDetailDTOList()) {
             Book book = bookService.getBookById(detailDTO.getBookId());
+            Wrap wrap = Objects.nonNull(detailDTO.getWrapId()) ? wrapService.getWrap(detailDTO.getWrapId()) : null;
 
             OrderDetail detail = OrderDetail.builder()
                     .order(createdOrder)
                     .state(createdOrder.getState())
                     .amountDetail(book.getSalePrice())
                     .quantity(detailDTO.getQuantity())
-                    .wrap(wrapService.getWrap(detailDTO.getWrapId()))
+                    .wrap(wrap)
                     .couponId(detailDTO.getCouponId())
                     .book(book)
                     .shipment(shipment)

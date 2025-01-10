@@ -41,7 +41,7 @@ class PointHistoryRepositoryTest {
         user = new User("user1", "John Doe", LocalDate.of(1990, 1, 1), "010-1234-5678", "test@example.com", false);
         entityManager.persist(user);
 
-        PointPolicy pointPolicy = new PointPolicy("Policy1", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
+        PointPolicy pointPolicy = new PointPolicy(1, "Policy1", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
         entityManager.persist(pointPolicy);
 
         PointHistory history1 = new PointHistory(50, PointType.EARNED, user, pointPolicy);

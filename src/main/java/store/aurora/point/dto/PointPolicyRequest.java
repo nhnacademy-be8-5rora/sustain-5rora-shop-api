@@ -1,9 +1,6 @@
 package store.aurora.point.dto;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,6 +12,9 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PointPolicyRequest {
+    @NotNull @Min(1)
+    private Integer pointPolicyId;
+
     @NotBlank(message = "pointPolicyName은 공백일 수 없습니다.")
     @Size(max = 50)
     private String pointPolicyName;

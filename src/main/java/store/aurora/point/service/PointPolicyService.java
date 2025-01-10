@@ -46,6 +46,10 @@ public class PointPolicyService {
             throw new PointPolicyAlreadyExistsException(pointPolicy.getPointPolicyName());
         }
 
+        if (pointPolicyRepository.existsById(pointPolicy.getId())) {
+            throw new PointPolicyAlreadyExistsException(pointPolicy.getId().toString());
+        }
+
         return pointPolicyRepository.save(pointPolicy);
     }
 }

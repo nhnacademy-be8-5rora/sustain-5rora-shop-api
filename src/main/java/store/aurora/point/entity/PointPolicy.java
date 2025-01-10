@@ -16,7 +16,6 @@ import java.math.BigDecimal;
 @Getter
 public class PointPolicy {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @NotBlank
@@ -39,7 +38,8 @@ public class PointPolicy {
     @Column(nullable = false)
     private Boolean isActive = true;
 
-    public PointPolicy(String pointPolicyName, PointPolicyType pointPolicyType, BigDecimal pointPolicyValue) {
+    public PointPolicy(Integer id, String pointPolicyName, PointPolicyType pointPolicyType, BigDecimal pointPolicyValue) {
+        this.id = id;
         this.pointPolicyName = pointPolicyName;
         this.pointPolicyType = pointPolicyType;
         this.pointPolicyValue = pointPolicyValue;

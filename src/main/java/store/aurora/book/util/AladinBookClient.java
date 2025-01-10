@@ -9,24 +9,22 @@ public interface AladinBookClient {
 
     @GetMapping("/ItemSearch.aspx")
     String searchBooks(
-            @RequestParam("ttbkey") String ttbKey,
-            @RequestParam("Query") String query,
-            @RequestParam("QueryType") String queryType,
-            @RequestParam("MaxResults") int maxResults,
-            @RequestParam("Start") int start,
-            @RequestParam("SearchTarget") String searchTarget,
-            @RequestParam("Output") String output,
-            @RequestParam("Version") String version
-
+            @RequestParam String ttbKey,
+            @RequestParam String query,
+            @RequestParam String queryType,
+            @RequestParam String searchTarget,
+            @RequestParam int start,
+            @RequestParam int maxResults,
+            @RequestParam String output,
+            @RequestParam String version
     );
-
 
     @GetMapping("/ItemLookUp.aspx")
     String getBookDetails(
-            @RequestParam("ttbkey") String ttbKey,
-            @RequestParam("itemIdType") String itemIdType,
-            @RequestParam("ItemId") String itemId,
-            @RequestParam("Output") String output,
-            @RequestParam("Version") String version
+            @RequestParam String ttbKey,
+            @RequestParam String itemIdType,
+            @RequestParam String itemId,
+            @RequestParam String output,
+            @RequestParam String version
     );
 }

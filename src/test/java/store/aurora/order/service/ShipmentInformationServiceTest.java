@@ -2,6 +2,7 @@ package store.aurora.order.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.ShipmentInformation;
@@ -25,6 +26,7 @@ class ShipmentInformationServiceTest {
     @Mock
     ShipmentInformationRepository repo;
 
+    @InjectMocks
     ShipmentInformationService service;
 
     @BeforeEach
@@ -55,7 +57,7 @@ class ShipmentInformationServiceTest {
         Order order = orderService.getOrder(1L);
 
         ShipmentInformation shipmentInformation = new ShipmentInformation();
-        shipmentInformation.setOrderId(order.getId());
+        shipmentInformation.setOrder(order);
         shipmentInformation.setReceiverAddress("");
         shipmentInformation.setReceiverName("");
         shipmentInformation.setReceiverPhone("");
@@ -81,11 +83,12 @@ class ShipmentInformationServiceTest {
         Order order = orderService.getOrder(1L);
 
         ShipmentInformation shipmentInformation = new ShipmentInformation();
-        shipmentInformation.setOrderId(order.getId() + 1);
+        shipmentInformation.setOrder(order);
         shipmentInformation.setReceiverAddress("");
         shipmentInformation.setReceiverName("");
         shipmentInformation.setReceiverPhone("");
 
+        when(orderService.isExist(order.getId())).thenReturn(false);
         assertThrows(OrderNotFoundException.class, () -> {
             service.createShipmentInformation(shipmentInformation);
         });

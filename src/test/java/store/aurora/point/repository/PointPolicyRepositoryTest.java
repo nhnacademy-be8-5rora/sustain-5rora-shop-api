@@ -24,7 +24,7 @@ class PointPolicyRepositoryTest {
     @DisplayName("existsByPointPolicyName: Should return true if policy name exists in the database")
     void testExistsByPointPolicyName_Exists() {
         // Given
-        PointPolicy policy = new PointPolicy("Loyalty Points", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
+        PointPolicy policy = new PointPolicy(1, "Loyalty Points", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
         pointPolicyRepository.save(policy);
 
         // When

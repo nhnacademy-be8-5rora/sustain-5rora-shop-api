@@ -2,6 +2,8 @@ package store.aurora.search.controller;
 
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +23,7 @@ import java.util.List;
 public class SearchController {
 
     private final SearchService searchService;
+    private static final Logger USER_LOG = LoggerFactory.getLogger("user-logger");
 
     @GetMapping("/api/books/search")
     public ResponseEntity<Page<BookSearchResponseDTO>> search(
@@ -33,7 +36,7 @@ public class SearchController {
 
         int page = validateAndParsePageNum(pageNum);
         if (page < 0) {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest().body(Page.empty());
         }
 
         PageRequest pageRequest = createPageRequest(page, orderBy, orderDirection);
@@ -50,7 +53,8 @@ public class SearchController {
 
             return ResponseEntity.ok(pageResult);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
+            USER_LOG.error(e.getMessage(), e);
+            return ResponseEntity.badRequest().body(Page.empty());
         }
     }
 
@@ -75,14 +79,14 @@ public class SearchController {
 
     private Page<BookSearchResponseDTO> handleSearchByType(String userId, String keyword, String type, PageRequest pageRequest) {
         if (type == null || keyword == null) {
-            return null;
+            return Page.empty();
         }
 
         return switch (type) {
             case "title" -> searchService.findBooksByTitleWithDetails(userId, keyword, pageRequest);
             case "category" -> handleCategorySearch(userId, keyword, pageRequest);
             case "author" -> searchService.findBooksByAuthorNameWithDetails(userId, keyword, pageRequest);
-            default -> null;
+            default -> Page.empty();
         };
     }
 
@@ -94,6 +98,7 @@ public class SearchController {
             Long categoryId = Long.valueOf(keyword);
             return searchService.findBooksByCategoryWithDetails(userId, categoryId, pageRequest);
         } catch (NumberFormatException e) {
+            USER_LOG.warn(e.getMessage(), e);
             throw new IllegalArgumentException("Category ID는 숫자만 입력 가능합니다.");
         }
     }

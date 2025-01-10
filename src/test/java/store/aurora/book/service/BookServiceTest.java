@@ -1,8 +1,8 @@
 package store.aurora.book.service;
 
 
+import com.querydsl.core.Tuple;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import store.aurora.book.config.QuerydslConfiguration;
 import store.aurora.book.dto.BookDetailsDto;
 import org.springframework.context.annotation.Import;
@@ -35,15 +36,12 @@ import store.aurora.user.entity.User;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
@@ -59,6 +57,9 @@ public class BookServiceTest {
 
     @InjectMocks
     private BookServiceImpl bookService;
+
+    @Mock
+    private Tuple bookIdTuple;
 
     @Mock
     private LikeRepository likeRepository;
@@ -166,14 +167,38 @@ public class BookServiceTest {
         when(likeRepository.findByUserIdAndIsLikeTrue(userId)).thenReturn(likes);
 
         // 6. BookSearchEntityDTO 객체 생성 (BookSearchEntityDTO에서 변환된 객체들)
-        BookSearchEntityDTO book1Dto = new BookSearchEntityDTO(
-                1L, "Book Title 1", 10000, 8000,true, LocalDate.of(2023, 5, 15), "Publisher Name",
-                "Author Name (Author Role), Another Author (Editor)", "path/to/image1.jpg", "1,2,3", 100L, 10, 4.5
-        );
-        BookSearchEntityDTO book2Dto = new BookSearchEntityDTO(
-                2L, "Book Title 2", 15000, 12000,true, LocalDate.of(2022, 8, 22), "Another Publisher",
-                "Author Two (Writer), Third Author", "path/to/image2.jpg", "4,5", 200L, 20, 4.0
-        );
+        BookSearchEntityDTO book1Dto = new BookSearchEntityDTO.Builder()
+                .id(1L)
+                .title("Book Title 1")
+                .regularPrice(10000)
+                .salePrice(8000)
+                .isSale(true)
+                .publishDate(LocalDate.of(2023, 5, 15))
+                .publisherName("Publisher Name")
+                .authors("Author Name (Author Role), Another Author (Editor)")
+                .bookImagePath("path/to/image1.jpg")
+                .categories("1,2,3")
+                .viewCount(100L)
+                .reviewCount(10)
+                .averageReviewRating(4.5)
+                .build();
+
+        BookSearchEntityDTO book2Dto = new BookSearchEntityDTO.Builder()
+                .id(2L)
+                .title("Book Title 2")
+                .regularPrice(15000)
+                .salePrice(12000)
+                .isSale(true)
+                .publishDate(LocalDate.of(2022, 8, 22))
+                .publisherName("Another Publisher")
+                .authors("Author Two (Writer), Third Author")
+                .bookImagePath("path/to/image2.jpg")
+                .categories("4,5")
+                .viewCount(200L)
+                .reviewCount(20)
+                .averageReviewRating(4.0)
+                .build();
+
 
 
         // 7. Page<BookSearchEntityDTO> 생성
@@ -220,4 +245,70 @@ public class BookServiceTest {
         verify(likeRepository).findByUserIdAndIsLikeTrue(userId);
         verify(bookRepository, never()).findBookByIdIn(any(), any()); // 책을 찾는 메서드는 호출되지 않음
     }
+    @Test
+    @DisplayName("가장 많이 팔린 책이 없을 경우 빈 책을 반환해야 한다")
+    void testFindMostSeller_whenNoMostSoldBook() {
+        // bookRepository.findMostSoldBook()이 null을 반환할 때
+        when(bookRepository.findMostSoldBook()).thenReturn(null);
+
+        Optional<BookSearchResponseDTO> result = bookService.findMostSeller();
+
+        assertTrue(result.isEmpty(), "책이 없으면 Optional이 비어 있어야 한다");
+    }
+
+    @Test
+    @DisplayName("주어진 book ID에 대한 책을 찾을 수 없을 경우 Optional이 비어 있어야 한다")
+    void testFindMostSeller_whenNoBookFoundForBookId() {
+        // bookRepository.findMostSoldBook()이 값을 반환하는 경우
+        when(bookRepository.findMostSoldBook()).thenReturn(bookIdTuple);
+        when(bookIdTuple.get(0, Long.class)).thenReturn(1L);
+
+        // bookRepository.findBookByIdIn()이 빈 페이지를 반환하는 경우
+        Pageable pageable = PageRequest.of(0, 1);
+        when(bookRepository.findBookByIdIn(anyList(), eq(pageable)))
+                .thenReturn(Page.empty());
+
+        Optional<BookSearchResponseDTO>  result = bookService.findMostSeller();
+
+        assertTrue(result.isEmpty(), "책이 없으면 Optional이 비어 있어야 한다");
+    }
+
+    @Test
+    @DisplayName("책을 찾았을 경우 책 정보 DTO를 반환해야 한다")
+    void testFindMostSeller_whenBookFound() {
+        // bookRepository.findMostSoldBook()이 값을 반환하는 경우
+        when(bookRepository.findMostSoldBook()).thenReturn(bookIdTuple);
+        when(bookIdTuple.get(0, Long.class)).thenReturn(1L);
+
+        // bookRepository.findBookByIdIn()이 책을 반환하는 경우
+        BookSearchEntityDTO book = new BookSearchEntityDTO.Builder()
+                .id(1L)
+                .title("Book Title")
+                .regularPrice(1000)
+                .salePrice(800)
+                .isSale(true)
+                .publishDate(LocalDate.now())
+                .publisherName("Publisher")
+                .authors("Author Name (Author Role)")
+                .bookImagePath("/image.jpg")
+                .categories("1")
+                .viewCount(10L)
+                .reviewCount(5)
+                .averageReviewRating(4.5)
+                .build();
+        // Pageable 객체 생성
+        Pageable pageable = PageRequest.of(0, 1);
+        Page<BookSearchEntityDTO> bookPage = new PageImpl<>(Collections.singletonList(book), pageable, 1);
+
+        when(bookRepository.findBookByIdIn(anyList(), eq(pageable))).thenReturn(bookPage);
+
+        Optional<BookSearchResponseDTO> result = bookService.findMostSeller();
+
+        assertTrue(result.isPresent(), "책을 찾았을 경우 책 정보 DTO가 존재해야 한다");
+        BookSearchResponseDTO existBook = result.get();  // 값이 있을 때에만 호출
+
+        assertEquals("Book Title", existBook.getTitle(), "책 제목은 예상한 값과 일치해야 한다");
+
+    }
+
 }

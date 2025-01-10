@@ -34,9 +34,9 @@ public class ShipmentInformationServiceImpl implements ShipmentInformationServic
         if(!validateShipmentInformation(shipmentInformation)){
             throw new ShipmentInformationAlreadyExistsException(shipmentInformation.getOrderId());
         }
-        if(!Objects.isNull(shipmentInformation.getOrder())){
-            shipmentInformation.setOrder(orderService.getOrder(shipmentInformation.getOrderId()));
-        }
+//        if(!Objects.isNull(shipmentInformation.getOrder())){
+//            shipmentInformation.setOrderId(shipmentInformation.getOrder().getId());
+//        }
         shipmentInformationRepository.save(shipmentInformation);
     }
 
@@ -93,11 +93,11 @@ public class ShipmentInformationServiceImpl implements ShipmentInformationServic
      * @return true: Order에 이미 shipmentInformation이 존재하는 경우, false: Order에 shipmentInformation이 존재하지 않는 경우
      */
     private boolean validateShipmentInformation(ShipmentInformation info) {
-        Long orderId = info.getOrderId();
-        if(Objects.isNull(orderId)){
-            throw new IllegalArgumentException(ID_ARGUMENT_IS_NULL);
+        if(Objects.isNull(info.getOrder())){
+            throw new IllegalArgumentException("Order is null");
         }
 
+        long orderId = info.getOrder().getId();
         if(!orderService.isExist(orderId)) {
             throw new OrderNotFoundException(orderId);
         }

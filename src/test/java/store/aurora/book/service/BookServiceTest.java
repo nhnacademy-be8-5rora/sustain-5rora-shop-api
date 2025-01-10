@@ -36,10 +36,7 @@ import store.aurora.user.entity.User;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -249,18 +246,18 @@ public class BookServiceTest {
         verify(bookRepository, never()).findBookByIdIn(any(), any()); // 책을 찾는 메서드는 호출되지 않음
     }
     @Test
-    @DisplayName("가장 많이 팔린 책이 없을 경우 null을 반환해야 한다")
+    @DisplayName("가장 많이 팔린 책이 없을 경우 빈 책을 반환해야 한다")
     void testFindMostSeller_whenNoMostSoldBook() {
         // bookRepository.findMostSoldBook()이 null을 반환할 때
         when(bookRepository.findMostSoldBook()).thenReturn(null);
 
-        BookSearchResponseDTO result = bookService.findMostSeller();
+        Optional<BookSearchResponseDTO> result = bookService.findMostSeller();
 
-        assertNull(result, "가장 많이 팔린 책이 없을 경우 null을 반환해야 한다");
+        assertTrue(result.isEmpty(), "책이 없으면 Optional이 비어 있어야 한다");
     }
 
     @Test
-    @DisplayName("주어진 book ID에 대한 책을 찾을 수 없을 경우 null을 반환해야 한다")
+    @DisplayName("주어진 book ID에 대한 책을 찾을 수 없을 경우 Optional이 비어 있어야 한다")
     void testFindMostSeller_whenNoBookFoundForBookId() {
         // bookRepository.findMostSoldBook()이 값을 반환하는 경우
         when(bookRepository.findMostSoldBook()).thenReturn(bookIdTuple);
@@ -271,9 +268,9 @@ public class BookServiceTest {
         when(bookRepository.findBookByIdIn(anyList(), eq(pageable)))
                 .thenReturn(Page.empty());
 
-        BookSearchResponseDTO result = bookService.findMostSeller();
+        Optional<BookSearchResponseDTO>  result = bookService.findMostSeller();
 
-        assertNull(result, "주어진 book ID에 대한 책을 찾을 수 없을 경우 null을 반환해야 한다");
+        assertTrue(result.isEmpty(), "책이 없으면 Optional이 비어 있어야 한다");
     }
 
     @Test
@@ -305,10 +302,13 @@ public class BookServiceTest {
 
         when(bookRepository.findBookByIdIn(anyList(), eq(pageable))).thenReturn(bookPage);
 
-        BookSearchResponseDTO result = bookService.findMostSeller();
+        Optional<BookSearchResponseDTO> result = bookService.findMostSeller();
 
-        assertNotNull(result, "책을 찾았을 경우 책 정보 DTO를 반환해야 한다");
-        assertEquals("Book Title", result.getTitle(), "책 제목은 예상한 값과 일치해야 한다");
+        assertTrue(result.isPresent(), "책을 찾았을 경우 책 정보 DTO가 존재해야 한다");
+        BookSearchResponseDTO existBook = result.get();  // 값이 있을 때에만 호출
+
+        assertEquals("Book Title", existBook.getTitle(), "책 제목은 예상한 값과 일치해야 한다");
+
     }
 
 }

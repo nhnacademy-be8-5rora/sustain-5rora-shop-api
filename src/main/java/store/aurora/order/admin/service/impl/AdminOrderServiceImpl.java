@@ -13,6 +13,7 @@ import store.aurora.order.service.OrderService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,15 +23,9 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     @Override
     @Transactional(readOnly = true)
     public List<AdminOrderDTO> getAllOrderList() {
-        List<Order> orderList = orderService.getOrders();
-        List<AdminOrderDTO> orderDtoList = new ArrayList<>();
-
-        for (Order order : orderList) {
-            AdminOrderDTO orderDto = convertToAdminOrderDTO(order);
-            orderDtoList.add(orderDto);
-        }
-
-        return orderDtoList;
+        return orderService.getOrders().stream()
+                .map(this::convertToAdminOrderDTO)
+                .toList();
     }
 
     private AdminOrderDTO convertToAdminOrderDTO(Order order) {

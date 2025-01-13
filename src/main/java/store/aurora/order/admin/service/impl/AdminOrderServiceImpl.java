@@ -1,6 +1,9 @@
 package store.aurora.order.admin.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.order.admin.dto.AdminOrderDTO;
@@ -22,10 +25,15 @@ public class AdminOrderServiceImpl implements AdminOrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AdminOrderDTO> getAllOrderList() {
-        return orderService.getOrders().stream()
+    public Page<AdminOrderDTO> getAllOrderList(Pageable pageable) {
+        List<Order> oders = orderService.getOrders();
+        List<AdminOrderDTO> orderDTOList = oders.stream()
                 .map(this::convertToAdminOrderDTO)
                 .toList();
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), orderDTOList.size());
+        return new PageImpl<>(orderDTOList.subList(start, end), pageable, orderDTOList.size());
     }
 
     private AdminOrderDTO convertToAdminOrderDTO(Order order) {

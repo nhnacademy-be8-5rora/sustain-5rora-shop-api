@@ -1,7 +1,5 @@
 package store.aurora.order.entity.enums;
 
-import store.aurora.order.exception.exception404.OrderStateConvertFailException;
-
 public enum OrderState {
     PENDING,    // 대기
     CANCELLED,  // 취소됨
@@ -11,12 +9,16 @@ public enum OrderState {
     REFUNDED,   // 환불됨
     CONFIRMED;  // 주문 확정
 
-    public static OrderState fromOrdinal(int ordinal){
-        for (OrderState state : values()) {
-            if (state.ordinal() == ordinal) {
-                return state;
-            }
-        }
-        throw new OrderStateConvertFailException("Invalid ordinal for OrderState: " + ordinal);
+    public static OrderState fromString(String state) {
+        return switch (state.toUpperCase()) {
+            case "PENDING" -> PENDING;
+            case "CANCELLED" -> CANCELLED;
+            case "SHIPPED" -> SHIPPED;
+            case "DELIVERED" -> DELIVERED;
+            case "REFUND_PENDING" -> REFUND_PENDING;
+            case "REFUNDED" -> REFUNDED;
+            case "CONFIRMED" -> CONFIRMED;
+            default -> throw new IllegalArgumentException("Unknown order state: " + state);
+        };
     }
 }

@@ -44,7 +44,8 @@ public class SearchController {
         try {
             Page<BookSearchResponseDTO> bookSearchResponseDTOPage = handleSearchByType(userId, keyword, type, pageRequest);
             if (bookSearchResponseDTOPage == null || bookSearchResponseDTOPage.isEmpty()) {
-                return ResponseEntity.noContent().build();
+                USER_LOG.info("조회 결과가 존재하지않습니다.");
+                return ResponseEntity.ok(Page.empty(pageRequest));
             }
             // PageImpl을 사용하여 반환
             List<BookSearchResponseDTO> content = bookSearchResponseDTOPage.getContent();
@@ -86,7 +87,7 @@ public class SearchController {
             case "title" -> searchService.findBooksByTitleWithDetails(userId, keyword, pageRequest);
             case "category" -> handleCategorySearch(userId, keyword, pageRequest);
             case "author" -> searchService.findBooksByAuthorNameWithDetails(userId, keyword, pageRequest);
-            default -> Page.empty();
+            default -> Page.empty(pageRequest);
         };
     }
 
@@ -98,8 +99,8 @@ public class SearchController {
             Long categoryId = Long.valueOf(keyword);
             return searchService.findBooksByCategoryWithDetails(userId, categoryId, pageRequest);
         } catch (NumberFormatException e) {
-            USER_LOG.warn(e.getMessage(), e);
-            throw new IllegalArgumentException("Category ID는 숫자만 입력 가능합니다.");
+            USER_LOG.info(e.getMessage(), e);
+            return Page.empty(pageRequest);
         }
     }
 }

@@ -11,7 +11,7 @@ public enum OrderState {
     REFUNDED,   // 환불됨
     CONFIRMED;  // 주문 확정
 
-    public static OrderState fromOrdinal(int ordinal){
+    public static OrderState fromOrdinal(int ordinal) {
         for (OrderState state : values()) {
             if (state.ordinal() == ordinal) {
                 return state;

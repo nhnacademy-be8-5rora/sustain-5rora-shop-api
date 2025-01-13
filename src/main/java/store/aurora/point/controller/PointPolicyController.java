@@ -62,6 +62,7 @@ public class PointPolicyController {
     @PostMapping
     public ResponseEntity<PointPolicy> createPointPolicy(@RequestBody @Valid PointPolicyRequest request) {
         PointPolicy pointPolicy = new PointPolicy(
+                request.getPointPolicyId(),
                 request.getPointPolicyName(),
                 request.getPointPolicyType(),
                 request.getPointPolicyValue()

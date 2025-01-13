@@ -60,7 +60,7 @@ public class Order {
 
     // 주문자 이메일
     @Email
-    @Column(name = "order_email", nullable = false)
+    @Column(name = "order_email")
     private String orderEmail;
 
     // 비회원 주문자 비밀번호, 회원 주문 시에는 null

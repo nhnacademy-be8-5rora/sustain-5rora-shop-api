@@ -220,12 +220,12 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public BookSearchResponseDTO findMostSeller() {
+    public Optional<BookSearchResponseDTO>  findMostSeller() {
         Tuple bookIdTuple = bookRepository.findMostSoldBook();
         if (bookIdTuple == null) {
             // bookIdTuple이 null일 경우 로그를 남기고 빈 값 반환
-            USER_LOG.error("No most sold book found for last month.");
-            return null;
+            USER_LOG.info("No most sold book found for last month.");
+            return Optional.empty();  // 빈 객체 반환
         }
 
         Long bookId = bookIdTuple.get(0, Long.class);  // 0번째가 bookId
@@ -236,13 +236,13 @@ public class BookServiceImpl implements BookService {
         Page<BookSearchEntityDTO> books = bookRepository.findBookByIdIn(bookIds, pageable);
 
         if (books.isEmpty()) {
-            USER_LOG.error("No books found for the given book ID: {}", bookId);
-            return null;
+            USER_LOG.info("No books found for the given book ID: {}", bookId);
+            return Optional.empty();
         }
 
         Page<BookSearchResponseDTO> bookSearchResponseDTOPage = books.map(BookSearchResponseDTO::new);
 
-        return bookSearchResponseDTOPage.getContent().isEmpty() ? null : bookSearchResponseDTOPage.getContent().get(0);
+        return bookSearchResponseDTOPage.getContent().isEmpty() ? Optional.empty() : Optional.ofNullable(bookSearchResponseDTOPage.getContent().getFirst());
     }
 
 

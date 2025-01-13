@@ -169,6 +169,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         saveInformationOfOrderWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
     }
 
+    // todo: 0원 결제 처리 로직 작성
     private void saveInformationOfOrderWhenOrderComplete(Order order, String paymentKey, int amount, OrderRequestDto orderInfo){
         Order createdOrder = orderService.createOrder(order);
 

@@ -6,4 +6,6 @@ import store.aurora.order.admin.dto.AdminOrderDTO;
 
 public interface AdminOrderService {
     Page<AdminOrderDTO> getAllOrderList(Pageable pageable);
+
+    void updateShipmentStatusOfOrder(Long orderId, String shipmentState);
 }

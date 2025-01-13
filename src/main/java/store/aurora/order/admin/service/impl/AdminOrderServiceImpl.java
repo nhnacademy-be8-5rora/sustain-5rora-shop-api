@@ -11,7 +11,11 @@ import store.aurora.order.admin.dto.AdminOrderDetailDTO;
 import store.aurora.order.admin.service.AdminOrderService;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.OrderDetail;
+import store.aurora.order.entity.Shipment;
+import store.aurora.order.entity.enums.OrderState;
+import store.aurora.order.entity.enums.ShipmentState;
 import store.aurora.order.service.OrderService;
+import store.aurora.order.service.ShipmentService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,12 +26,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AdminOrderServiceImpl implements AdminOrderService {
     private final OrderService orderService;
+    private final ShipmentService shipmentService;
 
     @Override
     @Transactional(readOnly = true)
     public Page<AdminOrderDTO> getAllOrderList(Pageable pageable) {
-        List<Order> oders = orderService.getOrders();
-        List<AdminOrderDTO> orderDTOList = oders.stream()
+        List<Order> orders = orderService.getOrders();
+        List<AdminOrderDTO> orderDTOList = orders.stream()
                 .map(this::convertToAdminOrderDTO)
                 .toList();
 
@@ -62,5 +67,18 @@ public class AdminOrderServiceImpl implements AdminOrderService {
                 detail.getState().toString(),
                 shipmentDatetime
         );
+    }
+
+    @Override
+    @Transactional
+    public void updateShipmentStatusOfOrder(Long orderId, String shipmentStatus){
+        Order order = orderService.getOrder(orderId);
+
+        order.setState(OrderState.valueOf(shipmentStatus));
+
+        OrderDetail detail = order.getOrderDetails().getFirst();
+        Shipment shipment = detail.getShipment();
+        shipment.setState(ShipmentState.valueOf(shipmentStatus));
+        shipmentService.updateShipment(shipment);
     }
 }

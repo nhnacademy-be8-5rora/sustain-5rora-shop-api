@@ -37,7 +37,7 @@ class PointHistoryServiceTest {
 
     @BeforeAll
     static void setUp() {
-        PointPolicy pointPolicy = new PointPolicy("Policy1", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
+        PointPolicy pointPolicy = new PointPolicy(1, "Policy1", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
         history1 = new PointHistory(50, PointType.EARNED, new User(userId, "John Doe", LocalDate.of(1990, 1, 1), "010-1234-5678", "test@example.com", false), pointPolicy);
         history2 = new PointHistory(-20, PointType.USED, new User(userId, "John Doe", LocalDate.of(1990, 1, 1), "010-1234-5678", "test@example.com", false), pointPolicy);
     }

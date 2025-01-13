@@ -16,8 +16,12 @@ import store.aurora.file.ObjectStorageException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    private static final Logger LOG = LoggerFactory.getLogger("user-logger");
 
     @ExceptionHandler(DataNotFoundException.class)
     public ResponseEntity<ErrorResponseDto> handleNotFoundExceptions(RuntimeException e) {
@@ -62,7 +66,13 @@ public class GlobalExceptionHandler {
         return createResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponseDto> handleGeneralException(Exception e) {
+        return createResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     private ResponseEntity<ErrorResponseDto> createResponseEntity(Exception e, HttpStatus status) {
+        LOG.error(e.getMessage(), e);
         return ResponseEntity
                 .status(status)
                 .body(new ErrorResponseDto(

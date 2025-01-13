@@ -1,14 +1,15 @@
 package store.aurora.book.dto.tag;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Size;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class TagRequestDto {
-    @NotBlank(message = "태그 이름은 필수입니다.")
-    private String name; // 태그 이름
+    @NotBlank
+    @Size(max = 15)
+    private String name;
 }

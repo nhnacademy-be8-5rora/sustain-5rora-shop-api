@@ -79,15 +79,6 @@ public class BookAuthorServiceImpl implements BookAuthorService {
                 .collect(Collectors.joining(", "));
     }
 
-    private void validateAuthorsString(String authorsString) {
-        // 입력 형식을 검증하는 정규식 (작가 이름과 역할)
-        String regex = "^(\\s*[가-힣a-zA-Z0-9]+\\s*(\\(\\s*[가-힣a-zA-Z0-9]+\\s*\\))?\\s*,\\s*)*(\\s*[가-힣a-zA-Z0-9]+\\s*(\\(\\s*[가-힣a-zA-Z0-9]+\\s*\\))?\\s*)$";
-
-        if (!authorsString.matches(regex)) {
-            throw new IllegalArgumentException("작가 입력 형식이 잘못되었습니다. 형식: '작가1, 작가2 (역할1), 작가3 (역할2)'");
-        }
-    }
-
     private List<BookAuthor> parseAuthors(Book book, String authorsString) {
         List<BookAuthor> bookAuthors = new ArrayList<>();
         String[] entries = authorsString.split(", ");

@@ -1,6 +1,7 @@
 package store.aurora.book.service.impl;
 
 import com.querydsl.core.Tuple;
+import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.dto.BookDetailsDto;
 import store.aurora.book.dto.BookInfoDTO;
@@ -59,8 +61,8 @@ public class BookServiceImpl implements BookService {
     @Transactional
     @Override
     public void saveBook(BookRequestDto bookDto, MultipartFile coverImage, List<MultipartFile> additionalImages) {
-        if (bookRepository.existsByIsbn(bookDto.getIsbn13())) {
-            throw new IsbnAlreadyExistsException(bookDto.getIsbn13());
+        if (bookRepository.existsByIsbn(bookDto.getIsbn())) {
+            throw new IsbnAlreadyExistsException(bookDto.getIsbn());
         }
         Book book = bookMapper.toEntity(bookDto);
         // 책 저장
@@ -253,14 +255,13 @@ public class BookServiceImpl implements BookService {
         book.setTitle(bookDto.getTitle());
         book.setExplanation(bookDto.getDescription());
         book.setContents(bookDto.getContents());
-        book.setIsbn(bookDto.getIsbn13());
+        book.setIsbn(bookDto.getIsbn());
         book.setSalePrice(bookDto.getPriceSales());
         book.setRegularPrice(bookDto.getPriceStandard());
-        book.setPublishDate(bookDto.getPubDate() != null ?
-                LocalDate.parse(bookDto.getPubDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd")) : null);
+        book.setPublishDate(bookDto.getPubDate() != null ? bookDto.getPubDate() : null);
         book.setStock(bookDto.getStock());
-        book.setSale(bookDto.getIsForSale());
-        book.setPackaging(bookDto.getIsPackaged());
+        book.setSale(bookDto.isSale());
+        book.setPackaging(bookDto.isPackaging());
 
         // Publisher 업데이트
         Publisher publisher = publisherRepository.findByName(bookDto.getPublisher())
@@ -284,7 +285,7 @@ public class BookServiceImpl implements BookService {
         }
 
         // 7. 태그 업데이트
-        if (bookDto.getTags() != null && !bookDto.getTags().isEmpty()) {
+        if (StringUtils.isBlank(bookDto.getTags())) {
             List<Tag> tags = tagService.getOrCreateTagsByName(bookDto.getTags());
             book.clearBookTags();
             for (Tag tag : tags) {

@@ -1,15 +1,15 @@
 package store.aurora.book.service.aladin;
 
-import store.aurora.book.dto.aladin.AladinBookDto;
+import store.aurora.book.dto.aladin.AladinBookRequestDto;
 
 import java.util.List;
 
 public interface AladinBookRedisService {
-    void storeBooks(String cacheKey, List<AladinBookDto> books);
+    void storeBooks(String cacheKey, List<AladinBookRequestDto> books);
 
-    void storeIndividualBooks(List<AladinBookDto> books);
+    void storeIndividualBooks(List<AladinBookRequestDto> books);
 
-    List<AladinBookDto> getBooks(String cacheKey);
+    List<AladinBookRequestDto> getBooks(String cacheKey);
 
-    AladinBookDto getBook(String bookCacheKey);
+    AladinBookRequestDto getBook(String bookCacheKey);
 }

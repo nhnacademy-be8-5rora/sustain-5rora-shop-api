@@ -17,6 +17,7 @@ import store.aurora.book.repository.tag.TagRepository;
 import store.aurora.book.service.tag.TagService;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -78,10 +79,10 @@ public class TagServiceImpl implements TagService {
     @Transactional
     @Override
     public List<Tag> getOrCreateTagsByName(String tags) {
-        List<String> tagNames = parseTags(tags);
-        if (tagNames == null || tagNames.isEmpty()) {
-            return List.of();
+        if (tags == null || tags.trim().isEmpty()) { // null 체크 추가
+            return Collections.emptyList();
         }
+        List<String> tagNames = parseTags(tags);
 
         return tagNames.stream()
                 .map(tagName -> tagRepository.findByName(tagName)
@@ -112,6 +113,9 @@ public class TagServiceImpl implements TagService {
     }
 
     private List<String> parseTags(String tags) {
+        if (tags == null || tags.trim().isEmpty()) {
+            return Collections.emptyList(); // null 또는 빈 문자열이면 빈 리스트 반환
+        }
         return Arrays.stream(tags.split(","))
                 .map(String::trim) // 공백 제거
                 .filter(tag -> !tag.isEmpty()) // 빈 태그 제거

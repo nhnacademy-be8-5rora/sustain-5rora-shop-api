@@ -180,16 +180,21 @@ class TagServiceImplTest {
 
     @Test
     void testGetOrCreateTagsByName_EmptyTags() {
+        when(tagRepository.findByName(anyString())).thenReturn(Optional.empty());
+
+        // null 입력 테스트
         List<Tag> resultNull = tagService.getOrCreateTagsByName(null);
         assertThat(resultNull).isEmpty();
 
+        // 빈 문자열 테스트
         List<Tag> resultEmpty = tagService.getOrCreateTagsByName("");
         assertThat(resultEmpty).isEmpty();
 
+        // 공백 문자열 테스트
         List<Tag> resultWhitespace = tagService.getOrCreateTagsByName("   ");
         assertThat(resultWhitespace).isEmpty();
 
-        when(tagRepository.findByName(anyString())).thenReturn(Optional.empty());
+        // 잘못된 입력 테스트
         List<Tag> resultInvalid = tagService.getOrCreateTagsByName(",");
         assertThat(resultInvalid).isEmpty();
     }

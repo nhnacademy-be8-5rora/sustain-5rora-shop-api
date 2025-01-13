@@ -1,9 +1,9 @@
 package store.aurora.order.admin.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import store.aurora.order.admin.dto.AdminOrderDTO;
 
-import java.util.List;
-
 public interface AdminOrderService {
-    List<AdminOrderDTO> getAllOrderList();
+    Page<AdminOrderDTO> getAllOrderList(Pageable pageable);
 }

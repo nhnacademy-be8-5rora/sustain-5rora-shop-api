@@ -6,9 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import store.aurora.book.entity.category.BookCategory;
-import store.aurora.book.entity.category.Category;
 import store.aurora.book.entity.tag.BookTag;
-import store.aurora.book.entity.tag.Tag;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -26,7 +24,7 @@ public class Book {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String title;
 
     @Column(nullable = false)
@@ -35,12 +33,13 @@ public class Book {
     @Column(nullable = false)
     private int salePrice;
 
-    private Integer stock = 100;
+    @Column(nullable = false)
+    private int stock = 100;
 
     @Column(nullable = false)
-    private boolean isSale;
+    private boolean isSale = false;
 
-    @Column(nullable = false, unique = true, length = 15)
+    @Column(nullable = false, unique = true, length = 13)
     private String isbn;
 
     @Column(columnDefinition = "TEXT")
@@ -49,6 +48,8 @@ public class Book {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String explanation;
 
+
+    @Column(nullable = false)
     private boolean packaging = false;
 
     @Column(nullable = false)
@@ -99,5 +100,4 @@ public class Book {
         }
         bookTags.clear();
     }
-
 }

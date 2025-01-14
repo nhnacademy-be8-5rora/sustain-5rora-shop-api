@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import store.aurora.book.dto.aladin.AladinBookDto;
+import store.aurora.book.dto.aladin.AladinBookRequestDto;
 import store.aurora.book.service.aladin.AladinBookRedisService;
 import store.aurora.book.util.RedisCacheManager;
 
@@ -20,7 +20,7 @@ public class AladinBookRedisServiceImpl implements AladinBookRedisService {
     private static final Duration CACHE_DURATION = Duration.ofMinutes(30);
 
     @Override
-    public void storeBooks(String cacheKey, List<AladinBookDto> books) {
+    public void storeBooks(String cacheKey, List<AladinBookRequestDto> books) {
         if (CollectionUtils.isEmpty(books)) {
             return; // 데이터가 없으면 저장하지 않음
         }
@@ -32,7 +32,7 @@ public class AladinBookRedisServiceImpl implements AladinBookRedisService {
     }
 
     @Override
-    public void storeIndividualBooks(List<AladinBookDto> books) {
+    public void storeIndividualBooks(List<AladinBookRequestDto> books) {
         books.stream()
                 .filter(book -> book.getIsbn13() != null) // ISBN이 존재하는 책만 저장
                 .forEach(book -> {
@@ -42,12 +42,12 @@ public class AladinBookRedisServiceImpl implements AladinBookRedisService {
     }
 
     @Override
-    public List<AladinBookDto> getBooks(String cacheKey) {
+    public List<AladinBookRequestDto> getBooks(String cacheKey) {
         return redisCacheManager.get(cacheKey, new TypeReference<>() {});
     }
 
     @Override
-    public AladinBookDto getBook(String bookCacheKey) {
+    public AladinBookRequestDto getBook(String bookCacheKey) {
         return redisCacheManager.get(bookCacheKey, new TypeReference<>() {});
     }
 }

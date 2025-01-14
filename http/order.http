@@ -7,3 +7,9 @@ GET localhost:8280/api/users/apple/orders
 
 ### gateway테스트
 GET localhost:8180/api/users/apple/orders
+
+### 주문 목록
+GET localhost:8280/api/users/A8UmCqn6jwbIIWFAbQ5iPg==/orders
+
+### 주문 상세
+GET localhost:8280/api/users/A8UmCqn6jwbIIWFAbQ5iPg==/orders/L9wgkBIV39hcmj-URGZs_w==

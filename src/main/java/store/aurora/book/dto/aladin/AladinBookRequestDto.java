@@ -1,17 +1,19 @@
 package store.aurora.book.dto.aladin;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.*;
-import lombok.*;
-import org.springframework.format.annotation.DateTimeFormat;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class BookRequestDto {
+public class AladinBookRequestDto {
 
     @NotBlank(message = "제목은 필수 항목입니다.")
     @Size(max = 150, message = "제목은 최대 150자까지 입력 가능합니다.")
@@ -32,20 +34,23 @@ public class BookRequestDto {
     @Size(max = 50, message = "출판사 이름은 최대 50자까지 입력 가능합니다.")
     private String publisher;
 
-    @NotNull(message = "출판 날짜는 필수 항목입니다.") // null 값 허용하지 않음
-    @PastOrPresent(message = "출판일은 과거 또는 현재 날짜여야 합니다.")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate pubDate;
+    @NotBlank(message = "출판 날짜는 필수 항목입니다.")
+    @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "출판 날짜는 yyyy-MM-dd 형식이어야 합니다.")
+    private String pubDate;
 
     @NotBlank(message = "ISBN은 필수 항목입니다.")
-    @Pattern(regexp = "\\d{10}|\\d{13}", message = "ISBN은 10자리 또는 13자리 숫자여야 합니다.")
-    private String isbn;
+    @Pattern(regexp = "\\d{13}", message = "ISBN은 13자리 숫자여야 합니다.")
+    private String isbn13;
 
     @Positive(message = "판매 가격은 양수여야 합니다.")
     private int priceSales;
 
     @Positive(message = "정가 가격은 양수여야 합니다.")
     private int priceStandard;
+
+    private String cover;
+
+    private AladinBookRequestDto.SeriesInfo seriesInfo;
 
     @Min(value = 0, message = "재고는 0 이상이어야 합니다.")
     private int stock = 100;
@@ -54,15 +59,21 @@ public class BookRequestDto {
 
     private boolean isPackaging = false;
 
-    @Size(max = 100, message = "시리즈 이름은 최대 100자까지 입력 가능합니다.")
-    private String seriesName;
-
-    @NotNull(message = "카테고리는 필수 항목입니다.")
+    @NotNull(message = "카테고리 ID 리스트는 필수 항목입니다.")
     @Size(min = 1, max = 10, message = "카테고리는 최소 1개에서 최대 10개까지 선택 가능합니다.")
     private List<Long> categoryIds;
 
     @Size(max = 200, message = "태그 입력은 최대 200자까지 가능합니다.")
-    @Pattern(regexp = "^([^,]*,\\s*)*[^,]*$",
-            message = "태그 형식이 잘못되었습니다. 쉼표로 구분된 태그 형식이어야 합니다.")
-    private String tags; // 선택 항목
+    private String tags;
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class SeriesInfo {
+        @Size(max = 100, message = "시리즈 이름은 최대 100자까지 입력 가능합니다.")
+        private String seriesName; // 시리즈 이름
+    }
+
 }

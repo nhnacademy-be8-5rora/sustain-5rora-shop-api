@@ -3,10 +3,8 @@ package store.aurora.book.mapper;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import store.aurora.book.dto.aladin.AladinBookDto;
-import store.aurora.book.dto.aladin.BookDetailDto;
-import store.aurora.book.dto.aladin.BookRequestDto;
-import store.aurora.book.dto.aladin.BookResponseDto;
+import org.springframework.util.CollectionUtils;
+import store.aurora.book.dto.aladin.*;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.BookImage;
 import store.aurora.book.entity.category.BookCategory;
@@ -35,7 +33,7 @@ public class BookMapper {
     private final BookImageService bookImageService;
 
     // BookRequestDto -> Book 변환
-    public Book toEntity(BookRequestDto bookDto) {
+    public Book aladinToEntity(AladinBookRequestDto bookDto) {
         Book book = new Book();
         book.setTitle(bookDto.getTitle());
         book.setExplanation(bookDto.getDescription());
@@ -46,8 +44,44 @@ public class BookMapper {
         book.setPublishDate(!StringUtils.isBlank(bookDto.getPubDate())
                 ? LocalDate.parse(bookDto.getPubDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd")) : null);
         book.setStock(bookDto.getStock());
-        book.setSale(bookDto.getIsForSale());
-        book.setPackaging(bookDto.getIsPackaged());
+        book.setSale(bookDto.isSale());
+        book.setPackaging(bookDto.isPackaging());
+
+        // Publisher
+        book.setPublisher(publisherService.getOrCreatePublisher(bookDto.getPublisher()));
+
+        // Series
+        if (bookDto.getSeriesInfo() != null && !StringUtils.isBlank(bookDto.getSeriesInfo().getSeriesName())) {
+            book.setSeries(seriesService.getOrCreateSeries(bookDto.getSeriesInfo().getSeriesName()));
+        }
+
+        // Categories
+        List<BookCategory> bookCategories = categoryService.createBookCategories(bookDto.getCategoryIds());
+        bookCategories.forEach(book::addBookCategory);
+
+        // Tags
+        if (!StringUtils.isBlank(bookDto.getTags())) {
+            // 태그 파싱 및 생성/조회
+            List<Tag> tags = tagService.getOrCreateTagsByName(bookDto.getTags());
+
+            // BookTag 생성 및 연결
+            List<BookTag> bookTags = tagService.createBookTags(tags);
+            bookTags.forEach(book::addBookTag);
+        }
+            return book;
+    }
+    public Book toEntity(BookRequestDto bookDto) {
+        Book book = new Book();
+        book.setTitle(bookDto.getTitle());
+        book.setExplanation(bookDto.getDescription());
+        book.setContents(!StringUtils.isBlank(bookDto.getContents())? bookDto.getContents() : null);
+        book.setIsbn(bookDto.getIsbn());
+        book.setSalePrice(bookDto.getPriceSales());
+        book.setRegularPrice(bookDto.getPriceStandard());
+        book.setPublishDate(bookDto.getPubDate());
+        book.setStock(bookDto.getStock());
+        book.setSale(bookDto.isSale());
+        book.setPackaging(bookDto.isPackaging());
 
         // Publisher
         book.setPublisher(publisherService.getOrCreatePublisher(bookDto.getPublisher()));
@@ -70,8 +104,9 @@ public class BookMapper {
             List<BookTag> bookTags = tagService.createBookTags(tags);
             bookTags.forEach(book::addBookTag);
         }
-            return book;
+        return book;
     }
+
 
     // Book -> BookResponseDto 변환
     public BookResponseDto toResponseDto(Book book) {
@@ -91,8 +126,8 @@ public class BookMapper {
         bookDto.setPriceStandard(book.getRegularPrice());
         bookDto.setPubDate(book.getPublishDate() != null ? book.getPublishDate().toString() : null);
         bookDto.setStock(book.getStock());
-        bookDto.setIsForSale(book.isSale());
-        bookDto.setIsPackaged(book.isPackaging());
+        bookDto.setSale(book.isSale());
+        bookDto.setPackaging(book.isPackaging());
         bookDto.setPublisher(book.getPublisher().getName());
 
         return bookDto;
@@ -101,19 +136,18 @@ public class BookMapper {
     // Book -> BookDetailDto 변환
     public BookDetailDto toDetailDto(Book book) {
         BookDetailDto bookDetailDto = new BookDetailDto();
-        bookDetailDto.setId(book.getId());
         bookDetailDto.setTitle(book.getTitle());
         bookDetailDto.setAuthor(bookAuthorService.getFormattedAuthors(book));
         bookDetailDto.setDescription(book.getExplanation());
         bookDetailDto.setContents(book.getContents());
-        bookDetailDto.setIsbn13(book.getIsbn());
+        bookDetailDto.setIsbn(book.getIsbn());
         bookDetailDto.setPublisher(book.getPublisher().getName());
         bookDetailDto.setPriceStandard(book.getRegularPrice());
         bookDetailDto.setPriceSales(book.getSalePrice());
-        bookDetailDto.setPubDate(book.getPublishDate() != null ? book.getPublishDate().toString() : null);
+        bookDetailDto.setPubDate(book.getPublishDate());
         bookDetailDto.setStock(book.getStock());
-        bookDetailDto.setIsForSale(book.isSale());
-        bookDetailDto.setIsPackaged(book.isPackaging());
+        bookDetailDto.setSale(book.isSale());
+        bookDetailDto.setPackaging(book.isPackaging());
         bookDetailDto.setSeriesName(book.getSeries() != null ? book.getSeries().getName() : null);
         bookDetailDto.setCategoryIds(book.getBookCategories().stream()
                 .map(category -> category.getCategory().getId())
@@ -122,14 +156,14 @@ public class BookMapper {
         // Cover 이미지 처리
         BookImage thumbnailImage = bookImageService.getThumbnail(book);
         if (thumbnailImage != null) {
-            bookDetailDto.setCover(new BookDetailDto.ImageDetail(thumbnailImage.getId(), thumbnailImage.getFilePath()));
+            bookDetailDto.setCover(new ImageDetail(thumbnailImage.getId(), thumbnailImage.getFilePath()));
         }
 
         // Additional Images 처리
-        List<BookDetailDto.ImageDetail> additionalImages = bookImageService.getAdditionalImages(book).stream()
-                .map(image -> new BookDetailDto.ImageDetail(image.getId(), image.getFilePath()))
+        List<ImageDetail> additionalImages = bookImageService.getAdditionalImages(book).stream()
+                .map(image -> new ImageDetail(image.getId(), image.getFilePath()))
                 .toList();
-        bookDetailDto.setAdditionalImages(additionalImages);
+        bookDetailDto.setExistingAdditionalImages(additionalImages);
         return bookDetailDto;
     }
 }

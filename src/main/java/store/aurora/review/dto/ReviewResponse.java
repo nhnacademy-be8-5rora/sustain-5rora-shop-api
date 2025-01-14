@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 public class ReviewResponse {
+    private Long id;
     private Integer rating;
     private String content;
     private List<String> imageFilePath;

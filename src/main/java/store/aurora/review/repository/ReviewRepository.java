@@ -1,7 +1,6 @@
 package store.aurora.review.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import store.aurora.book.entity.Book;
 import store.aurora.review.entity.Review;
 import store.aurora.user.entity.User;
@@ -14,4 +13,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     List<Review> findByUser(User user);
 
     boolean existsByBookIdAndUserId(Long bookId, String userId);
+    int countByBookId(Long bookId);  // bookId에 해당하는 Review 의 개수 반환
+    List<Review> findByBookId(Long bookId);
+
 }

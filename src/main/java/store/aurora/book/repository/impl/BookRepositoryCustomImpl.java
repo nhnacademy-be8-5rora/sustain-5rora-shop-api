@@ -141,7 +141,10 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 )
                 .fetch();
 
-        List<BookSearchEntityDTO> content = results.stream()
+        // 결과 변환
+        List<BookSearchEntityDTO> content = (results == null || results.isEmpty())
+                ? Collections.emptyList() // 결과가 없을 경우 빈 리스트 반환
+                : results.stream()
                 .map(this::convertToDTO) // 메서드 호출
                 .toList();
 
@@ -238,8 +241,11 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 )
                 .fetch();
 
-        List<BookSearchEntityDTO> content = results.stream()
-                .map(this::convertToDTO) // `convertToDTO` 메서드를 사용하여 변환
+        // 결과 변환
+        List<BookSearchEntityDTO> content = (results == null || results.isEmpty())
+                ? Collections.emptyList() // 결과가 없을 경우 빈 리스트 반환
+                : results.stream()
+                .map(this::convertToDTO) // 메서드 호출
                 .toList();
 
         // 총 데이터 수 계산
@@ -370,10 +376,12 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 )
                 .fetch();
 
-        List<BookSearchEntityDTO> content = results.stream()
-                .map(this::convertToDTO) // `convertToDTO` 메서드를 사용하여 변환
+        // 결과 변환
+        List<BookSearchEntityDTO> content = (results == null || results.isEmpty())
+                ? Collections.emptyList() // 결과가 없을 경우 빈 리스트 반환
+                : results.stream()
+                .map(this::convertToDTO) // 메서드 호출
                 .toList();
-
 
         // 총 데이터 수 계산
         long total = from(book)
@@ -610,8 +618,11 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 )
                 .orderBy(orderSpecifier) // 정렬 기준 추가
                 .fetch();
-        List<BookSearchEntityDTO> content = results.stream()
-                .map(this::convertToDTO) // `convertToDTO` 메서드를 사용하여 변환
+        // 결과 변환
+        List<BookSearchEntityDTO> content = (results == null || results.isEmpty())
+                ? Collections.emptyList() // 결과가 없을 경우 빈 리스트 반환
+                : results.stream()
+                .map(this::convertToDTO) // 메서드 호출
                 .toList();
 
         // Count query for pagination

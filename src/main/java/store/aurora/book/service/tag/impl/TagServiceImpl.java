@@ -10,6 +10,8 @@ import store.aurora.book.dto.tag.TagResponseDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.tag.BookTag;
 import store.aurora.book.entity.tag.Tag;
+import store.aurora.book.exception.tag.TagAlreadyExistException;
+import store.aurora.book.exception.tag.TagNotFoundException;
 import store.aurora.book.repository.tag.BookTagRepository;
 import store.aurora.book.repository.tag.TagRepository;
 import store.aurora.book.service.tag.TagService;
@@ -28,10 +30,10 @@ public class TagServiceImpl implements TagService {
     @Transactional(readOnly = true)
     @Override
     public List<TagResponseDto> searchTags(String keyword) {
-        return tagRepository.findByKeyword(keyword)
+        return tagRepository.findByNameContaining(keyword)
                 .stream()
-                .map(tag -> new TagResponseDto(tag.getId(), tag.getName()))
-                .collect(Collectors.toList());
+                .map(this::mapToResponseDto)
+                .toList();
     }
 
     @Override
@@ -42,16 +44,14 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public TagResponseDto getTagById(Long id) {
-        Tag tag = tagRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("태그를 찾을 수 없습니다."));
-        return mapToResponseDto(tag);
+        return mapToResponseDto(findTagById(id));
     }
 
     @Transactional
     @Override
     public TagResponseDto createTag(TagRequestDto requestDto) {
         if (tagRepository.findByName(requestDto.getName()).isPresent()) {
-            throw new IllegalArgumentException("이미 존재하는 태그입니다.");
+            throw new TagAlreadyExistException("이미 존재하는 태그입니다: " + requestDto.getName());
         }
         Tag tag = new Tag();
         tag.setName(requestDto.getName());
@@ -63,8 +63,7 @@ public class TagServiceImpl implements TagService {
     @Transactional
     @Override
     public TagResponseDto updateTag(Long id, TagRequestDto requestDto) {
-        Tag tag = tagRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("태그를 찾을 수 없습니다."));
+        Tag tag = findTagById(id);
         tag.setName(requestDto.getName());
         tag = tagRepository.save(tag);
         return mapToResponseDto(tag);
@@ -73,24 +72,22 @@ public class TagServiceImpl implements TagService {
     @Transactional
     @Override
     public void deleteTag(Long id) {
-        if (!tagRepository.existsById(id)) {
-            throw new IllegalArgumentException("태그를 찾을 수 없습니다.");
-        }
-        tagRepository.deleteById(id);
+        Tag tag = findTagById(id);
+        tagRepository.delete(tag);
     }
 
     @Transactional
     @Override
     public List<Tag> getOrCreateTagsByName(String tags) {
-        List<String> tagNames = parseTags(tags);
-        if (tagNames == null || tagNames.isEmpty()) {
-            return List.of();
+        if (tags == null || tags.trim().isEmpty()) { // null 체크 추가
+            return Collections.emptyList();
         }
+        List<String> tagNames = parseTags(tags);
 
         return tagNames.stream()
                 .map(tagName -> tagRepository.findByName(tagName)
                         .orElseGet(() -> tagRepository.save(new Tag(tagName))))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional
@@ -102,7 +99,7 @@ public class TagServiceImpl implements TagService {
                     bookTag.setTag(tag);
                     return bookTag;
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -116,20 +113,24 @@ public class TagServiceImpl implements TagService {
     }
 
     private List<String> parseTags(String tags) {
-        if (tags == null || tags.isBlank()) {
-            return Collections.emptyList();
+        if (tags == null || tags.trim().isEmpty()) {
+            return Collections.emptyList(); // null 또는 빈 문자열이면 빈 리스트 반환
         }
-
         return Arrays.stream(tags.split(","))
                 .map(String::trim) // 공백 제거
                 .filter(tag -> !tag.isEmpty()) // 빈 태그 제거
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private TagResponseDto mapToResponseDto(Tag tag) {
-        TagResponseDto responseDto = new TagResponseDto();
-        responseDto.setId(tag.getId());
-        responseDto.setName(tag.getName());
-        return responseDto;
+        return TagResponseDto.builder()
+                .id(tag.getId())
+                .name(tag.getName())
+                .build();
+    }
+
+    private Tag findTagById(Long id) {
+        return tagRepository.findById(id)
+                .orElseThrow(() -> new TagNotFoundException("태그를 찾을 수 없습니다. ID: " + id));
     }
 }

@@ -6,6 +6,7 @@ spring:
     name: shop-api
   profiles:
     active: dev
+    include: rabbitmq-config
   lifecycle:
     timeout-per-shutdown-phase: 30s
 

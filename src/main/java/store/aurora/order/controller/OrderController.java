@@ -40,7 +40,9 @@ public class OrderController {
         return orderProcessService.getOrderResponseFromOrderRequestDtoInRedis(orderId);
     }
 
-    // todo: ResponseDTO 추가
+    /* todo: ResponseDTO 추가
+        비회원 주문 시 주문 id 값 넘겨주기 (적절한 값 찾아서)
+     */
     @PostMapping("/order-complete")
     public void orderComplete(
             @RequestBody OrderCompleteRequestDto dto

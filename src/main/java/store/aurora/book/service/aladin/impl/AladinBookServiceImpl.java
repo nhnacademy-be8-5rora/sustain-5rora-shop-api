@@ -13,8 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.dto.aladin.AladinApiResponse;
-import store.aurora.book.dto.aladin.AladinBookDto;
-import store.aurora.book.dto.aladin.BookRequestDto;
+import store.aurora.book.dto.aladin.AladinBookRequestDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.exception.book.IsbnAlreadyExistsException;
 import store.aurora.book.mapper.BookMapper;
@@ -51,11 +50,11 @@ public class AladinBookServiceImpl implements AladinBookService {
 
     @Transactional
     @Override
-    public void saveBookFromApi(BookRequestDto bookDto, List<MultipartFile> additionalImages) {
+    public void saveBookFromApi(AladinBookRequestDto bookDto, List<MultipartFile> additionalImages) {
         if (bookRepository.existsByIsbn(bookDto.getIsbn13())) {
             throw new IsbnAlreadyExistsException(bookDto.getIsbn13());
         }
-        Book book = bookMapper.toEntity(bookDto);
+        Book book = bookMapper.aladinToEntity(bookDto);
         // 책 저장
         bookRepository.save(book);
         // 작가 정보 저장
@@ -87,16 +86,16 @@ public class AladinBookServiceImpl implements AladinBookService {
     }
 
     @Override
-    public List<AladinBookDto> searchBooks(String query, String queryType, String searchTarget, int start) {
+    public List<AladinBookRequestDto> searchBooks(String query, String queryType, String searchTarget, int start) {
         String cacheKey = createCacheKey(query, queryType, searchTarget, start);
 
         // Redis에서 데이터 조회
-        List<AladinBookDto> cachedBooks = aladinBookRedisService.getBooks(cacheKey);
+        List<AladinBookRequestDto> cachedBooks = aladinBookRedisService.getBooks(cacheKey);
         if (!CollectionUtils.isEmpty(cachedBooks)) {
             return cachedBooks;
         }
         // 알라딘 API 호출
-        List<AladinBookDto> books = getBooksFromApi(query, queryType, searchTarget, start);
+        List<AladinBookRequestDto> books = getBooksFromApi(query, queryType, searchTarget, start);
 
         // Redis에 데이터 저장
         aladinBookRedisService.storeBooks(cacheKey, books);
@@ -105,11 +104,11 @@ public class AladinBookServiceImpl implements AladinBookService {
     }
 
     @Override
-    public AladinBookDto getBookDetailsByIsbn(String isbn13) {
+    public AladinBookRequestDto getBookDetailsByIsbn(String isbn13) {
         String bookCacheKey = "book:" + isbn13;
 
         // Redis에서 데이터 조회
-        AladinBookDto book = aladinBookRedisService.getBook(bookCacheKey);
+        AladinBookRequestDto book = aladinBookRedisService.getBook(bookCacheKey);
         if (book != null) {
             return book;
         }
@@ -131,7 +130,7 @@ public class AladinBookServiceImpl implements AladinBookService {
     }
 
     // 알라딘 검색 api
-    private List<AladinBookDto> getBooksFromApi(String query, String queryType, String searchTarget, int start) {
+    private List<AladinBookRequestDto> getBooksFromApi(String query, String queryType, String searchTarget, int start) {
         try {
             String response = aladinBookClient.searchBooks(
                     ttbKey, query, queryType, searchTarget, start, 50, "js", "20131101"
@@ -159,7 +158,7 @@ public class AladinBookServiceImpl implements AladinBookService {
     }
 
     // 외부 API를 호출하여 책 데이터 조회
-    private AladinBookDto getBookDetailsFromApi(String isbn13) {
+    private AladinBookRequestDto getBookDetailsFromApi(String isbn13) {
         try {
             String response = aladinBookClient.getBookDetails(ttbKey, "ISBN13", isbn13, "js", "20131101");
 

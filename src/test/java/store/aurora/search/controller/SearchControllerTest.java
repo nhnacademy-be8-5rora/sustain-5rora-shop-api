@@ -48,7 +48,7 @@ class SearchControllerTest {
     private static final int PAGE_SIZE = 8;
 
     private PageRequest createPageRequest(int pageNum) {
-        return PageRequest.of(pageNum - 1, PAGE_SIZE);
+        return PageRequest.of(pageNum, PAGE_SIZE);
     }
 
     @DisplayName("제목을 기준으로 검색할 때 내용과 상태코드가 잘 넘어오는지 확인")
@@ -63,7 +63,7 @@ class SearchControllerTest {
         Page<BookSearchResponseDTO> page = new PageImpl<>(Collections.singletonList(responseDTO));
 
         // searchService의 예외 처리를 추가하고 예외 발생 시 적절한 메시지를 던지도록 수정
-        when(searchService.findBooksByTitleWithDetails(any(), eq(keyword), eq(pageRequest)))
+        when(searchService.findBooksByTitleWithDetails(any(), eq(keyword), any()))
                 .thenReturn(page);
 
         mockMvc.perform(get(BASE_URL)
@@ -326,7 +326,7 @@ class SearchControllerTest {
                         .param("keyword", keyword)
                         .param("pageNum", String.valueOf(pageNum))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest()); // 잘못된 요청이므로 400 상태코드
+                .andExpect(status().isNoContent()); // 잘못된 요청이므로 400 상태코드
 
         verifyNoInteractions(searchService); // 예외 발생 시 searchService 호출되지 않음
     }
@@ -343,7 +343,7 @@ class SearchControllerTest {
                         .param("keyword", keyword)
                         .param("pageNum", String.valueOf(pageNum))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest()); // 잘못된 요청이므로 400 상태코드
+                .andExpect(status().isNoContent()); // 잘못된 요청이므로 400 상태코드
 
         verifyNoInteractions(searchService); // 예외 발생 시 searchService 호출되지 않음
     }

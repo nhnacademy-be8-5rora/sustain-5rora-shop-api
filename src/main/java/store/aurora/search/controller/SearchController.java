@@ -36,7 +36,7 @@ public class SearchController {
 
         int page = validateAndParsePageNum(pageNum);
         if (page < 0) {
-            return ResponseEntity.badRequest().body(Page.empty());
+            return ResponseEntity.noContent().build();
         }
 
         PageRequest pageRequest = createPageRequest(page, orderBy, orderDirection);
@@ -45,7 +45,7 @@ public class SearchController {
             Page<BookSearchResponseDTO> bookSearchResponseDTOPage = handleSearchByType(userId, keyword, type, pageRequest);
             if (bookSearchResponseDTOPage == null || bookSearchResponseDTOPage.isEmpty()) {
                 USER_LOG.info("조회 결과가 존재하지않습니다.");
-                return ResponseEntity.ok(Page.empty(pageRequest));
+                return ResponseEntity.noContent().build();
             }
             // PageImpl을 사용하여 반환
             List<BookSearchResponseDTO> content = bookSearchResponseDTOPage.getContent();
@@ -55,7 +55,7 @@ public class SearchController {
             return ResponseEntity.ok(pageResult);
         } catch (IllegalArgumentException e) {
             USER_LOG.error(e.getMessage(), e);
-            return ResponseEntity.badRequest().body(Page.empty());
+            return ResponseEntity.status(500).build(); // 500 Internal Server Error for unexpected errors
         }
     }
 

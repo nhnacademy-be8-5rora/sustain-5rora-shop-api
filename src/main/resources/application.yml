@@ -24,6 +24,12 @@ spring:
   datasource:
     type: org.apache.commons.dbcp2.BasicDataSource
 
+  #elasticSearch info
+  elasticsearch:
+    uris: http://115.94.72.197:9200
+    username: elastic
+    password: nhnacademy123!
+
 #  h2:
 #    console:
 #      enabled: true

@@ -61,7 +61,7 @@ public class SearchController {
 
     private int validateAndParsePageNum(String pageNum) {
         try {
-            int page = Integer.parseInt(pageNum) - 1;
+            int page = Integer.parseInt(pageNum);
             return Math.max(page, 0);
         } catch (NumberFormatException e) {
             return -1; // 잘못된 pageNum 값 처리

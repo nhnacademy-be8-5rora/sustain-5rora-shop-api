@@ -1,5 +1,6 @@
 package store.aurora.book.service.aladin.impl;
 
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.common.util.StringUtils;
@@ -23,11 +24,13 @@ import store.aurora.book.service.aladin.AladinBookService;
 import store.aurora.book.service.BookAuthorService;
 import store.aurora.book.service.BookImageService;
 import store.aurora.book.util.AladinBookClient;
+import store.aurora.search.service.ElasticSearchService;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +43,7 @@ public class AladinBookServiceImpl implements AladinBookService {
     private final BookImageService bookImageService;
     private final ObjectMapper objectMapper;
     private final AladinBookRedisService aladinBookRedisService;
+    private final ElasticSearchService elasticSearchService;
     private static final Logger USER_LOG = LoggerFactory.getLogger("user-logger");
 
     @Value("${aladin.api.ttb-key}")
@@ -58,6 +62,28 @@ public class AladinBookServiceImpl implements AladinBookService {
         bookAuthorService.parseAndSaveBookAuthors(book, bookDto.getAuthor());
         // 커버 이미지 url 과 추가 이미지 저장
         bookImageService.processApiImages(book, bookDto.getCover(), additionalImages);
+
+        //엘라스틱 서치를 위한 레파지토리에도 저장. 실패(서버 문제 등)에도 문제없도록 try-catch 처리.
+        try {
+            // book 엔티티를 조회하고, 해당 엔티티와 저자 정보를 가져옵니다.
+            Optional<Book> optionalBook = bookRepository.findById(book.getId());
+
+            // 엔티티가 존재하지 않으면 예외를 던집니다.
+            if (optionalBook.isPresent()) {
+                Book bookEntity = optionalBook.get();
+
+                // Elasticsearch에 저장할 수 있도록 처리
+                elasticSearchService.saveBooks(bookEntity);
+            } else {
+                USER_LOG.warn("Book not found with id: " + book.getId());
+            }
+        } catch (ElasticsearchException e) {
+            // Elasticsearch 관련 예외 처리
+            USER_LOG.warn("Elasticsearch 서버 오류: " + e.getMessage(), e);
+        }catch (Exception e) {
+            // 기타 예외 처리
+            USER_LOG.warn("Elasticsearch 저장 실패: " + e.getMessage(), e);
+        }
     }
 
     @Override

@@ -22,8 +22,9 @@ public class AdminOrderController {
         return adminOrderService.getAllOrderList(pageable);
     }
 
-    @PostMapping("/{orderId}")
-    public void updateShipmentStatus(@PathVariable Long orderId, @RequestParam String shipmentState){
+    @PostMapping
+    public void updateShipmentStatus(@RequestParam("order-id") Long orderId,
+                                     @RequestParam("shipment-state") String shipmentState){
         adminOrderService.updateShipmentStatusOfOrder(orderId, shipmentState);
     }
 

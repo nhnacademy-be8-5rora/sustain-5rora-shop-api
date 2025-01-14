@@ -74,10 +74,15 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     public void updateShipmentStatusOfOrder(Long orderId, String shipmentStatus){
         Order order = orderService.getOrder(orderId);
 
-        order.setState(OrderState.valueOf(shipmentStatus));
+        OrderState orderState = OrderState.valueOf(shipmentStatus);
+        order.setState(OrderState.valueOf(orderState.toString()));
 
-        OrderDetail detail = order.getOrderDetails().getFirst();
-        Shipment shipment = detail.getShipment();
+        List<OrderDetail> orderDetails = order.getOrderDetails();
+        for (OrderDetail orderDetail : orderDetails) {
+            orderDetail.setState(OrderState.valueOf(shipmentStatus));
+        }
+
+        Shipment shipment = orderDetails.getFirst().getShipment();
         shipment.setState(ShipmentState.valueOf(shipmentStatus));
         shipmentService.updateShipment(shipment);
     }

@@ -11,7 +11,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.dto.BookDetailsDto;
 import store.aurora.book.dto.BookInfoDTO;
@@ -37,8 +36,7 @@ import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.search.service.ElasticSearchService;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -89,7 +87,7 @@ public class BookServiceImpl implements BookService {
                 // Elasticsearch에 저장할 수 있도록 처리
                 elasticSearchService.saveBooks(bookEntity);
             } else {
-                USER_LOG.warn("Book not found with id: " + book.getId());
+                USER_LOG.warn("Book not found with id: {}", book.getId());
             }
         } catch (ElasticsearchException e) {
             // Elasticsearch 관련 예외 처리
@@ -130,7 +128,25 @@ public class BookServiceImpl implements BookService {
         }
 
         // 6. 책 저장
-        bookRepository.save(book);
+        book = bookRepository.save(book);
+
+        int retryCount = 0;
+        int maxRetries = 3;
+
+        while (retryCount < maxRetries) {
+            try {
+                elasticSearchService.saveBooks(book);
+                break; // 성공 시 루프 종료
+            } catch (ElasticsearchException e) {
+                retryCount++;
+                if (retryCount == maxRetries) {
+                    USER_LOG.warn("엘라스틱 서치에 데이터를 반영하는 중 실패. 최대 재시도 횟수 도달.");
+                } else {
+                    USER_LOG.info("엘라스틱 서치 저장 재시도 중: {}",retryCount + "회");
+                }
+            }
+        }
+
     }
 
     @Override

@@ -17,11 +17,14 @@ import store.aurora.book.dto.AuthorDTO;
 import store.aurora.book.dto.SearchBookDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.Like;
+import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.exception.api.InvalidApiResponseException;
 import store.aurora.book.repository.BookAuthorRepository;
 import store.aurora.book.repository.BookViewRepository;
 import store.aurora.book.repository.LikeRepository;
+import store.aurora.book.repository.category.BookCategoryRepository;
+import store.aurora.book.repository.category.CategoryRepository;
 import store.aurora.book.service.BookImageService;
 import store.aurora.document.*;
 import store.aurora.review.repository.ReviewRepository;
@@ -50,7 +53,9 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
     private final BookImageService bookImageService;
     private final BookAuthorRepository bookAuthorRepository;
     private final ElasticsearchClient elasticsearchClient;
+    private final BookCategoryRepository bookCategoryRepository;
     private static final Logger USER_LOG = LoggerFactory.getLogger("user-logger");
+    private final CategoryRepository categoryRepository;
 
     @Override
     public Page<BookSearchResponseDTO> searchBooks(String type,String keyword, Pageable pageable, String userId) {
@@ -92,29 +97,38 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
         int from = pageable.getPageNumber() * pageable.getPageSize();
         int size = pageable.getPageSize();
 
-        SearchRequest searchRequest= new SearchRequest.Builder()
-                .index("5rora")  // 사용할 인덱스 이름
+        SearchRequest searchRequest = new SearchRequest.Builder()
+                .index("5rora")
                 .query(query -> query
                         .bool(boolQuery -> boolQuery
                                 .should(shouldQuery -> shouldQuery
                                         .match(match -> match
                                                 .field("title")
                                                 .query(keyword)
-                                                .boost(2.0F)  // title 필드에 높은 가중치 부여
+                                                .analyzer("edge_ngram_analyzer")  // 검색 시 분석기를 edge_ngram_analyzer로 설정
+                                                .boost(2.0F)
                                         )
                                 )
                                 .should(shouldQuery -> shouldQuery
                                         .match(match -> match
-                                                .field("authors.name")  // AuthorDocument.name 필드
+                                                .field("authors.name")
                                                 .query(keyword)
-                                                .boost(1.5F)  // 저자 이름에 대한 가중치
+                                                .analyzer("edge_ngram_analyzer")  // authors.name 필드에 대한 분석기도 적용
+                                                .boost(1.1F)
                                         )
                                 )
                                 .should(shouldQuery -> shouldQuery
                                         .match(match -> match
-                                                .field("categories.name")  // CategoryDocument.name 필드
+                                                .field("categories.name")
                                                 .query(keyword)
-                                                .boost(1.0F)  // 카테고리 이름에 대한 가중치
+                                                .boost(1.0F)
+                                        )
+                                )
+                                .should(shouldQuery -> shouldQuery
+                                        .match(match -> match
+                                                .field("bookTags.name")
+                                                .query(keyword)
+                                                .boost(1.0F)
                                         )
                                 )
                         )
@@ -122,6 +136,7 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
                 .from(from)
                 .size(size)
                 .build();
+
 
         SearchResponse<SearchBookDTO> searchResponse;
         try {
@@ -190,6 +205,7 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
         }
     }
 
+    //entity -> bookDocument
     private BookDocument convertToBookDocument(Book book) {
         // Book의 데이터를 BookDocument로 변환
         BookDocument bookDocument = new BookDocument();
@@ -232,14 +248,18 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
         List<AuthorDocument> authorDTOs = bookAuthorRepository.findAuthorsByBookId(book.getId());
         bookDocument.setAuthors(authorDTOs);
 
-        // Categories 변환 (재귀적으로 부모-자식 구조 처리)
-        if (book.getBookCategories() != null && !book.getBookCategories().isEmpty()) {
-            List<CategoryDocument> categories = book.getBookCategories().stream()
-                    .map(bookCategory -> convertCategoryToDocument(bookCategory.getCategory()))
-                    .toList();
-            bookDocument.setCategories(categories);
-        }
+        // 도서 id에 해당하는 카테고리들의 id 를 반환받음.
+        List<BookCategory> bookCategory = bookCategoryRepository.findBookCategoryByBookId(book.getId());
+        List<Long> categoryIds = bookCategory.stream()
+                .map(bc -> bc.getCategory().getId())  // 'bc'는 bookCategory 리스트의 각 요소
+                .toList();
+        //위에서 가져온 카테고리 id 에 해당하는 카테고리들을 가져옴.
+        List<Category> categoryList = categoryRepository.findByIdIn(categoryIds);
+        //카테고리 doc 객체로 변환
+        List<CategoryDocument> categoryDocuments =
+                categoryList.stream().map(category -> new CategoryDocument(category.getId(),category.getName())).toList();
 
+        bookDocument.setCategories(categoryDocuments);
 
         // BookTags 변환
         if (book.getBookTags() != null && !book.getBookTags().isEmpty()) {
@@ -259,19 +279,5 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
 
         return bookDocument;
     }
-
-    private CategoryDocument convertCategoryToDocument(Category category) {
-        if (category == null) return null;
-
-        // 자식 카테고리 변환
-        List<CategoryDocument> childDocuments = category.getChildren().stream()
-                .map(this::convertCategoryToDocument)
-                .toList();
-
-        // 현재 카테고리와 자식 설정
-        return new CategoryDocument(category.getId(), category.getName(), childDocuments);
-    }
-
-
 
 }

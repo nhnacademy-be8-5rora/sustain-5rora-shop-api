@@ -100,8 +100,8 @@ public class OrderProcessServiceImpl implements OrderProcessService {
          */
         List<OrderDetailDTO> orderDetailList = Objects.requireNonNull(dto).getOrderDetailDTOList();
 
-        // todo: 포인트 사용 금액 적용
-        int value = getTotalAmountFromOrderDetailList(orderDetailList);
+        int value = getTotalAmountFromOrderDetailList(orderDetailList)
+                    - dto.getUsedPoint();
 
         StringBuilder orderName = new StringBuilder();
         for(OrderDetailDTO detail : orderDetailList){
@@ -138,6 +138,8 @@ public class OrderProcessServiceImpl implements OrderProcessService {
 //                .preferredDeliveryDate(orderInfo.getPreferredDeliveryDate())
                 .user(userService.getUser(orderInfo.getUsername()))
                 .build();
+
+        // todo: 포인트 사용량 적용
 
         saveInformationWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
     }

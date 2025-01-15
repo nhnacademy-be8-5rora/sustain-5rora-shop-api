@@ -2,14 +2,19 @@ package store.aurora.order.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import store.aurora.order.dto.OrderDetailInfoDto;
 import store.aurora.order.dto.OrderInfo;
+import store.aurora.order.dto.OrderRelatedInfoWithAuth;
 import store.aurora.order.entity.Order;
+import store.aurora.order.entity.OrderDetail;
 import store.aurora.user.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByUser(User user);
@@ -34,4 +39,16 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                     "    where user_id = :userId",
             nativeQuery = true)
     Page<OrderInfo> findOrderInfosByUserId(@Param("userId")String userId, Pageable pageable);
+
+    @Query(value = "select new store.aurora.order.dto.OrderRelatedInfoWithAuth(" +
+            "o.id, o.preferredDeliveryDate, o.deliveryFee, o.orderTime, o.totalAmount, " +
+            "o.pointAmount, o.state, o.password, o.user.id, o.orderPhone, o.orderEmail, " +
+            "o.shipmentInformation.receiverName, o.shipmentInformation.receiverPhone, o.shipmentInformation.receiverAddress, o.shipmentInformation.customerRequest) " +
+            "from Order o " +
+            "where o.id = :orderId")
+    @EntityGraph(attributePaths = {"shipmentInformation", "user"})
+    Optional<OrderRelatedInfoWithAuth> findOrderRelatedInfoByOrderId(Long orderId);
+
+    @Query(value = "select od from OrderDetail od left join fetch od.order left join fetch od.book left join fetch od.shipment left join fetch od.wrap where od.order.id = :orderId order by od.id")
+    List<OrderDetail> findOrderDetailByOrderId(@Param("orderId") Long orderId);
 }

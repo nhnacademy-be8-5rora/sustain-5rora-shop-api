@@ -137,7 +137,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .user(userService.getUser(orderInfo.getUsername()))
                 .build();
 
-        return saveInformationOfOrderWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
+        return saveInformationWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
     }
 
     // todo: 비밀번호 passwordEncoder 적용
@@ -164,11 +164,11 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .password(orderInfo.getNonMemberPassword())
                 .build();
 
-        saveInformationOfOrderWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
+        saveInformationWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
     }
 
     // todo: 0원 결제 처리 로직 작성
-    private Order saveInformationOfOrderWhenOrderComplete(Order order, String paymentKey, int amount, OrderRequestDto orderInfo){
+    private Order saveInformationWhenOrderComplete(Order order, String paymentKey, int amount, OrderRequestDto orderInfo){
         Order createdOrder = orderService.createOrder(order);
 
         // 배송 정보 생성

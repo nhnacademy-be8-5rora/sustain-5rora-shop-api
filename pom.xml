@@ -170,17 +170,8 @@
             <artifactId>httpclient</artifactId>
             <version>4.5.14</version>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-amqp</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.amqp</groupId>
-            <artifactId>spring-rabbit-test</artifactId>
-            <scope>test</scope>
-        </dependency>
 
-<!--        <dependency>-->
+        <!--        <dependency>-->
 <!--            <groupId>org.apache.httpcomponents.client5</groupId>-->
 <!--            <artifactId>httpclient5</artifactId>-->
 <!--        </dependency>-->
@@ -191,6 +182,15 @@
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.6.0</version>
         </dependency>
+
+
+        <!-- Elasticsearch 설정 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+        </dependency>
+
+
     </dependencies>
 
     <build>

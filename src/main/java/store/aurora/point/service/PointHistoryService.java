@@ -50,7 +50,7 @@ public class PointHistoryService {
                 .sum();
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void earnReviewPoint(User user, boolean hasImage) {
         PointPolicyCategory pointPolicyCategory;
         if(hasImage) {

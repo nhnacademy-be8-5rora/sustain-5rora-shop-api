@@ -129,7 +129,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         Order newOrder = Order.builder()
                 .deliveryFee(deliveryFee)
                 .orderTime(LocalDateTime.now())
-                .totalAmount(amount - deliveryFee + orderInfo.getUsedPoint())
+                .totalAmount(amount - deliveryFee)
                 .pointAmount(orderInfo.getUsedPoint())
                 .state(OrderState.PENDING)
                 .name(orderInfo.getOrdererName())
@@ -153,7 +153,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .deliveryFee(deliveryFee)
                 .orderTime(LocalDateTime.now())
 
-                .totalAmount(amount - deliveryFee + orderInfo.getUsedPoint())
+                .totalAmount(amount - deliveryFee)
                 .pointAmount(orderInfo.getUsedPoint())
 
                 .state(OrderState.PENDING)

@@ -10,10 +10,7 @@ import store.aurora.book.dto.category.CategoryResponseDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
-import store.aurora.book.exception.category.CategoryAlreadyExistException;
-import store.aurora.book.exception.category.CategoryHasChildrenException;
-import store.aurora.book.exception.category.CategoryLinkedToBooksException;
-import store.aurora.book.exception.category.CategoryNotFoundException;
+import store.aurora.book.exception.category.*;
 import store.aurora.book.repository.category.BookCategoryRepository;
 import store.aurora.book.repository.category.CategoryRepository;
 import store.aurora.book.service.category.CategoryService;
@@ -22,7 +19,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -77,7 +73,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         if (!category.getChildren().isEmpty()) {
-            throw new CategoryHasChildrenException("하위 카테고리가 존재하므로 삭제할 수 없습니다.");
+            throw new SubCategoryExistsException("하위 카테고리가 존재하므로 삭제할 수 없습니다.");
         }
         // 부모-자식 관계 끊기
         if (category.getParent() != null) {
@@ -135,7 +131,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<BookCategory> createBookCategories(List<Long> categoryIds) {
         if (categoryIds.isEmpty() || categoryIds.size() > 10) {
-            throw new IllegalArgumentException("카테고리는 최소 1개 이상, 최대 10개 이하만 선택할 수 있습니다.");
+            throw new CategoryLimitException("카테고리는 최소 1개 이상, 최대 10개 이하만 선택할 수 있습니다.");
         }
         List<Category> categories = categoryRepository.findAllById(categoryIds);
         return categories.stream()
@@ -144,7 +140,7 @@ public class CategoryServiceImpl implements CategoryService {
                     bookCategory.setCategory(category);
                     return bookCategory;
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -162,7 +158,7 @@ public class CategoryServiceImpl implements CategoryService {
                         category.getDepth(),
                         convertChildrenToResponseDTO(category.getChildren()) // 자식 카테고리들도 변환
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // 재귀적으로 자식 카테고리들을 CategoryResponseDTO로 변환하는 메서드

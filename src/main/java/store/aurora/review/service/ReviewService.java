@@ -16,7 +16,6 @@ import store.aurora.review.entity.ReviewImage;
 import store.aurora.review.exception.ReviewAlreadyExistsException;
 import store.aurora.review.exception.ReviewNotFoundException;
 import store.aurora.review.exception.UnauthorizedReviewException;
-import store.aurora.review.repository.ReviewImageRepository;
 import store.aurora.review.repository.ReviewRepository;
 import store.aurora.user.entity.User;
 import store.aurora.user.exception.UserNotFoundException;
@@ -34,12 +33,11 @@ public class ReviewService {
     private final ObjectStorageService objectStorageService;
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
-    private final ReviewImageRepository reviewImageRepository;
     private final OrderDetailRepository orderDetailRepository;
 
     @Transactional
     // 리뷰 등록
-    public void saveReview(ReviewRequest request, List<MultipartFile> files, Long bookId, String userId) throws IOException {
+    public Review saveReview(ReviewRequest request, List<MultipartFile> files, Long bookId, String userId) throws IOException {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException(bookId));
 
@@ -74,7 +72,7 @@ public class ReviewService {
         }
 
         review.setReviewImages(images);
-        reviewRepository.save(review);
+        return reviewRepository.save(review);
     }
 
     // 리뷰 목록 조회 (도서 ID로 조회)

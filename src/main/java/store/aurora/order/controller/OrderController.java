@@ -5,10 +5,15 @@ import org.springframework.web.bind.annotation.*;
 import store.aurora.order.dto.OrderRequestDto;
 import store.aurora.order.dto.OrderResponseDto;
 import store.aurora.order.dto.OrderUuidAndRedirectUrlDto;
+import store.aurora.order.entity.Order;
 import store.aurora.order.process.dto.OrderCompleteRequestDto;
 import store.aurora.order.process.service.OrderProcessService;
+import store.aurora.point.service.PointHistoryService;
 
 import java.util.Objects;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/order")
@@ -16,6 +21,9 @@ import java.util.Objects;
 public class OrderController {
 
     private final OrderProcessService orderProcessService;
+    private final PointHistoryService pointHistoryService;
+
+    private static final Logger LOG = LoggerFactory.getLogger("user-logger");
 
     // todo : 에러 처리 및 예외 처리 추가
     @PostMapping("/save-order-info")
@@ -49,7 +57,14 @@ public class OrderController {
             ){
         if(Objects.nonNull(dto.getIsGuest()) && Boolean.TRUE.equals(dto.getIsGuest()))
             orderProcessService.nonUserOrderProcess(dto.getOrderId(), dto.getPaymentKey(), dto.getAmount());
-        else
-            orderProcessService.userOrderProcess(dto.getOrderId(), dto.getPaymentKey(), dto.getAmount());
+        else {
+            Order savedOrder = orderProcessService.userOrderProcess(dto.getOrderId(), dto.getPaymentKey(), dto.getAmount());
+
+            try {
+                pointHistoryService.earnOrderPoints(savedOrder);
+            }catch (Exception e) {
+                LOG.error("Failed to earn points: category=order, userId={}, orderId={}", savedOrder.getUser().getId(), savedOrder.getId(), e);
+            }
+        }
     }
 }

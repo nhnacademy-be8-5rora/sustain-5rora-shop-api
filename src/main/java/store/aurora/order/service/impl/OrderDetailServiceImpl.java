@@ -90,6 +90,11 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         orderDetailRepository.deleteById(orderDetailId);
     }
 
+    @Override
+    public Integer getTotalWrapCostByOrder(Long orderId) {
+        return orderDetailRepository.calculateTotalWrapCostByOrderId(orderId);
+    }
+
     private void validate(OrderDetail orderDetail){
         if (Objects.isNull(orderDetail)) {
             throw new IllegalArgumentException(ID_ARGUMENT_IS_NULL);

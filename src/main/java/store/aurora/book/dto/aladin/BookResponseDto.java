@@ -24,6 +24,6 @@ public class BookResponseDto {
     private int priceStandard;
     private String cover;
     private int stock;
-    private Boolean isForSale = false;
-    private Boolean isPackaged = false;
+    private boolean isSale = false;
+    private boolean isPackaging = false;
 }

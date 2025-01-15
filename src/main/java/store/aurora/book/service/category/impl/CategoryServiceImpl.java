@@ -88,22 +88,15 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional(readOnly = true)
     @Override
     public Page<CategoryResponseDTO> getRootCategories(Pageable pageable) {
-        // 부모가 없는 루트 카테고리를 조회
-        Page<Category> rootCategories = categoryRepository.findByParentIsNull(pageable);
-
-        // CategoryResponseDTO로 변환
-        return rootCategories.map(this::mapToResponseDTO);
+        return categoryRepository.findByParentIsNull(pageable)
+                .map(this::mapToResponseDTO);
     }
 
     @Transactional(readOnly = true)
     @Override
     public Page<CategoryResponseDTO> getChildrenCategories(Long parentId, Pageable pageable) {
-        Page<Category> childCategories = categoryRepository.findByParentId(parentId, pageable);
-
-        // 직속 하위 카테고리를 DTO로 변환
-        return childCategories
+        return categoryRepository.findByParentId(parentId, pageable)
                 .map(this::mapToResponseDTO);
-
     }
 
     @Override
@@ -181,7 +174,7 @@ public class CategoryServiceImpl implements CategoryService {
                         child.getDepth(),
                         convertChildrenToResponseDTO(child.getChildren()) // 자식 카테고리가 있을 경우 재귀적으로 변환
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private void validateCategoryName(String name) {
@@ -222,6 +215,7 @@ public class CategoryServiceImpl implements CategoryService {
         dto.setId(category.getId());
         dto.setName(category.getName());
         dto.setDepth(category.getDepth());
+        dto.setParentId(category.getParent() != null ? category.getParent().getId() : null);
         dto.setParentName(category.getParent() != null ? category.getParent().getName() : null);
         return dto;
     }

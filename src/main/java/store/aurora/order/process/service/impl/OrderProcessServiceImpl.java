@@ -1,7 +1,6 @@
 package store.aurora.order.process.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.entity.Book;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -121,7 +119,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     }
 
     // todo-3 장바구니 물품 주문한 경우, 주문한 책 장바구니에서 지우는 로직 추가
-    public void userOrderProcess(String redisOrderId, String paymentKey, int amount){
+    public Order userOrderProcess(String redisOrderId, String paymentKey, int amount){
         OrderRequestDto orderInfo = orderInfoService.getOrderInfoFromRedis(redisOrderId);
 
         int deliveryFee = deliveryFeeService.getDeliveryFee(amount);
@@ -139,7 +137,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .user(userService.getUser(orderInfo.getUsername()))
                 .build();
 
-        saveInformationOfOrderWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
+        return saveInformationOfOrderWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
     }
 
     // todo: 비밀번호 passwordEncoder 적용
@@ -170,7 +168,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     }
 
     // todo: 0원 결제 처리 로직 작성
-    private void saveInformationOfOrderWhenOrderComplete(Order order, String paymentKey, int amount, OrderRequestDto orderInfo){
+    private Order saveInformationOfOrderWhenOrderComplete(Order order, String paymentKey, int amount, OrderRequestDto orderInfo){
         Order createdOrder = orderService.createOrder(order);
 
         // 배송 정보 생성
@@ -219,5 +217,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .build();
 
         paymentService.createPayment(payment);
+
+        return createdOrder;
     }
 }

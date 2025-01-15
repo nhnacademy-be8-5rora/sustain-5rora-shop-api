@@ -9,10 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.data.domain.*;
 import store.aurora.point.dto.PointHistoryResponse;
-import store.aurora.point.entity.PointHistory;
-import store.aurora.point.entity.PointPolicy;
-import store.aurora.point.entity.PointPolicyType;
-import store.aurora.point.entity.PointType;
+import store.aurora.point.entity.*;
 import store.aurora.point.repository.PointHistoryRepository;
 import store.aurora.user.entity.User;
 
@@ -37,7 +34,7 @@ class PointHistoryServiceTest {
 
     @BeforeAll
     static void setUp() {
-        PointPolicy pointPolicy = new PointPolicy(1, "Policy1", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
+        PointPolicy pointPolicy = new PointPolicy(PointPolicyCategory.REVIEW_IMAGE, "Policy1", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
         history1 = new PointHistory(50, PointType.EARNED, new User(userId, "John Doe", LocalDate.of(1990, 1, 1), "010-1234-5678", "test@example.com", false), pointPolicy);
         history2 = new PointHistory(-20, PointType.USED, new User(userId, "John Doe", LocalDate.of(1990, 1, 1), "010-1234-5678", "test@example.com", false), pointPolicy);
     }

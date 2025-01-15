@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
 import store.aurora.point.entity.PointPolicy;
+import store.aurora.point.entity.PointPolicyCategory;
 import store.aurora.point.entity.PointPolicyType;
 import store.aurora.point.exception.PointPolicyAlreadyExistsException;
 import store.aurora.point.exception.PointPolicyNotFoundException;
@@ -31,13 +32,13 @@ class PointPolicyServiceTest {
 
     // Given
     Integer policyId = 1;
-    PointPolicy policy = new PointPolicy(1, "Policy1", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
+    PointPolicy policy = new PointPolicy(PointPolicyCategory.REVIEW_IMAGE, "Policy1", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
 
     @Test
     @DisplayName("getAllPointPolicies: Should return all point policies")
     void testGetAllPointPolicies() {
         // Given
-        PointPolicy policy2 = new PointPolicy(2, "Policy2", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(5.0));
+        PointPolicy policy2 = new PointPolicy(PointPolicyCategory.REVIEW_IMAGE, "Policy2", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(5.0));
         when(pointPolicyRepository.findAll()).thenReturn(List.of(policy, policy2));
 
         // When

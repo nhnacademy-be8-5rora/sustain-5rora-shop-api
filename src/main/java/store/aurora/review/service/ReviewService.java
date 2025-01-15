@@ -1,18 +1,15 @@
 package store.aurora.review.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import store.aurora.book.dto.BookInfoDTO;
 import store.aurora.book.entity.Book;
-import store.aurora.book.entity.BookImage;
 import store.aurora.book.exception.BookNotFoundException;
 import store.aurora.book.repository.BookRepository;
 import store.aurora.file.ObjectStorageService;
 import store.aurora.order.repository.OrderDetailRepository;
-import store.aurora.order.repository.OrderRepository;
+import store.aurora.point.service.PointHistoryService;
 import store.aurora.review.dto.ReviewRequest;
 import store.aurora.review.dto.ReviewResponse;
 import store.aurora.review.entity.Review;
@@ -20,7 +17,6 @@ import store.aurora.review.entity.ReviewImage;
 import store.aurora.review.exception.ReviewAlreadyExistsException;
 import store.aurora.review.exception.ReviewNotFoundException;
 import store.aurora.review.exception.UnauthorizedReviewException;
-import store.aurora.review.repository.ReviewImageRepository;
 import store.aurora.review.repository.ReviewRepository;
 import store.aurora.user.entity.User;
 import store.aurora.user.exception.UserNotFoundException;
@@ -31,15 +27,21 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewRepository reviewRepository;
-    private final ObjectStorageService objectStorageService;
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
-    private final ReviewImageRepository reviewImageRepository;
     private final OrderDetailRepository orderDetailRepository;
+
+    private final ObjectStorageService objectStorageService;
+    private final PointHistoryService pointHistoryService;
+    
+    private static final Logger LOG = LoggerFactory.getLogger("user-logger");
 
     @Transactional
     // 리뷰 등록
@@ -78,7 +80,14 @@ public class ReviewService {
         }
 
         review.setReviewImages(images);
-        reviewRepository.save(review);
+        Review savedRiview = reviewRepository.save(review);
+
+        try{
+            pointHistoryService.earnReviewPoint(savedRiview.getUser(), !savedRiview.getReviewImages().isEmpty());
+        } catch (Exception e) { // case: review가 null, empty인데 getFirst,
+            // todo: 예상 가능한 에러 별 브라우저 응답 다르게 (잠깐 db 에러는 적립 재시도)
+            LOG.warn("Failed to earn points: category=review, userId={}", user.getId(), e);
+        }
     }
 
     // 리뷰 목록 조회 (도서 ID로 조회)

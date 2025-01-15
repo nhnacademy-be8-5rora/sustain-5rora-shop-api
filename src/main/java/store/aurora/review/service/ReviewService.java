@@ -1,18 +1,14 @@
 package store.aurora.review.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import store.aurora.book.dto.BookInfoDTO;
 import store.aurora.book.entity.Book;
-import store.aurora.book.entity.BookImage;
 import store.aurora.book.exception.BookNotFoundException;
 import store.aurora.book.repository.BookRepository;
 import store.aurora.file.ObjectStorageService;
 import store.aurora.order.repository.OrderDetailRepository;
-import store.aurora.order.repository.OrderRepository;
 import store.aurora.review.dto.ReviewRequest;
 import store.aurora.review.dto.ReviewResponse;
 import store.aurora.review.entity.Review;
@@ -20,7 +16,6 @@ import store.aurora.review.entity.ReviewImage;
 import store.aurora.review.exception.ReviewAlreadyExistsException;
 import store.aurora.review.exception.ReviewNotFoundException;
 import store.aurora.review.exception.UnauthorizedReviewException;
-import store.aurora.review.repository.ReviewImageRepository;
 import store.aurora.review.repository.ReviewRepository;
 import store.aurora.user.entity.User;
 import store.aurora.user.exception.UserNotFoundException;
@@ -38,12 +33,11 @@ public class ReviewService {
     private final ObjectStorageService objectStorageService;
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
-    private final ReviewImageRepository reviewImageRepository;
     private final OrderDetailRepository orderDetailRepository;
 
     @Transactional
     // 리뷰 등록
-    public void saveReview(ReviewRequest request, List<MultipartFile> files, Long bookId, String userId) throws IOException {
+    public Review saveReview(ReviewRequest request, List<MultipartFile> files, Long bookId, String userId) throws IOException {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException(bookId));
 
@@ -78,7 +72,7 @@ public class ReviewService {
         }
 
         review.setReviewImages(images);
-        reviewRepository.save(review);
+        return reviewRepository.save(review);
     }
 
     // 리뷰 목록 조회 (도서 ID로 조회)
@@ -90,6 +84,7 @@ public class ReviewService {
         return reviewRepository.findByBook(book).stream()
                 .map(review -> {
                     ReviewResponse response = new ReviewResponse();
+                    response.setId(review.getId());
                     response.setRating(review.getReviewRating());
                     response.setContent(review.getReviewContent());
                     response.setReviewCreateAt(review.getReviewCreateAt());
@@ -117,6 +112,7 @@ public class ReviewService {
         return reviewRepository.findByUser(user).stream()
                 .map(review -> {
                     ReviewResponse response = new ReviewResponse();
+                    response.setId(review.getId());
                     response.setRating(review.getReviewRating());
                     response.setContent(review.getReviewContent());
                     response.setReviewCreateAt(review.getReviewCreateAt());
@@ -135,10 +131,36 @@ public class ReviewService {
                 .toList();
     }
 
+    // 리뷰 조회
+    @Transactional(readOnly = true)
+    public ReviewResponse getReviewById(Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ReviewNotFoundException(reviewId));
+
+        ReviewResponse response = new ReviewResponse();
+        response.setId(review.getId());
+        response.setRating(review.getReviewRating());
+        response.setContent(review.getReviewContent());
+        response.setReviewCreateAt(review.getReviewCreateAt());
+        response.setBookId(review.getBook().getId());
+        response.setUserId(review.getUser().getId());
+
+        // 리뷰 이미지 처리
+        List<ReviewImage> reviewImages = review.getReviewImages();
+        List<String> reviewImgPaths = new ArrayList<>();
+        for (ReviewImage reviewImage : reviewImages) {
+            reviewImgPaths.add(reviewImage.getImageFilePath());
+        }
+        response.setImageFilePath(reviewImgPaths);
+
+        return response;
+    }
+
+
 
     // 리뷰 수정
     @Transactional
-    public void updateReview(Long reviewId, ReviewRequest request, List<MultipartFile> files, Long bookId, String userId) throws IOException {
+    public void updateReview(Long reviewId, ReviewRequest request, List<MultipartFile> files, String userId) throws IOException {
         Review existingReview = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException(reviewId));
 
@@ -146,18 +168,18 @@ public class ReviewService {
         existingReview.setReviewContent(request.getContent());
         existingReview.setReviewCreateAt(LocalDateTime.now());
 
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new BookNotFoundException(bookId));
+//        Book book = bookRepository.findById(bookId)
+//                .orElseThrow(() -> new BookNotFoundException(bookId));
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
-        existingReview.setBook(book);
+//        existingReview.setBook(book);
         existingReview.setUser(user);
 
         // 기존 이미지 삭제
-        List<ReviewImage> existingImages = new ArrayList<>(existingReview.getReviewImages());
-        existingImages.clear();
+        List<ReviewImage> existingImages = existingReview.getReviewImages();
+//        existingImages.clear();
 
         if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
@@ -173,6 +195,20 @@ public class ReviewService {
 
         existingReview.setReviewImages(existingImages);
         reviewRepository.save(existingReview);
+    }
+    public Double calculateAverageRating(Long bookId) {
+        List<Review> reviews = reviewRepository.findByBookId(bookId);
+
+        if (reviews.isEmpty()) {
+            return 0.0;  // 리뷰가 없으면 평균 평점은 0.0
+        }
+
+        // 평점의 합을 구하고 리뷰의 개수로 나누어 평균을 계산
+        double totalRating = reviews.stream()
+                .mapToInt(Review::getReviewRating)
+                .sum();
+
+        return totalRating / reviews.size();  // 리뷰 개수로 나눠서 평균 계산
     }
 
 }

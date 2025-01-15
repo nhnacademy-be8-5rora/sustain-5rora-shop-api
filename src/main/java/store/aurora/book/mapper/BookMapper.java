@@ -129,7 +129,6 @@ public class BookMapper {
         bookDto.setSale(book.isSale());
         bookDto.setPackaging(book.isPackaging());
         bookDto.setPublisher(book.getPublisher().getName());
-
         return bookDto;
     }
 

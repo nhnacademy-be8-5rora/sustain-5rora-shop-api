@@ -37,7 +37,7 @@ public class Book {
     private int stock = 100;
 
     @Column(nullable = false)
-    private boolean isSale = false;
+    private boolean isSale = true;
 
     @Column(nullable = false, unique = true, length = 13)
     private String isbn;
@@ -48,9 +48,11 @@ public class Book {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String explanation;
 
-
     @Column(nullable = false)
     private boolean packaging = false;
+
+    @Column(nullable = false)
+    private boolean active = true;
 
     @Column(nullable = false)
     private LocalDate publishDate;

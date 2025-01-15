@@ -1,5 +1,6 @@
 package store.aurora.book.service.impl;
 
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import com.querydsl.core.Tuple;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +11,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.dto.BookDetailsDto;
 import store.aurora.book.dto.BookInfoDTO;
@@ -34,9 +34,8 @@ import store.aurora.book.service.*;
 import store.aurora.book.service.tag.TagService;
 import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.search.dto.BookSearchResponseDTO;
+import store.aurora.search.service.ElasticSearchService;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -55,6 +54,7 @@ public class BookServiceImpl implements BookService {
     private final SeriesRepository seriesRepository;
     private final CategoryRepository categoryRepository;
     private final BookMapper bookMapper;
+    private final ElasticSearchService elasticSearchService;
 
     private static final Logger USER_LOG = LoggerFactory.getLogger("user-logger");
 
@@ -73,6 +73,29 @@ public class BookServiceImpl implements BookService {
         bookImageService.handleImageUpload(book,coverImage, true);
         // 추가 이미지 처리
         bookImageService.handleAdditionalImages(book, additionalImages);
+
+        //엘라스틱 서치를 위한 레파지토리에도 저장. 실패(서버 문제 등)에도 문제없도록 try-catch 처리.
+        try {
+            // book 엔티티를 조회하고, 해당 엔티티와 저자 정보를 가져옵니다.
+            Optional<Book> optionalBook = bookRepository.findById(book.getId());
+
+            // 엔티티가 존재하지 않으면 예외를 던집니다.
+            if (optionalBook.isPresent()) {
+                Book bookEntity = optionalBook.get();
+
+                // Elasticsearch에 저장할 수 있도록 처리
+                elasticSearchService.saveBooks(bookEntity);
+            } else {
+                USER_LOG.warn("Book not found with id: " + book.getId());
+            }
+        } catch (ElasticsearchException e) {
+            // Elasticsearch 관련 예외 처리
+            USER_LOG.warn("Elasticsearch 서버 오류: " + e.getMessage(), e);
+        }catch (Exception e) {
+            // 기타 예외 처리
+            USER_LOG.warn("Elasticsearch 저장 실패: " + e.getMessage(), e);
+        }
+
     }
 
     @Transactional
@@ -104,6 +127,22 @@ public class BookServiceImpl implements BookService {
         }
 
         // 6. 책 저장
+        bookRepository.save(book);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<BookResponseDto> getBooksByActive(boolean isActive, Pageable pageable) {
+        return bookRepository.findByActive(isActive, pageable)
+                .map(this::convertToDto);
+    }
+
+    @Transactional
+    @Override
+    public void updateBookActivation(Long bookId, boolean isActive) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new NotFoundBookException(bookId));
+        book.setActive(isActive); // 활성/비활성 상태 설정
         bookRepository.save(book);
     }
 

@@ -152,8 +152,8 @@ public class BookServiceTest {
         Series series = new Series(1L, "Series Name");
 
         // 2. Book 객체 생성
-        Book book1 = new Book(1L, "Book Title 1", 10000, 8000, 100, true, "ISBN12345", "Contents", "Explanation", false, LocalDate.now(), publisher, series, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
-        Book book2 = new Book(2L, "Book Title 2", 15000, 12000, 200, true, "ISBN67890", "Contents", "Explanation", false, LocalDate.now(), publisher, series, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        Book book1 = new Book(1L, "Book Title 1", 10000, 8000, 100, true, "ISBN12345", "Contents", "Explanation", false,true, LocalDate.now(), publisher, series, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+        Book book2 = new Book(2L, "Book Title 2", 15000, 12000, 200, true, "ISBN67890", "Contents", "Explanation", false,true, LocalDate.now(), publisher, series, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
 
         // 3. User 객체 생성
         User user = new User("user123", "John Doe", LocalDate.of(1990, 1, 1), "010-1234-5678", "john.doe@example.com", false);

@@ -10,16 +10,15 @@ import store.aurora.book.dto.category.CategoryResponseDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
-import store.aurora.book.exception.category.CategoryLinkedToBooksException;
-import store.aurora.book.exception.category.CategoryNotFoundException;
-import store.aurora.book.exception.category.InvalidCategoryException;
+import store.aurora.book.exception.category.*;
 import store.aurora.book.repository.category.BookCategoryRepository;
 import store.aurora.book.repository.category.CategoryRepository;
 import store.aurora.book.service.category.CategoryService;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Queue;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +29,6 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public void createCategory(CategoryRequestDTO requestDTO) {
-        validateCategoryName(requestDTO.getName());
         Category parent = getParentCategory(requestDTO.getParentId());
         validateUniqueCategoryName(requestDTO.getName(), parent);
 
@@ -55,9 +53,9 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public void updateCategoryName(Long categoryId, String newName) {
-        validateCategoryName(newName);
-
         Category category = findCategoryByIdOrThrow(categoryId);
+
+        checkNameInHierarchy(category, newName);
 
         validateUniqueCategoryName(newName, category.getParent());
         category.setName(newName);
@@ -74,13 +72,13 @@ public class CategoryServiceImpl implements CategoryService {
             throw new CategoryLinkedToBooksException(categoryId);
         }
 
+        if (!category.getChildren().isEmpty()) {
+            throw new SubCategoryExistsException("하위 카테고리가 존재하므로 삭제할 수 없습니다.");
+        }
         // 부모-자식 관계 끊기
         if (category.getParent() != null) {
             category.getParent().getChildren().remove(category); // 부모의 자식 목록에서 제거
         }
-
-        // 자식 카테고리의 부모 관계 제거
-        category.getChildren().forEach(child -> child.setParent(null));
 
         categoryRepository.delete(category);
     }
@@ -133,7 +131,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<BookCategory> createBookCategories(List<Long> categoryIds) {
         if (categoryIds.isEmpty() || categoryIds.size() > 10) {
-            throw new IllegalArgumentException("카테고리는 최소 1개 이상, 최대 10개 이하만 선택할 수 있습니다.");
+            throw new CategoryLimitException("카테고리는 최소 1개 이상, 최대 10개 이하만 선택할 수 있습니다.");
         }
         List<Category> categories = categoryRepository.findAllById(categoryIds);
         return categories.stream()
@@ -142,7 +140,7 @@ public class CategoryServiceImpl implements CategoryService {
                     bookCategory.setCategory(category);
                     return bookCategory;
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -160,7 +158,7 @@ public class CategoryServiceImpl implements CategoryService {
                         category.getDepth(),
                         convertChildrenToResponseDTO(category.getChildren()) // 자식 카테고리들도 변환
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // 재귀적으로 자식 카테고리들을 CategoryResponseDTO로 변환하는 메서드
@@ -175,12 +173,6 @@ public class CategoryServiceImpl implements CategoryService {
                         convertChildrenToResponseDTO(child.getChildren()) // 자식 카테고리가 있을 경우 재귀적으로 변환
                 ))
                 .toList();
-    }
-
-    private void validateCategoryName(String name) {
-        if (name == null || name.trim().isEmpty()) {
-            throw new InvalidCategoryException("카테고리 이름은 비어 있을 수 없습니다.");
-        }
     }
 
     private Category findCategoryByIdOrThrow(Long categoryId) {
@@ -198,18 +190,44 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     private void validateUniqueCategoryName(String name, Category parent) {
-        boolean exists;
-        if (parent != null) {
-            exists = categoryRepository.existsByNameAndParent(name, parent);
-        } else {
-            exists = categoryRepository.existsByNameAndParentIsNull(name);
+        boolean existsInSameParent = (parent != null)
+                ? categoryRepository.existsByNameAndParent(name, parent)
+                : categoryRepository.existsByNameAndParentIsNull(name);
+        if (existsInSameParent) {
+            throw new CategoryAlreadyExistException("같은 상위 카테고리 아래에 동일한 이름의 카테고리가 이미 존재합니다.");
         }
 
-        if (exists) {
-            throw new InvalidCategoryException("해당 이름의 카테고리가 이미 존재합니다.");
+
+        if (parent != null) {
+            checkParentHierarchy(name, parent);
+        }
+    }
+    private void checkParentHierarchy(String name, Category parent) {
+        Category current = parent;
+        while (current != null) {
+            if (current.getName().equals(name)) {
+                throw new CategoryAlreadyExistException("하위 카테고리의 이름은 상위 카테고리 이름과 중복될 수 없습니다.");
+            }
+            current = current.getParent();
         }
     }
 
+    private void checkNameInHierarchy(Category parent, String newName) {
+        Queue<Category> queue = new LinkedList<>();
+        queue.addAll(parent.getChildren());
+
+        while (!queue.isEmpty()) {
+            Category current = queue.poll();
+
+            // 하위 계층의 이름 중복 여부 확인
+            if (current.getName().equals(newName)) {
+                throw new CategoryAlreadyExistException("하위 계층에 동일한 이름이 존재합니다: " + newName);
+            }
+
+            // 현재 노드의 자식들을 큐에 추가
+            queue.addAll(current.getChildren());
+        }
+    }
     private CategoryResponseDTO mapToResponseDTO(Category category) {
         CategoryResponseDTO dto = new CategoryResponseDTO();
         dto.setId(category.getId());

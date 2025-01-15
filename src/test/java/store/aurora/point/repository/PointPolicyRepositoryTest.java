@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import store.aurora.book.config.QuerydslConfiguration;
 import store.aurora.point.entity.PointPolicy;
+import store.aurora.point.entity.PointPolicyCategory;
 import store.aurora.point.entity.PointPolicyType;
 
 import java.math.BigDecimal;
@@ -24,7 +25,7 @@ class PointPolicyRepositoryTest {
     @DisplayName("existsByPointPolicyName: Should return true if policy name exists in the database")
     void testExistsByPointPolicyName_Exists() {
         // Given
-        PointPolicy policy = new PointPolicy(1, "Loyalty Points", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
+        PointPolicy policy = new PointPolicy(PointPolicyCategory.REVIEW_IMAGE, "Loyalty Points", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
         pointPolicyRepository.save(policy);
 
         // When

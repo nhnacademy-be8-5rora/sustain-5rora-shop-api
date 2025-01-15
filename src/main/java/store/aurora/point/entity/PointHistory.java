@@ -35,9 +35,8 @@ public class PointHistory {
     @ManyToOne
     private Order order;
 
-    @NotNull
     @ManyToOne
-    @JoinColumn(name = "point_policy_id", nullable = false)
+    @JoinColumn(name = "point_policy_id")
     private PointPolicy pointPolicy; // 적립 사유 가져오려고
 
     @NotNull
@@ -50,5 +49,11 @@ public class PointHistory {
         this.pointType = pointType;
         this.user = user;
         this.pointPolicy = pointPolicy;
+    }
+
+    public PointHistory(Integer pointAmount, PointType pointType, User user) {
+        this.pointAmount = pointAmount;
+        this.pointType = pointType;
+        this.user = user;
     }
 }

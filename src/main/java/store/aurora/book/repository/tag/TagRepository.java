@@ -1,5 +1,7 @@
 package store.aurora.book.repository.tag;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import store.aurora.book.entity.tag.Tag;
 
@@ -10,5 +12,6 @@ import java.util.Optional;
 public interface TagRepository extends JpaRepository<Tag, Long> {
     Optional<Tag> findByName(String name);
     List<Tag> findByNameContaining(String keyword);
+    Page<Tag> findAllByOrderByIdAsc(Pageable pageable);
 }
 

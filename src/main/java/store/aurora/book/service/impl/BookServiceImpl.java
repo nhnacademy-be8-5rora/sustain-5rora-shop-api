@@ -149,6 +149,22 @@ public class BookServiceImpl implements BookService {
 
     }
 
+    @Transactional(readOnly = true)
+    @Override
+    public Page<BookResponseDto> getBooksByActive(boolean isActive, Pageable pageable) {
+        return bookRepository.findByActive(isActive, pageable)
+                .map(this::convertToDto);
+    }
+
+    @Transactional
+    @Override
+    public void updateBookActivation(Long bookId, boolean isActive) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new NotFoundBookException(bookId));
+        book.setActive(isActive); // 활성/비활성 상태 설정
+        bookRepository.save(book);
+    }
+
     @Override
     public Page<BookResponseDto> getAllBooks(Pageable pageable) {
         return bookRepository.findAll(pageable)

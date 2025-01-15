@@ -65,4 +65,7 @@ public class BookRequestDto {
     @Pattern(regexp = "^([^,]*,\\s*)*[^,]*$",
             message = "태그 형식이 잘못되었습니다. 쉼표로 구분된 태그 형식이어야 합니다.")
     private String tags; // 선택 항목
+
+    private boolean deleted = false; // 삭제 여부 추가
+
 }

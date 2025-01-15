@@ -85,11 +85,11 @@ public class BookRepositoryCustomTest {
 
         // Book 생성
         Book book1 = new Book(
-                1L, "test title", 10000, 9000, 100, true, "1234567890123", "sample contents", "test desc", false,
+                1L, "test title", 10000, 9000, 100, true, "1234567890123", "sample contents", "test desc", false,true,
                 LocalDate.of(2024, 12, 12), publisher, series, new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
         );
         Book book2 = new Book(
-                2L, "test title2", 10000, 9000, 100, true, "1234567890124", "sample contents2", "test desc2", false,
+                2L, "test title2", 10000, 9000, 100, true, "1234567890124", "sample contents2", "test desc2", false,true,
                 LocalDate.of(2024, 12, 12), publisher, series, new ArrayList<>(), new ArrayList<>(), new ArrayList<>()
         );
 

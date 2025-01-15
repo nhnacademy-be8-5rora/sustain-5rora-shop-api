@@ -33,7 +33,7 @@ public class PointHistory {
     private LocalDateTime transactionDate = LocalDateTime.now();
 
     @ManyToOne
-    private Order order;
+    private Order order; // 주문 시 적립이면 있음
 
     @ManyToOne
     @JoinColumn(name = "point_policy_id")
@@ -44,6 +44,7 @@ public class PointHistory {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    // 주문 외 적립
     public PointHistory(Integer pointAmount, PointType pointType, User user, PointPolicy pointPolicy) {
         this.pointAmount = pointAmount;
         this.pointType = pointType;
@@ -51,6 +52,15 @@ public class PointHistory {
         this.pointPolicy = pointPolicy;
     }
 
+    // 주문 적립
+    public PointHistory(Integer pointAmount, PointType pointType, User user, Order order) {
+        this.pointAmount = pointAmount;
+        this.pointType = pointType;
+        this.user = user;
+        this.order = order;
+    }
+
+    // 주문 사용
     public PointHistory(Integer pointAmount, PointType pointType, User user) {
         this.pointAmount = pointAmount;
         this.pointType = pointType;

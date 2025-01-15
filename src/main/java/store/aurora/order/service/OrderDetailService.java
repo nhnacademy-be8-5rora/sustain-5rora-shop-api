@@ -13,4 +13,5 @@ public interface OrderDetailService {
     List<OrderDetail> getOrderDetailsByOrder(Order order);
     void updateOrderDetail(OrderDetail orderDetail);
     void deleteOrderDetailById(Long orderDetailId);
+    Integer getTotalWrapCostByOrder(Long orderId);
 }

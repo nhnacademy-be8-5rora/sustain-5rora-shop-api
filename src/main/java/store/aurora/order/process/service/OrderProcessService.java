@@ -1,7 +1,7 @@
 package store.aurora.order.process.service;
 
 import store.aurora.order.dto.*;
-import store.aurora.user.entity.User;
+import store.aurora.order.entity.Order;
 
 import java.util.List;
 
@@ -49,8 +49,9 @@ public interface OrderProcessService {
      * @param redisOrderId 레디스 저장된 정보의 키
      * @param paymentKey 결제 키
      * @param amount 결제 금액
+     * @return order 주문 엔티티
      */
-    void userOrderProcess(String redisOrderId, String paymentKey, int amount);
+    Order userOrderProcess(String redisOrderId, String paymentKey, int amount);
 
     /**
      * 비회원 주문 내역 저장

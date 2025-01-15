@@ -5,33 +5,33 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import store.aurora.point.service.PointHistoryService;
 import store.aurora.review.dto.ReviewRequest;
 import store.aurora.review.dto.ReviewResponse;
 import store.aurora.review.entity.Review;
 import store.aurora.review.service.ReviewService;
-import store.aurora.user.entity.User;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping("/api/reviews")
 @Validated
 @RequiredArgsConstructor
 public class ReviewController {
     private final ReviewService reviewService;
+    private final PointHistoryService pointHistoryService;
+
+    private static final Logger LOG = LoggerFactory.getLogger("user-logger");
 
     // 리뷰 등록
     @PostMapping
@@ -48,10 +48,18 @@ public class ReviewController {
                                                @RequestParam String userId) {
         if (files == null) { files = new ArrayList<>(); }
         try {
-            reviewService.saveReview(request, files, bookId, userId);
+            Review savedRiview = reviewService.saveReview(request, files, bookId, userId);
+
+            try{
+                pointHistoryService.earnReviewPoint(savedRiview.getUser(), !savedRiview.getReviewImages().isEmpty());
+            } catch (Exception e) { // case: review가 null, empty인데 getFirst,
+                // todo: 예상 가능한 에러 별 브라우저 응답 다르게 (잠깐 db 에러는 적립 재시도)
+                LOG.warn("Failed to earn points: category=review, userId={}", userId, e);
+            }
+
             return ResponseEntity.status(201).body("Upload OK"); //body(review);
         } catch (IOException e) {
-            log.error(e.getMessage());
+            LOG.error(e.getMessage());
             return ResponseEntity.status(500).body("Upload failed: " + e.getMessage()); //.body(null);
         }
     }
@@ -113,7 +121,7 @@ public class ReviewController {
             reviewService.updateReview(reviewId, request, files, userId);
             return ResponseEntity.status(200).body("Review updated successfully");
         } catch (IOException e) {
-            log.error(e.getMessage());
+            LOG.error(e.getMessage());
             return ResponseEntity.status(500).body("Update failed: " + e.getMessage());
         }
     }

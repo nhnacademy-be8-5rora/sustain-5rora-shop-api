@@ -59,17 +59,4 @@ class PointHistoryServiceTest {
         assertThat(result.getContent().get(1).getPointAmount()).isEqualTo(-20);
         verify(pointHistoryRepository, times(1)).findByUserId(userId, pageable);
     }
-
-    @Test
-    @DisplayName("getAvailablePointsByUser: Should calculate total available points for a user")
-    void testGetAvailablePointsByUser() {
-        when(pointHistoryRepository.findByUserId(userId)).thenReturn(List.of(history1, history2));
-
-        // When
-        Integer result = pointHistoryService.getAvailablePointsByUser(userId);
-
-        // Then
-        assertThat(result).isEqualTo(30);
-        verify(pointHistoryRepository, times(1)).findByUserId(userId);
-    }
 }

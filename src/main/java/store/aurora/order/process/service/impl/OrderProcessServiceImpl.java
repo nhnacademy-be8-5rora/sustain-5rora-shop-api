@@ -14,12 +14,17 @@ import store.aurora.order.process.service.DeliveryFeeService;
 import store.aurora.order.process.service.OrderInfoService;
 import store.aurora.order.service.*;
 import store.aurora.order.process.service.OrderProcessService;
+import store.aurora.point.exception.PointInsufficientException;
+import store.aurora.point.service.PointSpendService;
 import store.aurora.user.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +40,9 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     private final OrderInfoService orderInfoService;
     private final UserService userService;
     private final PaymentService paymentService;
+    private final PointSpendService pointSpendService;
+
+    private static final Logger LOG = LoggerFactory.getLogger("user-logger");
 
     @Override
     public String getOrderUuid(){
@@ -136,6 +144,14 @@ public class OrderProcessServiceImpl implements OrderProcessService {
 //                .preferredDeliveryDate(orderInfo.getPreferredDeliveryDate())
                 .user(userService.getUser(orderInfo.getUsername()))
                 .build();
+
+        try {
+            pointSpendService.spendPoints(orderInfo.getUsername(), orderInfo.getUsedPoint());
+        } catch (PointInsufficientException e) {
+            throw e;
+        } catch (Exception e) {
+            LOG.error("{} 유저의 포인트 {} 사용 처리 실패", orderInfo.getUsername(), orderInfo.getUsedPoint(), e);
+        }
 
         return saveInformationWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
     }

@@ -8,7 +8,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.order.entity.Order;
 import store.aurora.order.service.OrderDetailService;
@@ -42,12 +41,6 @@ public class PointHistoryService {
 
         pointHistories = pointHistoryRepository.findByUserId(userId, pageable);
         return pointHistories.map(this::mapToResponse);
-    }
-
-    public Integer getAvailablePointsByUser(String userId) {
-        return pointHistoryRepository.findByUserId(userId).stream()
-                .mapToInt(PointHistory::getPointAmount)
-                .sum();
     }
 
     @Transactional

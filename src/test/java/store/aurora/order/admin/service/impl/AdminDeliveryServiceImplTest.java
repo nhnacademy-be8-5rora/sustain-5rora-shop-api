@@ -8,22 +8,21 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
 import store.aurora.order.service.OrderService;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(value = {MockitoExtension.class})
-class AdminOrderServiceImplTest {
+class AdminDeliveryServiceImplTest {
 
     @Mock
     OrderService orderService;
 
     @InjectMocks
-    AdminOrderServiceImpl adminOrderService;
+    AdminDeliveryServiceImpl adminDeliveryService;
 
     @Test
     void getAllOrderList() {
-        adminOrderService.getAllOrderList(PageRequest.of(0, 1));
+        adminDeliveryService.getAllOrderList(PageRequest.of(0, 1));
 
         verify(orderService, times(1)).getOrders();
     }

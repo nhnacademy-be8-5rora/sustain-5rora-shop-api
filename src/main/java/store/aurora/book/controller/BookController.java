@@ -40,8 +40,25 @@ public class BookController {
 
     @GetMapping
     public ResponseEntity<Page<BookResponseDto>> getAllBooks(Pageable pageable) {
-        Page<BookResponseDto> books = bookService.getAllBooks(pageable);
+        Page<BookResponseDto> books = bookService.getBooksByActive(true,pageable);
         return ResponseEntity.ok(books);
+    }
+    @GetMapping("/deactivate")
+    public ResponseEntity<Page<BookResponseDto>> getDeactivateBooks(Pageable pageable) {
+        Page<BookResponseDto> books = bookService.getBooksByActive(false,pageable);
+        return ResponseEntity.ok(books);
+    }
+
+    @PostMapping("/{bookId}/deactivate")
+    public ResponseEntity<Void> deactivateBook(@PathVariable Long bookId) {
+        bookService.updateBookActivation(bookId, false);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{bookId}/activate")
+    public ResponseEntity<Void> activateBook(@PathVariable Long bookId) {
+        bookService.updateBookActivation(bookId, true);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping(value = "/{bookId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -59,7 +76,6 @@ public class BookController {
         BookDetailDto bookDetails = bookService.getBookDetailsForAdmin(bookId);
         return ResponseEntity.ok(bookDetails);
     }
-
 
     @GetMapping("/{bookId}")
     public ResponseEntity<BookDetailsDto> getBookDetails(@PathVariable Long bookId) {

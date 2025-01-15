@@ -10,7 +10,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.dto.BookDetailsDto;
 import store.aurora.book.dto.BookInfoDTO;
@@ -35,8 +34,6 @@ import store.aurora.book.service.tag.TagService;
 import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.search.dto.BookSearchResponseDTO;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -104,6 +101,22 @@ public class BookServiceImpl implements BookService {
         }
 
         // 6. 책 저장
+        bookRepository.save(book);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<BookResponseDto> getBooksByActive(boolean isActive, Pageable pageable) {
+        return bookRepository.findByActive(isActive, pageable)
+                .map(this::convertToDto);
+    }
+
+    @Transactional
+    @Override
+    public void updateBookActivation(Long bookId, boolean isActive) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new NotFoundBookException(bookId));
+        book.setActive(isActive); // 활성/비활성 상태 설정
         bookRepository.save(book);
     }
 

@@ -38,7 +38,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public Page<TagResponseDto> getTags(Pageable pageable) {
-        return tagRepository.findAll(pageable)
+        return tagRepository.findAllByOrderByIdAsc(pageable)
                 .map(this::mapToResponseDto);
     }
 
@@ -50,9 +50,8 @@ public class TagServiceImpl implements TagService {
     @Transactional
     @Override
     public TagResponseDto createTag(TagRequestDto requestDto) {
-        if (tagRepository.findByName(requestDto.getName()).isPresent()) {
-            throw new TagAlreadyExistException("이미 존재하는 태그입니다: " + requestDto.getName());
-        }
+        validateDuplicateTagName(requestDto.getName());
+
         Tag tag = new Tag();
         tag.setName(requestDto.getName());
         tag = tagRepository.save(tag);
@@ -63,6 +62,7 @@ public class TagServiceImpl implements TagService {
     @Transactional
     @Override
     public TagResponseDto updateTag(Long id, TagRequestDto requestDto) {
+        validateDuplicateTagName(requestDto.getName());
         Tag tag = findTagById(id);
         tag.setName(requestDto.getName());
         tag = tagRepository.save(tag);
@@ -120,6 +120,12 @@ public class TagServiceImpl implements TagService {
                 .map(String::trim) // 공백 제거
                 .filter(tag -> !tag.isEmpty()) // 빈 태그 제거
                 .toList();
+    }
+
+    private void validateDuplicateTagName(String name) {
+        if (tagRepository.findByName(name).isPresent()) {
+            throw new TagAlreadyExistException("이미 존재하는 태그입니다: " + name);
+        }
     }
 
     private TagResponseDto mapToResponseDto(Tag tag) {

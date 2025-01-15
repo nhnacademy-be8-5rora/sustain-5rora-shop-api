@@ -26,4 +26,5 @@ public class BookResponseDto {
     private int stock;
     private boolean isSale = false;
     private boolean isPackaging = false;
+    private boolean deleted = false; // 삭제 여부 추가
 }

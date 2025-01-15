@@ -139,8 +139,6 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .user(userService.getUser(orderInfo.getUsername()))
                 .build();
 
-        // todo: 포인트 사용량 적용
-
         saveInformationWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
     }
 

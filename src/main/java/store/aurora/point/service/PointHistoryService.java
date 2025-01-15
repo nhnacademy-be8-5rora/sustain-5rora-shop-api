@@ -55,11 +55,6 @@ public class PointHistoryService {
         earnPoint(pointPolicyCategory, user);
     }
 
-    @Transactional
-    public void earnSignUpPoints(User user) {
-        earnPoint(PointPolicyCategory.SIGNUP, user);
-    }
-
     // todo 혜원 : 스케줄러로
     @Transactional//(propagation = Propagation.REQUIRES_NEW)
     public void earnOrderPoints(Order order) {
@@ -79,7 +74,7 @@ public class PointHistoryService {
         LOG.info("Points added successfully: userId={}, points={}", order.getUser().getId(), netAmount);
     }
 
-    private void earnPoint(PointPolicyCategory pointPolicyCategory, User user) {
+    public void earnPoint(PointPolicyCategory pointPolicyCategory, User user) {
         List<PointPolicy> policies = pointPolicyService.getActivePoliciesByCategory(pointPolicyCategory);
         if(policies.size() > 1) {
             LOG.warn("현재 {}에 해당하는 적용 가능한 포인트 정책이 여러개 이지만 하나만 적용되었습니다.", pointPolicyCategory);

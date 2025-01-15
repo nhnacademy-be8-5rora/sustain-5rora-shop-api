@@ -36,7 +36,8 @@ public class PointHistory {
     private Order order; // 주문 시 적립이면 있음
 
     @ManyToOne
-    private PointPolicy pointPolicy; // 적립 사유 가져오려고 / 주문은 null
+    @JoinColumn(name = "point_policy_id")
+    private PointPolicy pointPolicy; // 적립 사유 가져오려고
 
     @NotNull
     @ManyToOne
@@ -58,7 +59,6 @@ public class PointHistory {
         this.user = user;
         this.order = order;
     }
-
 
     // 주문 사용
     public PointHistory(Integer pointAmount, PointType pointType, User user) {

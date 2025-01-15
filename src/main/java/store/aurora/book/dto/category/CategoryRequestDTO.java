@@ -5,14 +5,13 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.Length;
 
 @Getter
 @Setter
 @NoArgsConstructor
 public class CategoryRequestDTO {
     private Long parentId;
-    @NotBlank
-    @Size(max = 20)
+    @NotBlank(message = "카테고리 이름은 필수입니다.")
+    @Size(max = 20, message = "카테고리 이름은 최대 20자까지 입력 가능합니다.")
     private String name;
 }

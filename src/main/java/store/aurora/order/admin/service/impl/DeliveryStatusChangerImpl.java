@@ -1,6 +1,7 @@
 package store.aurora.order.admin.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -14,8 +15,6 @@ import store.aurora.order.service.OrderService;
 import store.aurora.order.service.ShipmentService;
 
 import java.time.LocalDateTime;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +22,7 @@ public class DeliveryStatusChangerImpl implements DeliveryStatusChanger {
 
     private final OrderService orderService;
     private final ShipmentService shipmentService;
-    private final ConcurrentMap<Long, Long> orderScheduleMap = new ConcurrentHashMap<>();
+    private final RabbitTemplate rabbitTemplate;
 
     private static final long ONE_DAY = 86400000;
     private static final long HALF_HOUR = 1800000;
@@ -41,7 +40,7 @@ public class DeliveryStatusChangerImpl implements DeliveryStatusChanger {
         shipment.setShipmentDatetime(LocalDateTime.now());
         shipmentService.updateShipment(shipment);
 
-        orderScheduleMap.put(orderId, System.currentTimeMillis());
+        rabbitTemplate.convertAndSend("shippingQueue", orderId);
     }
 
     @Override
@@ -56,19 +55,6 @@ public class DeliveryStatusChangerImpl implements DeliveryStatusChanger {
 
         order.setState(OrderState.PENDING);
         orderService.updateOrder(order);
-    }
-
-    @Transactional
-    @Scheduled(fixedDelay = HALF_HOUR)
-    @Async
-    public void scheduleOrderCompletion() {
-        long currentTime = System.currentTimeMillis();
-        orderScheduleMap.forEach((orderId, startTime) -> {
-            if (currentTime - startTime >= ONE_DAY) { // 1일 후에 실행
-                completeOrder(orderId);
-                orderScheduleMap.remove(orderId);
-            }
-        });
     }
 
     @Transactional

@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.entity.Book;
+import store.aurora.coupon.feignclient.CouponClient;
 import store.aurora.order.dto.*;
 import store.aurora.order.entity.*;
 import store.aurora.order.entity.enums.OrderState;
@@ -34,6 +35,7 @@ public class UserOrderInfoServiceImpl implements UserOrderInfoService {
     private final OrderRepository orderRepository;
     private final PointHistoryRepository pointHistoryRepository;
     private final PaymentRepository paymentRepository;
+    private final CouponClient couponClient;
 
     private static final Logger log = LoggerFactory.getLogger("user-logger");
 
@@ -183,6 +185,15 @@ public class UserOrderInfoServiceImpl implements UserOrderInfoService {
         //포인트로 환불
         PointHistory pointHistory = new PointHistory(paidAmount, PointType.EARNED, order.getUser());
         pointHistoryRepository.save(pointHistory);
+
+        //해당 주문에서 사용된 쿠폰 반환
+        List<OrderDetail> orderDetails = orderRepository.findOrderDetailByOrderId(orderId);
+
+        List<Long> couponIds = orderDetails.stream()
+                .map(OrderDetail::getCouponId)  // OrderDetail에서 couponId를 추출
+                .toList();  // List<Long>으로 수집
+
+        couponClient.refund(couponIds); //used 된 사용자 쿠폰 -> Live 상태로 변경
 
         return order.getId();
     }

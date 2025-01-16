@@ -303,7 +303,6 @@ public class BookServiceImpl implements BookService {
         return bookSearchResponseDTOPage.getContent().isEmpty() ? Optional.empty() : Optional.ofNullable(bookSearchResponseDTOPage.getContent().getFirst());
     }
 
-
     // entity -> ResponseDto
     private BookResponseDto convertToDto(Book book) {
         return bookMapper.toResponseDto(book);

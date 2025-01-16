@@ -665,7 +665,8 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
     public Expression<Long> getLikeCountSubquery() {
         return JPAExpressions.select(like.count())
                 .from(like)
-                .where(like.book.id.eq(book.id));
+                .where(like.book.id.eq(book.id))
+                .where(like.isLike.eq(Boolean.TRUE));  // 수정된 부분
     }
 
     @Override

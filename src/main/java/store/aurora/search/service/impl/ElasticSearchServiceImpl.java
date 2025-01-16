@@ -63,7 +63,7 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
         {
             return searchBooksByFullText(keyword, pageable,userId);
         }
-        return null;
+        return Page.empty();
     }
 
     private Page<BookSearchResponseDTO> searchBooksByFullText(String keyword, Pageable pageable, String userId) {
@@ -78,16 +78,16 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
                 .map(SearchBookDTO::getId)
                 .toList();
 
-        List<Like> likeList = likeRepository.findByUserIdAndBookIdInAndIsLikeTrue(userId, bookIds);
+        if(userId !=null)
+        {
+            List<Like> likeList = likeRepository.findByUserIdAndBookIdInAndIsLikeTrue(userId, bookIds);
 
-        //  좋아요 상태 반영: Map을 사용하여 책 ID와 좋아요 여부 매핑 N+1을 해결하기 위하여 백에서 for문으로 처리
-        Set<Long> likedBookIds = likeList.stream()
-                .map(like -> like.getBook().getId())  // Like 객체에서 Book의 ID를 가져옵니다.
-                .collect(Collectors.toSet());
+            //  좋아요 상태 반영: Map을 사용하여 책 ID와 좋아요 여부 매핑 N+1을 해결하기 위하여 백에서 for문으로 처리
+            Set<Long> likedBookIds = likeList.stream()
+                    .map(like -> like.getBook().getId())  // Like 객체에서 Book의 ID를 가져옵니다.
+                    .collect(Collectors.toSet());
 
-        for (BookSearchResponseDTO bookDTO : bookSearchResponseDTOList) {
-            boolean liked = likedBookIds.contains(bookDTO.getId());
-            bookDTO.setLiked(liked);  // 좋아요 상태 설정
+            bookSearchResponseDTOList.forEach(bookDTO -> bookDTO.setLiked(likedBookIds.contains(bookDTO.getId())));
         }
 
         return new PageImpl<>(bookSearchResponseDTOList, pageable, bookList.size());
@@ -146,9 +146,6 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
         } catch (IOException e) {
             throw new InvalidApiResponseException("Elasticsearch 응답중 알 수 없는 오류 발생" );
         }
-
-
-
 
         return searchResponse.hits().hits().stream()
                 .map(Hit::source) // `BookDocument`로 변환

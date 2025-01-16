@@ -38,4 +38,10 @@ public class GenericUserOrderController {
         Long orderId = Long.parseLong(simpleEncryptor.decrypt(encryptedOrderId));
         return userOrderInfoService.cancelOrder(orderId);
     }
+
+    @PostMapping("/refund")
+    public Long requestRefund(@RequestParam("order-id") String encryptedOrderId){
+        Long orderId = Long.parseLong(simpleEncryptor.decrypt(encryptedOrderId));
+        return userOrderInfoService.requestRefund(orderId);
+    }
 }

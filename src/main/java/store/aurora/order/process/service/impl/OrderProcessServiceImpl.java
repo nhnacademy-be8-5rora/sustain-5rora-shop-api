@@ -197,7 +197,8 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         // Order detail 생성
         for (OrderDetailDTO detailDTO : orderInfo.getOrderDetailDTOList()) {
             Book book = bookService.getBookById(detailDTO.getBookId());
-            Wrap wrap = Objects.nonNull(detailDTO.getWrapId()) ? wrapService.getWrap(detailDTO.getWrapId()) : null;
+            Wrap wrap = Objects.nonNull(detailDTO.getWrapId()) && detailDTO.getWrapId() > 0L
+                    ? wrapService.getWrap(detailDTO.getWrapId()) : null;
 
             OrderDetail detail = OrderDetail.builder()
                     .order(createdOrder)

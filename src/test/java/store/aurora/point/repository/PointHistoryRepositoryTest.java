@@ -11,10 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import store.aurora.book.config.QuerydslConfiguration;
-import store.aurora.point.entity.PointHistory;
-import store.aurora.point.entity.PointPolicy;
-import store.aurora.point.entity.PointPolicyType;
-import store.aurora.point.entity.PointType;
+import store.aurora.point.entity.*;
 import store.aurora.user.entity.User;
 
 import java.math.BigDecimal;
@@ -41,7 +38,7 @@ class PointHistoryRepositoryTest {
         user = new User("user1", "John Doe", LocalDate.of(1990, 1, 1), "010-1234-5678", "test@example.com", false);
         entityManager.persist(user);
 
-        PointPolicy pointPolicy = new PointPolicy(1, "Policy1", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
+        PointPolicy pointPolicy = new PointPolicy(PointPolicyCategory.REVIEW_IMAGE, "Policy1", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
         entityManager.persist(pointPolicy);
 
         PointHistory history1 = new PointHistory(50, PointType.EARNED, user, pointPolicy);

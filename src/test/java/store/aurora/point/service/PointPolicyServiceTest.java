@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.api.extension.ExtendWith;
 import store.aurora.point.entity.PointPolicy;
+import store.aurora.point.entity.PointPolicyCategory;
 import store.aurora.point.entity.PointPolicyType;
 import store.aurora.point.exception.PointPolicyAlreadyExistsException;
 import store.aurora.point.exception.PointPolicyNotFoundException;
@@ -31,13 +32,13 @@ class PointPolicyServiceTest {
 
     // Given
     Integer policyId = 1;
-    PointPolicy policy = new PointPolicy(1, "Policy1", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
+    PointPolicy policy = new PointPolicy(PointPolicyCategory.REVIEW_IMAGE, "Policy1", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
 
     @Test
     @DisplayName("getAllPointPolicies: Should return all point policies")
     void testGetAllPointPolicies() {
         // Given
-        PointPolicy policy2 = new PointPolicy(2, "Policy2", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(5.0));
+        PointPolicy policy2 = new PointPolicy(PointPolicyCategory.REVIEW_IMAGE, "Policy2", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(5.0));
         when(pointPolicyRepository.findAll()).thenReturn(List.of(policy, policy2));
 
         // When
@@ -133,5 +134,21 @@ class PointPolicyServiceTest {
                 .hasMessageContaining(policy.getPointPolicyName());
         verify(pointPolicyRepository, times(1)).existsByPointPolicyName(policy.getPointPolicyName());
         verify(pointPolicyRepository, times(0)).save(policy);
+    }
+
+    @Test
+    @DisplayName("getActivePoliciesByCategory: 카테고리와 상태가 일치하는 모든 정책")
+    void testGetActivePoliciesByCategory() {
+        // Given
+        when(pointPolicyRepository.findByPointPolicyCategoryAndIsActive(policy.getPointPolicyCategory(), true)).thenReturn(List.of(policy));
+
+        // When
+        List<PointPolicy> result = pointPolicyService.getActivePoliciesByCategory(PointPolicyCategory.REVIEW_IMAGE);
+
+        // Then
+        assertThat(result)
+                .hasSize(1)
+                .containsExactly(policy);
+        verify(pointPolicyRepository, times(1)).findByPointPolicyCategoryAndIsActive(policy.getPointPolicyCategory(), true);
     }
 }

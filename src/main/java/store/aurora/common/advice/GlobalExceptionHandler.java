@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import store.aurora.common.dto.ErrorResponseDto;
 import store.aurora.common.dto.ValidationErrorResponse;
 import store.aurora.common.exception.DataAlreadyExistsException;
+import store.aurora.common.exception.DataInsufficientException;
 import store.aurora.common.exception.DataLimitExceededException;
 import store.aurora.common.exception.DataNotFoundException;
 import store.aurora.file.ObjectStorageException;
@@ -33,8 +34,8 @@ public class GlobalExceptionHandler {
         return createResponseEntity(e, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(DataLimitExceededException.class)
-    public ResponseEntity<ErrorResponseDto> handleAlreadyException(DataLimitExceededException e) {
+    @ExceptionHandler({DataLimitExceededException.class, DataInsufficientException.class})
+    public ResponseEntity<ErrorResponseDto> handleAlreadyException(RuntimeException e) {
         return createResponseEntity(e, HttpStatus.BAD_REQUEST);
     }
 

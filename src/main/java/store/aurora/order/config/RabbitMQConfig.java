@@ -10,17 +10,16 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    private static final String SHIPPING_QUEUE = "shippingQueue";
-    private static final String DLX_QUEUE = "dlxQueue";
-    private static final String DLX_EXCHANGE = "dlxExchange";
+    public static final String SHIPPING_QUEUE = "shippingQueue";
+    public static final String DLX_QUEUE = "dlxQueue";
+    public static final String DLX_EXCHANGE = "dlxExchange";
 
     private static final Long ONE_DAY = 86400000L;
 
-    // todo 실제 배포 환경에선 durable을 true로 설정해야함
     @Bean
     public Queue shippingQueue(){
         return QueueBuilder.durable(SHIPPING_QUEUE)
-                .withArgument("x-message-ttl", 60000)
+                .withArgument("x-message-ttl", 6000)
                 .withArgument("x-dead-letter-exchange", DLX_EXCHANGE)
                 .build();
     }
@@ -39,7 +38,7 @@ public class RabbitMQConfig {
     public Binding dlxBinding(){
         return BindingBuilder.bind(dlxQueue())
                 .to(dlxExchange())
-                .with("#");
+                .with(SHIPPING_QUEUE);
     }
 
     @Bean

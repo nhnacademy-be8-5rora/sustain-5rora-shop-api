@@ -29,6 +29,12 @@ spring:
     username: elastic
     password: nhnacademy123!
 
+  rabbitmq:
+    host: 133.186.241.167
+    port: 5672
+    username: admin
+    password: nhnacademy123!
+
 #  h2:
 #    console:
 #      enabled: true

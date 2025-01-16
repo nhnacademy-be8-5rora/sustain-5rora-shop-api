@@ -4,8 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.order.admin.dto.AdminOrderDTO;
@@ -14,9 +12,7 @@ import store.aurora.order.admin.service.AdminDeliveryService;
 import store.aurora.order.admin.service.DeliveryStatusChanger;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.OrderDetail;
-import store.aurora.order.entity.Shipment;
 import store.aurora.order.entity.enums.OrderState;
-import store.aurora.order.entity.enums.ShipmentState;
 import store.aurora.order.service.OrderService;
 import store.aurora.order.service.ShipmentService;
 

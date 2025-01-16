@@ -11,7 +11,7 @@ import store.aurora.coupon.dto.ProductInfoDTO;
 import java.util.List;
 import java.util.Map;
 
-@FeignClient(name = "couponClient", url = "${api.gateway.base-url}" + "/api/coupon/shop")
+@FeignClient(name = "couponClient", url = "${api.gateway.base-url}/api/coupon/shop")
 public interface CouponClient {
 
     //환불시에 refund controller 작동(if문으로 해당 refund 상품하는 결제 내역에 쿠폰이 있다면 작동하게끔)

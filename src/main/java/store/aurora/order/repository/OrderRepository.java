@@ -11,6 +11,7 @@ import store.aurora.order.dto.OrderInfo;
 import store.aurora.order.dto.OrderRelatedInfoWithAuth;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.OrderDetail;
+import store.aurora.order.entity.enums.OrderState;
 import store.aurora.user.entity.User;
 
 import java.util.List;
@@ -39,6 +40,26 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                     "    where user_id = :userId",
             nativeQuery = true)
     Page<OrderInfo> findOrderInfosByUserId(@Param("userId")String userId, Pageable pageable);
+
+    @Query(value = "select o.id as orderId," +
+            "       o.total_amount as totalAmount," +
+            "       o.state as orderState," +
+            "       o.order_time as orderTime," +
+            "       group_concat(b.title) as orderContent" +
+            "    from orders o" +
+            "        left join order_details od on o.id = od.order_id" +
+            "        left join books b on od.book_id = b.id" +
+            "        where o.state = :state" +
+            "        group by o.id, o.total_amount, o.state, o.order_time" +
+            "    order by o.order_time desc" +
+            "    limit :#{#pageable.pageSize}" +
+            "    offset :#{#pageable.offset}",
+
+            countQuery = "select count(o.id)" +
+                    "    from orders o" +
+                    "    where o.state = :state",
+            nativeQuery = true)
+    Page<OrderInfo> findOrderInfosByOrderState(@Param("state")int stateOrdinal, Pageable pageable);
 
     @Query(value = "select new store.aurora.order.dto.OrderRelatedInfoWithAuth(" +
             "o.id, o.preferredDeliveryDate, o.deliveryFee, o.orderTime, o.totalAmount, " +

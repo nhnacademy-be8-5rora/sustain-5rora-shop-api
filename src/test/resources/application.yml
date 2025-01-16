@@ -55,3 +55,7 @@ aladin:
   api:
     base-url: https://www.aladin.co.kr/ttb/api
     ttb-key: ttbrkdtkscjs10916001
+
+api:
+  gateway:
+    base-url: localhost:8180

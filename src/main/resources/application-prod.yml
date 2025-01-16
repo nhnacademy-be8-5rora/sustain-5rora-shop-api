@@ -30,3 +30,7 @@ spring:
       database: 1
       username:
       password: na
+
+api:
+  gateway:
+    base-url: localhost:9180

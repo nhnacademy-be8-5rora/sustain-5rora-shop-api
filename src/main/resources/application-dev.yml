@@ -12,6 +12,7 @@ spring:
 #    password: 3489
 #    driver-class-name: com.mysql.cj.jdbc.Driver
 
+
     dbcp2:
       initial-size: 5                  # 초기 커넥션 수
       max-total: 20                    # 최대 커넥션 수
@@ -41,3 +42,7 @@ spring:
       database: 0
       username:
       password:
+
+api:
+  gateway:
+    base-url: localhost:8180

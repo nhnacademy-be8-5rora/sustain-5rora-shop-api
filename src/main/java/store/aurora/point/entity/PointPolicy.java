@@ -16,7 +16,13 @@ import java.math.BigDecimal;
 @Getter
 public class PointPolicy {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PointPolicyCategory pointPolicyCategory;
 
     @NotBlank
     @Size(max = 50)
@@ -38,8 +44,8 @@ public class PointPolicy {
     @Column(nullable = false)
     private Boolean isActive = true;
 
-    public PointPolicy(Integer id, String pointPolicyName, PointPolicyType pointPolicyType, BigDecimal pointPolicyValue) {
-        this.id = id;
+    public PointPolicy(PointPolicyCategory pointPolicyCategory, String pointPolicyName, PointPolicyType pointPolicyType, BigDecimal pointPolicyValue) {
+        this.pointPolicyCategory = pointPolicyCategory;
         this.pointPolicyName = pointPolicyName;
         this.pointPolicyType = pointPolicyType;
         this.pointPolicyValue = pointPolicyValue;

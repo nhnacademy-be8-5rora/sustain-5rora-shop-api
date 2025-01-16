@@ -8,14 +8,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.entity.Book;
+import store.aurora.coupon.feignclient.CouponClient;
 import store.aurora.order.dto.*;
-import store.aurora.order.entity.OrderDetail;
-import store.aurora.order.entity.Wrap;
+import store.aurora.order.entity.*;
 import store.aurora.order.entity.enums.OrderState;
+import store.aurora.order.entity.enums.PaymentState;
+import store.aurora.order.entity.enums.ShipmentState;
 import store.aurora.order.exception.exception404.OrderNotFoundException;
 import store.aurora.order.repository.OrderRepository;
+import store.aurora.order.repository.PaymentRepository;
 import store.aurora.order.service.UserOrderInfoService;
+import store.aurora.point.entity.PointHistory;
+import store.aurora.point.entity.PointType;
+import store.aurora.point.repository.PointHistoryRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -26,6 +33,9 @@ import java.util.Optional;
 public class UserOrderInfoServiceImpl implements UserOrderInfoService {
 
     private final OrderRepository orderRepository;
+    private final PointHistoryRepository pointHistoryRepository;
+    private final PaymentRepository paymentRepository;
+    private final CouponClient couponClient;
 
     private static final Logger log = LoggerFactory.getLogger("user-logger");
 
@@ -80,6 +90,129 @@ public class UserOrderInfoServiceImpl implements UserOrderInfoService {
 
         return orderWithOrderDetails;
     }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Boolean isOwner(Long orderId, String userId, String password) {
+        Optional<Order> optionalOrder = orderRepository.findOrderWithUserByOrderId(orderId);
+        if(optionalOrder.isEmpty() || (userId == null && password == null)){
+            return false;
+        }
+
+        Order order = optionalOrder.get();
+        //비회원
+        if(order.getUser() == null){
+            return order.getPassword().equals(password);
+        }
+
+        //회원
+        else{
+            return order.getUser().getId().equals(userId);
+        }
+    }
+
+    @Transactional
+    @Override
+    public Long cancelOrder(Long orderId) {
+        //1. 주문의 상태 바꾸기
+        Order order = orderRepository.findOrderByOrderIdWithShipmentInformationAndPaymentsAndUser(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+        order.setState(OrderState.CANCELLED);
+
+        //2. 주문 상세의 상태 바꾸기
+        order.getOrderDetails().forEach(od -> od.setState(OrderState.CANCELLED));
+
+        //3. 배송의 상태 바꾸기
+        order.getOrderDetails().getFirst().getShipment().setState(ShipmentState.CANCELLED);
+
+        //4. 결제 내역 가져와서 결제된 만큼을 결제내역에 추가
+        int paidAmount = order.getPayments().stream().filter(od -> od.getAmount() > 0 ).findFirst().orElseThrow().getAmount();
+        Payment payment = Payment.builder()
+                .amount(-1 * paidAmount)
+                .paymentDatetime(LocalDateTime.now())
+                .status(PaymentState.COMPLETED)
+                .order(order)
+                .paymentKey(null)
+                .build();
+        paymentRepository.save(payment);
+
+        //5. 포인트로 환불
+        PointHistory pointHistory = new PointHistory(paidAmount, PointType.EARNED, order.getUser());
+        pointHistoryRepository.save(pointHistory);
+
+        return order.getId();
+    }
+
+    @Transactional
+    @Override
+    public Long requestRefund(Long orderId) {
+
+        //주문 상태 변경
+        Order order = orderRepository.findOrderByOrderIdWithShipmentInformationAndPaymentsAndUser(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+        order.setState(OrderState.REFUND_PENDING);
+
+        //주문 상세 상태 변경
+        order.getOrderDetails().forEach(od -> od.setState(OrderState.REFUND_PENDING));
+
+        return order.getId();
+    }
+
+
+    @Transactional
+    @Override
+    public Long resolveRefund(Long orderId) {
+
+        //주문 상태 변경
+        Order order = orderRepository.findOrderByOrderIdWithShipmentInformationAndPaymentsAndUser(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+        order.setState(OrderState.REFUNDED);
+
+        //주문 상세 상태 변경
+        order.getOrderDetails().forEach(od -> od.setState(OrderState.REFUNDED));
+
+        // 결제 내역 가져와서 결제된 만큼을 결제내역에 추가
+        int paidAmount = order.getPayments().stream().filter(od -> od.getAmount() > 0 ).findFirst().orElseThrow().getAmount();
+        Payment payment = Payment.builder()
+                .amount(-1 * paidAmount)
+                .paymentDatetime(LocalDateTime.now())
+                .status(PaymentState.COMPLETED)
+                .order(order)
+                .paymentKey(null)
+                .build();
+        paymentRepository.save(payment);
+
+        //포인트로 환불
+        PointHistory pointHistory = new PointHistory(paidAmount, PointType.EARNED, order.getUser());
+        pointHistoryRepository.save(pointHistory);
+
+        //해당 주문에서 사용된 쿠폰 반환
+        List<OrderDetail> orderDetails = orderRepository.findOrderDetailByOrderId(orderId);
+
+        List<Long> couponIds = orderDetails.stream()
+                .map(OrderDetail::getCouponId)  // OrderDetail에서 couponId를 추출
+                .toList();  // List<Long>으로 수집
+
+        couponClient.refund(couponIds); //used 된 사용자 쿠폰 -> Live 상태로 변경
+
+        return order.getId();
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Page<OrderInfoDto> getOrderInfosByState(OrderState orderState, Pageable pageable) {
+        return orderRepository.findOrderInfosByOrderState(orderState.ordinal(), pageable)
+                .map(oi ->
+                    new OrderInfoDto(
+                        oi.getOrderId(),
+                        oi.getTotalAmount(),
+                        OrderState.fromOrdinal(oi.getOrderState()),
+                        oi.getOrderTime(),
+                        oi.getOrderContent()
+                    )
+                );
+    }
+
 
     private Boolean isValid(OrderRelatedInfoWithAuth orderRelatedInfoWithAuth, String userId, String password){
         if(userId == null && password != null){

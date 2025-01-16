@@ -2,10 +2,8 @@ package store.aurora.user.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import store.aurora.user.entity.Rank;
-import store.aurora.user.entity.UserRank;
 import store.aurora.user.entity.UserRankHistory;
 
 import java.util.List;
@@ -25,4 +23,5 @@ public interface UserRankHistoryRepository extends JpaRepository<UserRankHistory
             "ORDER BY urh.changedAt DESC")
     Optional<Rank> findLatestRankNameByUserId(String userId);
 
+    Optional<UserRankHistory> findTopByUserIdOrderByChangedAtDesc(String userId);
 }

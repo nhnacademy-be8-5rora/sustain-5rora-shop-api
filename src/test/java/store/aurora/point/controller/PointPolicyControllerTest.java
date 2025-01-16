@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import store.aurora.point.entity.PointPolicy;
+import store.aurora.point.entity.PointPolicyCategory;
 import store.aurora.point.entity.PointPolicyType;
 import store.aurora.point.service.PointPolicyService;
 
@@ -41,8 +42,8 @@ class PointPolicyControllerTest {
     @DisplayName("GET /api/points/policies - Should return all point policies")
     void testGetAllPointPolicies() throws Exception {
         // Given
-        PointPolicy policy1 = new PointPolicy(1, "Policy1", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
-        PointPolicy policy2 = new PointPolicy(2, "Policy2", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(5.0));
+        PointPolicy policy1 = new PointPolicy(PointPolicyCategory.REVIEW_IMAGE, "Policy1", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
+        PointPolicy policy2 = new PointPolicy(PointPolicyCategory.REVIEW_IMAGE, "Policy2", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(5.0));
         when(pointPolicyService.getAllPointPolicies()).thenReturn(List.of(policy1, policy2));
 
         // When / Then
@@ -87,9 +88,9 @@ class PointPolicyControllerTest {
     @DisplayName("POST /api/points/policies - Should create a new point policy")
     void testCreatePointPolicy() throws Exception {
         // Given
-        PointPolicy policy = new PointPolicy(1, "Policy1", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
+        PointPolicy policy = new PointPolicy(PointPolicyCategory.REVIEW_IMAGE, "Policy1", PointPolicyType.PERCENTAGE, BigDecimal.valueOf(10.0));
         when(pointPolicyService.createPointPolicy(any(PointPolicy.class))).thenReturn(policy);
-        String requestBody = "{\"pointPolicyId\":\"1\",\"pointPolicyName\":\"Policy1\",\"pointPolicyType\":\"PERCENTAGE\",\"pointPolicyValue\":10.0}";
+        String requestBody = "{\"pointPolicyCategory\":\"SIGNUP\",\"pointPolicyName\":\"Policy1\",\"pointPolicyType\":\"PERCENTAGE\",\"pointPolicyValue\":10.0}";
 
         // When / Then
         mockMvc.perform(post("/api/points/policies")

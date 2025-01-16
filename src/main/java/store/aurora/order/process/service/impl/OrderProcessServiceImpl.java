@@ -1,7 +1,6 @@
 package store.aurora.order.process.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.entity.Book;
@@ -15,6 +14,8 @@ import store.aurora.order.process.service.DeliveryFeeService;
 import store.aurora.order.process.service.OrderInfoService;
 import store.aurora.order.service.*;
 import store.aurora.order.process.service.OrderProcessService;
+import store.aurora.point.exception.PointInsufficientException;
+import store.aurora.point.service.PointSpendService;
 import store.aurora.user.service.UserService;
 
 import java.time.LocalDateTime;
@@ -22,7 +23,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-@Slf4j
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -37,6 +40,9 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     private final OrderInfoService orderInfoService;
     private final UserService userService;
     private final PaymentService paymentService;
+    private final PointSpendService pointSpendService;
+
+    private static final Logger LOG = LoggerFactory.getLogger("user-logger");
 
     @Override
     public String getOrderUuid(){
@@ -121,7 +127,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     }
 
     // todo-3 장바구니 물품 주문한 경우, 주문한 책 장바구니에서 지우는 로직 추가
-    public void userOrderProcess(String redisOrderId, String paymentKey, int amount){
+    public Order userOrderProcess(String redisOrderId, String paymentKey, int amount){
         OrderRequestDto orderInfo = orderInfoService.getOrderInfoFromRedis(redisOrderId);
 
         int deliveryFee = deliveryFeeService.getDeliveryFee(amount);
@@ -129,7 +135,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         Order newOrder = Order.builder()
                 .deliveryFee(deliveryFee)
                 .orderTime(LocalDateTime.now())
-                .totalAmount(amount - deliveryFee + orderInfo.getUsedPoint())
+                .totalAmount(amount - deliveryFee)
                 .pointAmount(orderInfo.getUsedPoint())
                 .state(OrderState.PENDING)
                 .name(orderInfo.getOrdererName())
@@ -139,7 +145,18 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .user(userService.getUser(orderInfo.getUsername()))
                 .build();
 
-        saveInformationWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
+        if(orderInfo.getUsedPoint() > 0) {
+            try {
+                pointSpendService.spendPoints(orderInfo.getUsername(), orderInfo.getUsedPoint());
+            } catch (PointInsufficientException e) {
+                throw e;
+            } catch (Exception e) {
+                LOG.error("{} 유저의 포인트 {} 사용 처리 실패", orderInfo.getUsername(), orderInfo.getUsedPoint(), e);
+            }
+        }
+
+
+        return saveInformationWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
     }
 
     // todo: 비밀번호 passwordEncoder 적용
@@ -153,7 +170,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .deliveryFee(deliveryFee)
                 .orderTime(LocalDateTime.now())
 
-                .totalAmount(amount - deliveryFee + orderInfo.getUsedPoint())
+                .totalAmount(amount - deliveryFee)
                 .pointAmount(orderInfo.getUsedPoint())
 
                 .state(OrderState.PENDING)
@@ -170,7 +187,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     }
 
     // todo: 0원 결제 처리 로직 작성
-    private void saveInformationWhenOrderComplete(Order order, String paymentKey, int amount, OrderRequestDto orderInfo){
+    private Order saveInformationWhenOrderComplete(Order order, String paymentKey, int amount, OrderRequestDto orderInfo){
         Order createdOrder = orderService.createOrder(order);
 
         // 배송 정보 생성
@@ -219,5 +236,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .build();
 
         paymentService.createPayment(payment);
+
+        return createdOrder;
     }
 }

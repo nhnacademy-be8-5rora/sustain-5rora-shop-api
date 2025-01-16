@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import store.aurora.point.dto.PointHistoryResponse;
 import store.aurora.point.entity.PointType;
 import store.aurora.point.service.PointHistoryService;
+import store.aurora.point.service.PointSpendService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -33,6 +34,9 @@ class PointHistoryControllerTest {
 
     @Mock
     private PointHistoryService pointHistoryService;
+
+    @Mock
+    private PointSpendService pointSpendService;
 
     @BeforeEach
     void setUp() {
@@ -78,5 +82,23 @@ class PointHistoryControllerTest {
                 .andExpect(jsonPath("$.content[1].pointAmount").value(-20));
 
         verify(pointHistoryService, times(1)).getPointHistoryByUser(userId, 0, 10);
+    }
+
+    @Test
+    @DisplayName("GET /api/points/history/available - Should return available points for a user")
+    void testGetAvailablePoints() throws Exception {
+        // Given
+        String userId = "user1";
+        int availablePoints = 100;
+
+        when(pointSpendService.getAvailablePointsByUser(userId)).thenReturn(availablePoints);
+
+        // When / Then
+        mockMvc.perform(get("/api/points/history/available")
+                        .header("X-USER-ID", userId))
+                .andExpect(status().isOk())
+                .andExpect(content().string("100"));
+
+        verify(pointSpendService, times(1)).getAvailablePointsByUser(userId);
     }
 }

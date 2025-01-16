@@ -51,4 +51,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query(value = "select od from OrderDetail od left join fetch od.order left join fetch od.book left join fetch od.shipment left join fetch od.wrap where od.order.id = :orderId order by od.id")
     List<OrderDetail> findOrderDetailByOrderId(@Param("orderId") Long orderId);
+
+    @Query(value = "select o from Order o left join fetch o.user where o.id = :orderId")
+    Optional<Order> findOrderWithUserByOrderId(Long orderId);
+
+    @Query(value = "select o from Order o join fetch o.shipmentInformation join fetch o.payments join fetch o.user where o.id = :orderId")
+    Optional<Order> findOrderByOrderIdWithShipmentInformationAndPaymentsAndUser(Long orderId);
 }

@@ -6,10 +6,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import store.aurora.point.entity.PointPolicyCategory;
+import store.aurora.point.service.PointHistoryService;
 import store.aurora.user.dto.SignUpRequest;
 import store.aurora.user.dto.UserDetailResponseDto;
 import store.aurora.user.dto.UserInfoResponseDto;
@@ -21,14 +22,18 @@ import store.aurora.user.service.UserService;
 import java.util.Map;
 import java.util.Random;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-    @Autowired
     private final UserService userService;
-    @Autowired
     private final DoorayMessengerService doorayMessengerService;
+    private final PointHistoryService pointHistoryService;
+
+    private static final Logger LOG = LoggerFactory.getLogger("user-logger");
 
     @GetMapping("/auth/details")
     public ResponseEntity<UserDetailResponseDto> getUserDetail(@RequestHeader("UserId") String userId) {
@@ -65,11 +70,15 @@ public class UserController {
     @PostMapping
     public ResponseEntity<Map<String, String>> signUp(@RequestBody @Valid SignUpRequest request,
                                                       @RequestParam boolean isOauth) {
-        if (isOauth) {
-            userService.registerOauthUser(request);
-        } else {
-            userService.registerUser(request);
+        User savedUser = isOauth ? userService.registerOauthUser(request) : userService.registerUser(request);
+
+        try {
+            pointHistoryService.earnPoint(PointPolicyCategory.SIGNUP, savedUser);
+        } catch (Exception e) {
+            LOG.error("Failed to earn points: category=signup, userId={}", savedUser.getId(), e);
+            // todo 혜원 : 포인트 에러 던져서 처리
         }
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Map.of("message", "회원가입이 완료되었습니다."));
     }

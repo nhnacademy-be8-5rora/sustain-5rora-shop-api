@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
 
     // 회원가입
     @Override
-    public void registerUser(SignUpRequest request) {
+    public User registerUser(SignUpRequest request) {
         // 인증 상태 확인
 //        String verificationStatus = (String) redisTemplate.opsForValue().get(request.getPhoneNumber() + "_verified");
 //        if (verificationStatus == null || !verificationStatus.equals("true")) {
@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
         user.setSignUpDate(LocalDate.now());
         user.setIsOauth(false);
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
         // 회원등급 저장
         UserRank userRank = userRankRepository.findByRankName(Rank.GENERAL);
@@ -99,10 +99,12 @@ public class UserServiceImpl implements UserService {
 
         // 인증 상태 삭제
         redisTemplate.delete(request.getPhoneNumber() + "_verified");
+
+        return savedUser;
     }
 
     @Override
-    public void registerOauthUser(SignUpRequest request) {
+    public User registerOauthUser(SignUpRequest request) {
         User user = new User();
         user.setId(request.getId());
         user.setName(request.getName());
@@ -114,7 +116,7 @@ public class UserServiceImpl implements UserService {
         user.setSignUpDate(LocalDate.now());
         user.setIsOauth(true);
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
         // 회원등급 저장
         UserRank userRank = userRankRepository.findByRankName(Rank.GENERAL);
@@ -139,6 +141,8 @@ public class UserServiceImpl implements UserService {
         userRole.setUser(user);
 
         userRoleRepository.save(userRole);
+
+        return savedUser;
     }
 
     // 회원탈퇴

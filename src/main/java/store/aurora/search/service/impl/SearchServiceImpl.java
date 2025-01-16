@@ -34,7 +34,9 @@ public class SearchServiceImpl implements SearchService {
 
         // EntityDTO를 가져오는 메소드 호출
         Page<BookSearchEntityDTO> bookSearchEntityDTOPage = bookRepository.findBooksByTitleWithDetails(title, pageable);
-
+        if (bookSearchEntityDTOPage.isEmpty()) {
+            return Page.empty(pageable); // 결과가 없으면 빈 페이지 반환
+        }
         // BookSearchEntityDTO -> BookSearchResponseDTO로 변환
         Page<BookSearchResponseDTO> bookSearchResponseDTOPage = bookSearchEntityDTOPage.map(BookSearchResponseDTO::new);
 
@@ -67,6 +69,11 @@ public class SearchServiceImpl implements SearchService {
         // Author name으로 책을 검색한 결과를 가져옵니다.
         Page<BookSearchEntityDTO> bookSearchEntityDTOPage = bookRepository.findBooksByAuthorNameWithDetails(name, pageable);
 
+        if (bookSearchEntityDTOPage.isEmpty()) {
+            return Page.empty(pageable); // 결과가 없으면 빈 페이지 반환
+        }
+
+
         // BookSearchEntityDTO -> BookSearchResponseDTO로 변환
         Page<BookSearchResponseDTO> bookSearchResponseDTOPage = bookSearchEntityDTOPage.map(BookSearchResponseDTO::new);
 
@@ -97,7 +104,9 @@ public class SearchServiceImpl implements SearchService {
         }
 
         Page<BookSearchEntityDTO> bookSearchEntityDTOPage = bookRepository.findBooksByCategoryWithDetails(categoryId, pageable);
-
+        if (bookSearchEntityDTOPage.isEmpty()) {
+            return Page.empty(pageable); // 결과가 없으면 빈 페이지 반환
+        }
         // BookSearchEntityDTO -> BookSearchResponseDTO로 변환
         Page<BookSearchResponseDTO> bookSearchResponseDTOPage = bookSearchEntityDTOPage.map(BookSearchResponseDTO::new);
 

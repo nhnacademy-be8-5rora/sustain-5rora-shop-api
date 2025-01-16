@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 @Import(QuerydslConfiguration.class)
 @DataJpaTest
@@ -43,7 +42,6 @@ class CartItemRepositoryTest {
 
     private Cart cart;
     private Book book;
-    private CartItem cartItem;
 
     @BeforeEach
     void setUp() {
@@ -70,7 +68,7 @@ class CartItemRepositoryTest {
         book.setExplanation("Test Explanation");
         bookRepository.save(book);
 
-        cartItem = new CartItem(cart, book);
+        CartItem cartItem = new CartItem(cart, book);
         cartItemRepository.save(cartItem);
     }
 
@@ -79,8 +77,8 @@ class CartItemRepositoryTest {
         List<CartItem> cartItems = cartItemRepository.findByCartId(cart.getId());
 
         assertThat(cartItems).hasSize(1);
-        assertThat(cartItems.get(0).getCart()).isEqualTo(cart);
-        assertThat(cartItems.get(0).getBook()).isEqualTo(book);
+        assertThat(cartItems.getFirst().getCart()).isEqualTo(cart);
+        assertThat(cartItems.getFirst().getBook()).isEqualTo(book);
     }
 
     @Test

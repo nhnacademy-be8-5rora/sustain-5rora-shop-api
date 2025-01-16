@@ -6,11 +6,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.BookInfoDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.service.BookService;
+import store.aurora.cart.dto.CachedCart;
 import store.aurora.cart.dto.CartDTO;
 import store.aurora.cart.dto.CartItemDTO;
 import store.aurora.cart.entity.Cart;
@@ -41,38 +43,47 @@ public class CartServiceImpl implements CartService {
     private final UserService userService;
     private final BookService bookService;
 
+    private static final String CART_CACHE_KEY = "cart:"; // 엄밀히는 캐시 용도로 레디스를 쓰고 있지는 않음
+    private final RedisTemplate<String, Object> redisTemplate;
+
     private static final Logger LOG = LoggerFactory.getLogger("user-logger");
 
-    public CartServiceImpl(CartRepository cartRepository, CartItemRepository cartItemRepository, UserService userService, BookService bookService) {
+    public CartServiceImpl(CartRepository cartRepository, CartItemRepository cartItemRepository, UserService userService, BookService bookService, RedisTemplate<String, Object> redisTemplate) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
         this.userService = userService;
         this.bookService = bookService;
-    }
-
-    private Cart getUserCart(String userId) {
-        return cartRepository.findByUserId(userId)
-                .orElseGet(() -> createUserCart(userId));
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
     @Transactional
     public Map<String, Object> getUserCartWithTotalPrice(String userId) {
-        Cart cart = getUserCart(userId);
+        String cacheKey = CART_CACHE_KEY + userId;
+        CachedCart cachedCart = (CachedCart) redisTemplate.opsForValue().get(cacheKey);
 
-        List<CartDTO> cartItems = cartItemRepository.findByCartId(cart.getId()).stream()
+        if (cachedCart == null) {
+            Cart cart = cartRepository.findByUserId(userId)
+                    .orElseGet(() -> createUserCart(userId));
+
+            // Cart를 CachedCart로 변환하여 Redis에 저장
+            cachedCart = toCachedCart(cart);
+            redisTemplate.opsForValue().set(cacheKey, cachedCart);
+        }
+
+        List<CartDTO> cartItems = cachedCart.getCartItems().stream()
                 .map(cartItem -> new CartDTO(
-                        cartItem.getBook().getId(),
+                        cartItem.getBookId(),
                         cartItem.getQuantity()
                 )).toList();
 
-        return getBookInfo(cartItems);
+        return getBookInfo(cartItems); // todo 혜원 book 은 별도로 레디스에 저장
     }
 
     @Override
     @Transactional
     public void addItemToCart(String userId, Long bookId, int quantity) {
-        Cart cart = getUserCart(userId);
+        Cart cart = getUserCart(userId); // cartId, bookId
 
         Optional<CartItem> cartItemOptional = cartItemRepository.findByCartAndBookId(cart, bookId);
         if(cartItemOptional.isEmpty()) {
@@ -81,6 +92,8 @@ public class CartServiceImpl implements CartService {
             CartItem cartItem = cartItemOptional.get();
             cartItem.setQuantity(quantity);
         }
+
+        redisTemplate.opsForValue().set(CART_CACHE_KEY + userId, toCachedCart(cart));
     }
 
     @Override
@@ -99,6 +112,7 @@ public class CartServiceImpl implements CartService {
         }
 
         cart.getCartItems().remove(itemToRemove.get());
+        redisTemplate.opsForValue().set(CART_CACHE_KEY + userId, toCachedCart(cart));
         LOG.info("Cart item deleted successfully: userId={}, bookId={}", userId, bookId);
     }
 
@@ -113,6 +127,21 @@ public class CartServiceImpl implements CartService {
         CartItem cartItem = new CartItem(cart, book);
         cartItem.setQuantity(quantity);
         cartItemRepository.save(cartItem);
+    }
+
+    private CachedCart toCachedCart(Cart cart) {
+        List<CartItemDTO> cartItems = cart.getCartItems().stream()
+                .map(cartItem -> new CartItemDTO(
+                        cartItem.getBook().getId(),
+                        cartItem.getQuantity()
+                ))
+                .toList();
+        return new CachedCart(cartItems);
+    }
+
+    private Cart getUserCart(String userId) {
+        return cartRepository.findByUserId(userId)
+                .orElseGet(() -> createUserCart(userId));
     }
 
     //////////////////////// 비인증자 //////////////////////////////

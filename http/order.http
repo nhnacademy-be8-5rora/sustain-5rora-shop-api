@@ -22,3 +22,12 @@ GET localhost:8280/api/order/verify?order-id=L9wgkBIV39hcmj-URGZs_w==&user-id=A8
 
 ### 주문 취소
 POST localhost:8280/api/order/cancel?order-id=Jm2CEpjNxXwJpozehBvEwQ==
+
+### 환불 요청
+POST localhost:8280/api/order/refund?order-id=_mAzgcBNoT78ztkEiYscsA==
+
+### 환불요청 목록 확인
+GET localhost:8280/api/admin/order/orders?state=REFUND_PENDING
+
+### 환불 수락
+POST localhost:8280/api/admin/order/orders/_mAzgcBNoT78ztkEiYscsA==/refund

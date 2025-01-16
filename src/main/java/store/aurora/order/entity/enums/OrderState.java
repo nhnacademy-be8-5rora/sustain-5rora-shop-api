@@ -20,4 +20,13 @@ public enum OrderState {
         }
         throw new OrderStateConvertFailException("Invalid ordinal for OrderState: " + ordinal);
     }
+
+    public static OrderState fromString(String name){
+        for (OrderState state : values()){
+            if (state.name().equals(name)){
+                return state;
+            }
+        }
+        throw new OrderStateConvertFailException("Invalid name for OrderState: " + name);
+    }
 }

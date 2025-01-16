@@ -135,4 +135,20 @@ class PointPolicyServiceTest {
         verify(pointPolicyRepository, times(1)).existsByPointPolicyName(policy.getPointPolicyName());
         verify(pointPolicyRepository, times(0)).save(policy);
     }
+
+    @Test
+    @DisplayName("getActivePoliciesByCategory: 카테고리와 상태가 일치하는 모든 정책")
+    void testGetActivePoliciesByCategory() {
+        // Given
+        when(pointPolicyRepository.findByPointPolicyCategoryAndIsActive(policy.getPointPolicyCategory(), true)).thenReturn(List.of(policy));
+
+        // When
+        List<PointPolicy> result = pointPolicyService.getActivePoliciesByCategory(PointPolicyCategory.REVIEW_IMAGE);
+
+        // Then
+        assertThat(result)
+                .hasSize(1)
+                .containsExactly(policy);
+        verify(pointPolicyRepository, times(1)).findByPointPolicyCategoryAndIsActive(policy.getPointPolicyCategory(), true);
+    }
 }

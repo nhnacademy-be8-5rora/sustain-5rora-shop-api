@@ -3,16 +3,18 @@ package store.aurora.order.config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import store.aurora.order.admin.service.DeliveryStatusChanger;
 
 @Component
 @RequiredArgsConstructor
 public class ShippingStatusListener {
 
-    private final DeliveryStatusChanger orderService;
+    private final DeliveryStatusChanger deliveryStatusChanger;
 
-    @RabbitListener(queues = RabbitMQConfig.SHIPPING_QUEUE)
+    @RabbitListener(queues = "dlxQueue")
+    @Transactional
     public void receiveMessage(Long orderId){
-        orderService.updateOrderStatusToShipping(orderId);
+        deliveryStatusChanger.completeOrder(orderId);
     }
 }

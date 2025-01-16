@@ -77,8 +77,6 @@ public class AdminDeliveryServiceImpl implements AdminDeliveryService {
     @Override
     @Transactional
     public void updateShipmentStatusOfOrder(Long orderId, String shipmentStatus){
-//        Order order = orderService.getOrder(orderId);
-
         if (shipmentStatus.equals("SHIPPING")) {
             deliveryStatusChanger.updateOrderStatusToShipping(orderId);
         } else if (shipmentStatus.equals("PENDING")) {

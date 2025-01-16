@@ -145,13 +145,16 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .user(userService.getUser(orderInfo.getUsername()))
                 .build();
 
-        try {
-            pointSpendService.spendPoints(orderInfo.getUsername(), orderInfo.getUsedPoint());
-        } catch (PointInsufficientException e) {
-            throw e;
-        } catch (Exception e) {
-            LOG.error("{} 유저의 포인트 {} 사용 처리 실패", orderInfo.getUsername(), orderInfo.getUsedPoint(), e);
+        if(orderInfo.getUsedPoint() > 0) {
+            try {
+                pointSpendService.spendPoints(orderInfo.getUsername(), orderInfo.getUsedPoint());
+            } catch (PointInsufficientException e) {
+                throw e;
+            } catch (Exception e) {
+                LOG.error("{} 유저의 포인트 {} 사용 처리 실패", orderInfo.getUsername(), orderInfo.getUsedPoint(), e);
+            }
         }
+
 
         return saveInformationWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
     }

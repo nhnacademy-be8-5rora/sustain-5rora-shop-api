@@ -9,11 +9,16 @@ import store.aurora.point.repository.PointHistoryRepository;
 import store.aurora.user.entity.User;
 import store.aurora.user.service.UserService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 @RequiredArgsConstructor
 public class PointSpendService {
     private final UserService userService;
     private final PointHistoryRepository pointHistoryRepository;
+
+    private static final Logger LOG = LoggerFactory.getLogger("user-logger");
 
     public Integer getAvailablePointsByUser(String userId) {
         return pointHistoryRepository.findByUserId(userId).stream()
@@ -32,5 +37,7 @@ public class PointSpendService {
         pointHistoryRepository.save(
                 new PointHistory(-pointAmount, PointType.USED, user)
         );
+
+        LOG.info("Points use successfully: userId={}, points={}", userId, pointAmount);
     }
 }

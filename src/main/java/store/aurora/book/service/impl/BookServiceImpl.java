@@ -163,6 +163,8 @@ public class BookServiceImpl implements BookService {
                 .orElseThrow(() -> new NotFoundBookException(bookId));
         book.setActive(isActive); // 활성/비활성 상태 설정
         bookRepository.save(book);
+
+        elasticSearchService.saveBook(book);
     }
 
     @Override

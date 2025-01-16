@@ -2,9 +2,9 @@ package store.aurora.cart.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import store.aurora.user.entity.User;
 
 import java.util.ArrayList;
@@ -12,7 +12,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "carts")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Cart {
 
@@ -31,13 +31,13 @@ public class Cart {
         this.user = user;
     }
 
-    public void addCartItem(CartItem cartItem) {
-        cartItems.add(cartItem);
-//        cartItem.setCart(this);
-    }
-
-    public void removeCartItem(CartItem cartItem) {
-        cartItems.remove(cartItem);
-//        cartItem.setCart(null);
-    }
+//    public void addCartItem(CartItem cartItem) {
+//        cartItems.add(cartItem);
+////        cartItem.setCart(this);
+//    }
+//
+//    public void removeCartItem(CartItem cartItem) {
+//        cartItems.remove(cartItem);
+////        cartItem.setCart(null);
+//    }
 }

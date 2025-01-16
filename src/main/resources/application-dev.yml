@@ -43,3 +43,7 @@ spring:
       database: 0
       username:
       password:
+
+api:
+  gateway:
+    base-url: localhost:8180

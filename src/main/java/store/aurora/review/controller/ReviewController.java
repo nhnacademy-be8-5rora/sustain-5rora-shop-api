@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -42,16 +43,18 @@ public class ReviewController {
     @ApiResponse(responseCode = "403", description = "도서를 주문하지 않음")
     @ApiResponse(responseCode = "409", description = "리뷰를 이미 작성함")
     @ApiResponse(responseCode = "500", description = "서버 오류")
-    public ResponseEntity<String> createReview(@RequestBody @Valid ReviewRequest request,
-                                               @RequestParam(value = "files", required = false) List<MultipartFile> files,
+    public ResponseEntity<String> createReview(@ModelAttribute @Valid ReviewRequest request,
+                                               @RequestPart(value = "files", required = false) List<MultipartFile> files,
                                                @RequestParam Long bookId,
                                                @RequestParam String userId) {
+//                                               @RequestParam Integer rating,
+//                                               @RequestParam String content) {
         if (files == null) { files = new ArrayList<>(); }
         try {
-            Review savedRiview = reviewService.saveReview(request, files, bookId, userId);
+            Review savedReview = reviewService.saveReview(request, files, bookId, userId);
 
             try{
-                pointHistoryService.earnReviewPoint(savedRiview.getUser(), !savedRiview.getReviewImages().isEmpty());
+                pointHistoryService.earnReviewPoint(savedReview.getUser(), !savedReview.getReviewImages().isEmpty());
             } catch (Exception e) { // case: review가 null, empty인데 getFirst,
                 // todo: 예상 가능한 에러 별 브라우저 응답 다르게 (잠깐 db 에러는 적립 재시도)
                 LOG.warn("Failed to earn points: category=review, userId={}", userId, e);
@@ -112,8 +115,8 @@ public class ReviewController {
     @ApiResponse(responseCode = "404", description = "해당 (리뷰/도서/유저)가 존재하지 않음")
     @ApiResponse(responseCode = "500", description = "서버 오류")
     public ResponseEntity<String> updateReview(@PathVariable Long reviewId,
-                                               @RequestBody @Valid ReviewRequest request,
-                                               @RequestParam(required = false) List<MultipartFile> files,
+                                               @ModelAttribute @Valid ReviewRequest request,
+                                               @RequestPart(required = false) List<MultipartFile> files,
 //                                               @RequestParam Long bookId,
                                                @RequestParam String userId) {
         if (files == null) { files = new ArrayList<>(); }

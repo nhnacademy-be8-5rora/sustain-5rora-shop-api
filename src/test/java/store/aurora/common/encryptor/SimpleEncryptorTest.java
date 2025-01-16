@@ -36,7 +36,7 @@ class SimpleEncryptorTest {
 
     @Test
     void encrytTest3() {
-        String data = String.valueOf(31L);
+        String data = String.valueOf(2L);
         String encrypted = simpleEncryptor.encrypt(data);
         log.info("{}", encrypted);
         String decryted = simpleEncryptor.decrypt(encrypted);

@@ -12,7 +12,7 @@ public class ShippingStatusListener {
 
     private final DeliveryStatusChanger deliveryStatusChanger;
 
-    @RabbitListener(queues = "dlxQueue")
+    @RabbitListener(queues = RabbitMQConfig.DLX_QUEUE)
     @Transactional
     public void receiveMessage(Long orderId){
         deliveryStatusChanger.completeOrder(orderId);

@@ -30,3 +30,7 @@ spring:
       database: 1
       username:
       password: na
+
+  rabbitmq:
+    stream:
+      virtual-host: vh1_prod

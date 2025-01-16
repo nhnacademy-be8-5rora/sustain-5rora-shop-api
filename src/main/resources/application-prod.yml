@@ -32,5 +32,4 @@ spring:
       password: na
 
   rabbitmq:
-    stream:
-      virtual-host: vh1_prod
+    virtual-host: vh1_prod

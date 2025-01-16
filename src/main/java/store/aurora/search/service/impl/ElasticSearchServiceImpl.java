@@ -122,7 +122,7 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
                                                 .field("title")
                                                 .query(keyword)
                                                 .analyzer("edge_ngram_analyzer")
-                                                .boost(2.0F)
+                                                .boost(10.0F)
                                         )
                                 )
                                 .should(shouldQuery -> shouldQuery
@@ -185,7 +185,7 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
                                             .match(match -> match
                                                     .field("title")
                                                     .query(search)
-                                                    .boost(2.0F)  // 제목에 높은 가중치 부여
+                                                    .boost(10.0F)  // 제목에 높은 가중치 부여
                                             )
                                     )
                                     .should(shouldQuery -> shouldQuery

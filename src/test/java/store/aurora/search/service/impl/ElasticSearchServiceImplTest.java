@@ -80,7 +80,7 @@ public class ElasticSearchServiceImplTest {
         when(bookImageService.getThumbnail(any(Book.class))).thenReturn(bookImage);
 
         // when
-        elasticSearchService.saveBooks(book);
+        elasticSearchService.saveBook(book);
 
         // then
         verify(elasticSearchRepository, times(1)).save(any());

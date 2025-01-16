@@ -21,6 +21,7 @@ import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.exception.api.InvalidApiResponseException;
 import store.aurora.book.repository.BookAuthorRepository;
+import store.aurora.book.repository.BookRepository;
 import store.aurora.book.repository.BookViewRepository;
 import store.aurora.book.repository.LikeRepository;
 import store.aurora.book.repository.category.BookCategoryRepository;
@@ -56,6 +57,7 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
     private final BookCategoryRepository bookCategoryRepository;
     private static final Logger USER_LOG = LoggerFactory.getLogger("user-logger");
     private final CategoryRepository categoryRepository;
+    private final BookRepository bookRepository;
 
     @Override
     public Page<BookSearchResponseDTO> searchBooks(String type,String keyword, Pageable pageable, String userId) {
@@ -190,7 +192,7 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
 
     //저장 후의 book 엔티티를 가져옴.
     @Override
-    public void saveBooks(Book book) {
+    public void saveBook(Book book) {
         // BookRequestDto -> Book 변환
         BookDocument bookDocument = convertToBookDocument(book);
 
@@ -277,4 +279,51 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
         return bookDocument;
     }
 
+
+    @Override
+    public Long saveBooksNotInElasticSearch() {
+        List<Long> allBooksInDb  = bookRepository.findAll().stream().map(Book::getId).toList();
+        List<Long> allBooksInElastic= findAllBooks();
+        // allBooksInDb에서 allBooksInElastic에 없는 ID 필터링
+        List<Long> idsNotInElastic = allBooksInDb.stream()
+                .filter(id -> !allBooksInElastic.contains(id))
+                .toList();
+
+        List<Book> books = bookRepository.findALlByIdIn(idsNotInElastic);
+        Long count = 0L;  // Long으로 선언하여 반환 타입과 맞춤
+        for (Book book : books) {
+            try {
+                saveBook(book); // 저장 시도
+                count++; // 성공한 경우에만 카운트 증가
+            } catch (Exception e) {
+                USER_LOG.warn("책 저장 실패: {} - {}", book.getId(), e.getMessage());
+            }
+        }
+
+        return count;
+    }
+
+    private List<Long> findAllBooks() {
+        try {
+            // 쿼리 생성
+            SearchRequest request = new SearchRequest.Builder()
+                    .index("5rora")
+                    .query(q -> q.matchAll(m -> m)) // match_all 쿼리
+                    .size(1000)  // 한번에 1000개 가져오기
+                    .storedFields(List.of())       // _id만 가져오기 위해 stored_fields 사용
+                    .build();
+
+            // Elasticsearch 요청 실행
+            SearchResponse<Void> response = elasticsearchClient.search(request, Void.class);
+
+            // _id 추출
+            return response.hits().hits().stream()
+                    .map(Hit::id) // Hit 객체에서 id만 추출
+                    .map(Long::parseLong) // String -> Long 변환
+                    .toList();
+
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Elasticsearch 요청 실패: " + e.getMessage(), e);
+        }
+    }
 }

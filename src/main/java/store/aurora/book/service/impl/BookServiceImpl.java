@@ -85,7 +85,7 @@ public class BookServiceImpl implements BookService {
                 Book bookEntity = optionalBook.get();
 
                 // Elasticsearch에 저장할 수 있도록 처리
-                elasticSearchService.saveBooks(bookEntity);
+                elasticSearchService.saveBook(bookEntity);
             } else {
                 USER_LOG.warn("Book not found with id: {}", book.getId());
             }
@@ -135,7 +135,7 @@ public class BookServiceImpl implements BookService {
 
         while (retryCount < maxRetries) {
             try {
-                elasticSearchService.saveBooks(book);
+                elasticSearchService.saveBook(book);
                 break; // 성공 시 루프 종료
             } catch (ElasticsearchException e) {
                 retryCount++;

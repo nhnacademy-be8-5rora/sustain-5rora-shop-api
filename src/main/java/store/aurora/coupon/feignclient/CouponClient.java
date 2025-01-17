@@ -20,7 +20,7 @@ public interface CouponClient {
 
     //쿠폰 사용시 결제 버튼에서 이것도 결제 내역에 쿠폰이 있다면 발동하게끔.
     @PostMapping("/using")
-    void used(@RequestBody List<Long> couponIds);
+    void used(@RequestBody Long couponIds);
 
     // 사용 가능한 쿠폰 정보 전달
     @PostMapping("/usable")

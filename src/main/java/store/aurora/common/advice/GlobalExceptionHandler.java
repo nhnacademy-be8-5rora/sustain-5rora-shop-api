@@ -64,7 +64,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ObjectStorageException.class)
     public ResponseEntity<ErrorResponseDto> handleObjectStorageException(ObjectStorageException e) {
-        return createResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+                e.getMessage(),
+                e.getStatus().value(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(e.getStatus()).body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)

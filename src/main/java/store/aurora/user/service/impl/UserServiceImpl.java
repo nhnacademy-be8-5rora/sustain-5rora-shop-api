@@ -242,4 +242,11 @@ public class UserServiceImpl implements UserService {
                 rankName.name()
         );
     }
+
+    @Override
+    public List<String> searchByMonth(int currentMonth) {
+        return userRepository.findUserIdsByBirthMonth(currentMonth);
+    }
+
+
 }

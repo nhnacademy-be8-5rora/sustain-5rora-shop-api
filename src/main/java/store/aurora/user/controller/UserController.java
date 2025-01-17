@@ -19,6 +19,7 @@ import store.aurora.user.entity.User;
 import store.aurora.user.service.DoorayMessengerService;
 import store.aurora.user.service.UserService;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -122,6 +123,11 @@ public class UserController {
     public ResponseEntity<Map<String, String>> reactivateUser(@RequestParam String userId) {
         userService.reactivateUser(userId);
         return ResponseEntity.ok(Map.of("message", "휴면 계정이 활성화되었습니다."));
+    }
+
+    @GetMapping("birth/coupon")
+    List<String> getUserIdByMonth(@RequestParam int currentMonth){
+        return userService.searchByMonth(currentMonth);
     }
 
 }

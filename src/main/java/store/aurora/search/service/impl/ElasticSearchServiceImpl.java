@@ -12,7 +12,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import store.aurora.book.dto.AuthorDTO;
+import store.aurora.book.dto.SearchBookDTO;
+import store.aurora.book.dto.aladin.ImageDetail;
 import store.aurora.book.entity.Book;
+import store.aurora.book.entity.BookImage;
+import store.aurora.book.entity.Like;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.repository.BookAuthorRepository;
@@ -92,8 +97,10 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
         bookDocument.setPublishDate(book.getPublishDate().toString());
         bookDocument.setActive(book.isActive());
         //커버이미지는 db에서 얻어옴. N+1 발생하지만 save시 한번부르기때문에 1번만 발생.
-        bookDocument.setCoverImage(bookImageService.getThumbnail(book).getFilePath());
-
+        BookImage thumbnailImage = bookImageService.getThumbnail(book);
+        if (thumbnailImage != null) {
+            bookDocument.setCoverImage(thumbnailImage.getFilePath());
+        }
         // Publisher 변환
         if (book.getPublisher() != null) {
             PublisherDocument publisherDocument = new PublisherDocument(
@@ -195,8 +202,5 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
             throw new IllegalArgumentException("Elasticsearch 요청 실패: " + e.getMessage(), e);
         }
     }
-
-
-
 
 }

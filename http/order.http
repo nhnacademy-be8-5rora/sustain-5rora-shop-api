@@ -31,3 +31,6 @@ GET localhost:8280/api/admin/order/orders?state=REFUND_PENDING
 
 ### 환불 수락
 POST localhost:8280/api/admin/order/orders/_mAzgcBNoT78ztkEiYscsA==/refund
+
+### 비회원 주문정보
+GET localhost:8280/api/order/non-member/orders/U_tPR-E312J7KuG6BhR5-Q==

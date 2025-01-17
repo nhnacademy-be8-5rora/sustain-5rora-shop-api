@@ -6,6 +6,8 @@ import store.aurora.user.dto.UserInfoResponseDto;
 import store.aurora.user.dto.UserResponseDto;
 import store.aurora.user.entity.User;
 
+import java.time.LocalDateTime;
+
 public interface UserService {
     User registerUser(SignUpRequest signUpRequest);
     User registerOauthUser(SignUpRequest signUpRequest);
@@ -17,4 +19,5 @@ public interface UserService {
     UserResponseDto getUserByUserId(String userId);
     Boolean isUserExists(String userId);
     UserInfoResponseDto getUserInfo(String userId);
+    void updateLastLogin(String userId, LocalDateTime lastLogin);
 }

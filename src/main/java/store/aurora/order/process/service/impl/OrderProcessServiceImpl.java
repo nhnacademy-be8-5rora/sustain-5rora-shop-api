@@ -145,7 +145,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .user(userService.getUser(orderInfo.getUsername()))
                 .build();
 
-        saveInformationWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
+        Order saved = saveInformationWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
         if(orderInfo.getUsedPoint() > 0) {
             try {
                 pointSpendService.spendPoints(orderInfo.getUsername(), orderInfo.getUsedPoint());
@@ -157,7 +157,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         }
 
 
-        return saveInformationWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
+        return saved;
     }
 
     // todo: 비밀번호 passwordEncoder 적용

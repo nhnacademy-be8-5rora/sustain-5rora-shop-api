@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import store.aurora.point.entity.PointPolicyCategory;
 import store.aurora.point.service.PointHistoryService;
 import store.aurora.user.dto.SignUpRequest;
 import store.aurora.user.dto.UserDetailResponseDto;
@@ -72,7 +73,7 @@ public class UserController {
         User savedUser = isOauth ? userService.registerOauthUser(request) : userService.registerUser(request);
 
         try {
-            pointHistoryService.earnSignUpPoints(savedUser);
+            pointHistoryService.earnPoint(PointPolicyCategory.SIGNUP, savedUser);
         } catch (Exception e) {
             LOG.error("Failed to earn points: category=signup, userId={}", savedUser.getId(), e);
             // todo 혜원 : 포인트 에러 던져서 처리

@@ -31,6 +31,9 @@ spring:
       username:
       password: na
 
+  rabbitmq:
+    virtual-host: vh1_prod
+
 api:
   gateway:
     base-url: localhost:9180

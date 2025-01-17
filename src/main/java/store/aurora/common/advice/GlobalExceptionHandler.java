@@ -16,9 +16,11 @@ import store.aurora.file.ObjectStorageException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import store.aurora.user.exception.DormantAccountException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -60,6 +62,13 @@ public class GlobalExceptionHandler {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
         return createResponseEntity(ex, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+    @ExceptionHandler(DormantAccountException.class)
+    public ResponseEntity<Map<String, String>> handlerForbiddenException(DormantAccountException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", ex.getMessage()));
     }
 
     @ExceptionHandler(ObjectStorageException.class)

@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import store.aurora.user.exception.AlreadyActiveUserException;
+import store.aurora.user.exception.DormantAccountException;
 import store.aurora.user.exception.DuplicateUserException;
 import store.aurora.user.exception.VerificationException;
 
@@ -19,6 +20,7 @@ public class UserExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("error", ex.getMessage()));
     }
+
 
     @ExceptionHandler({DuplicateUserException.class, AlreadyActiveUserException.class})
     public ResponseEntity<Map<String, String>> handleConflictException(RuntimeException ex) {

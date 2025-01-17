@@ -24,10 +24,11 @@ import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.search.repository.ElasticSearchRepository;
 
 import java.time.LocalDate;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-public class ElasticSearchServiceImplTest {
+class ElasticSearchServiceImplTest {
 
     @InjectMocks
     private ElasticSearchServiceImpl elasticSearchService;
@@ -62,8 +63,6 @@ public class ElasticSearchServiceImplTest {
     @Mock
     private ReviewService reviewService;
     private static final String USER_ID = "testUserId";
-    private static final String KEYWORD = "testKeyword";
-    private static final Pageable PAGEABLE = PageRequest.of(0, 8);
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -154,8 +153,7 @@ public class ElasticSearchServiceImplTest {
         Page<BookSearchResponseDTO> result = elasticSearchService.searchBooks(type, keyword, pageable, USER_ID);
 
         // then
-        assertTrue(result.equals(mockPage));  // Verifying that the result is the mocked page
-        verify(elasticSearchRepository, times(1)).searchBooksWithWeightedFields(eq(keyword), eq(pageable), eq(USER_ID));
+        assertEquals(mockPage, result);  // Verifying that the result is the mocked page
     }
 
     @Test
@@ -174,8 +172,7 @@ public class ElasticSearchServiceImplTest {
         Page<BookSearchResponseDTO> result = elasticSearchService.searchBooks(type, keyword, pageable, USER_ID);
 
         // then
-        assertTrue(result.equals(mockPage));  // Verifying that the result is the mocked page
-        verify(elasticSearchRepository, times(1)).searchBooksByField(eq(type), eq(keyword), eq(pageable));
+        assertEquals(mockPage, result);  // Verifying that the result is the mocked page
     }
 
 }

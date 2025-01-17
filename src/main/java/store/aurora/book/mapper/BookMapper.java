@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import store.aurora.book.dto.aladin.*;
+import store.aurora.book.dto.category.CategoryDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.BookImage;
 import store.aurora.book.entity.Publisher;
@@ -41,7 +42,7 @@ public class BookMapper {
         book.setTitle(bookDto.getTitle());
         book.setExplanation(bookDto.getDescription());
         book.setContents(!StringUtils.isBlank(bookDto.getContents()) ? bookDto.getContents() : null);
-        book.setIsbn(bookDto.getIsbn13());
+        book.setIsbn(bookDto.getValidIsbn());
         book.setSalePrice(bookDto.getPriceSales());
         book.setRegularPrice(bookDto.getPriceStandard());
         book.setPublishDate(!StringUtils.isBlank(bookDto.getPubDate())
@@ -152,8 +153,11 @@ public class BookMapper {
         bookDetailDto.setSale(book.isSale());
         bookDetailDto.setPackaging(book.isPackaging());
         bookDetailDto.setSeriesName(book.getSeries() != null ? book.getSeries().getName() : null);
-        bookDetailDto.setCategoryIds(book.getBookCategories().stream()
-                .map(category -> category.getCategory().getId())
+        bookDetailDto.setCategories(book.getBookCategories().stream()
+                .map(bookCategory -> new CategoryDTO(
+                        bookCategory.getCategory().getId(),
+                        bookCategory.getCategory().getName()
+                ))
                 .toList());
         bookDetailDto.setTags(tagService.getFormattedTags(book));
         // Cover 이미지 처리

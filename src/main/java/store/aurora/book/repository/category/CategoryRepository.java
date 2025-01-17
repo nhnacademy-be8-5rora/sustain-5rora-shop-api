@@ -19,6 +19,7 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
     Optional<Category> findCategoryWithBooksById(Long id);
 
     Page<Category> findByParentId(Long parentId,Pageable pageable);
+    List<Category> findByParentId(Long parentId);
     List<Category> findByParentIsNull();
     Page<Category> findByParentIsNull(Pageable pageable);
 

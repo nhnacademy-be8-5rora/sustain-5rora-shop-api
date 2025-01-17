@@ -87,12 +87,28 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryRepository.findByParentIsNull(pageable)
                 .map(this::mapToResponseDTO);
     }
+    @Transactional(readOnly = true)
+    @Override
+    public List<CategoryResponseDTO> getAllRootCategories() {
+        return categoryRepository.findByParentIsNull().stream()
+                .map(this::mapToResponseDTO)
+                .toList();
+    }
 
     @Transactional(readOnly = true)
     @Override
     public Page<CategoryResponseDTO> getChildrenCategories(Long parentId, Pageable pageable) {
         return categoryRepository.findByParentId(parentId, pageable)
                 .map(this::mapToResponseDTO);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<CategoryResponseDTO> getAllChildrenCategories(Long parentId) {
+        return categoryRepository.findByParentId(parentId)
+                .stream()
+                .map(this::mapToResponseDTO)
+                .toList();
     }
 
     @Override

@@ -27,9 +27,9 @@ public class AladinBookController {
         return ResponseEntity.ok(books);
     }
 
-    @GetMapping("/{isbn13}")
-    public ResponseEntity<AladinBookRequestDto> getBookDetailsByIsbn(@PathVariable String isbn13) {
-        AladinBookRequestDto book = aladinBookService.getBookDetailsByIsbn(isbn13);
+    @GetMapping("/{isbn}")
+    public ResponseEntity<AladinBookRequestDto> getBookDetailsByIsbn(@PathVariable String isbn) {
+        AladinBookRequestDto book = aladinBookService.getBookDetailsByIsbn(isbn);
         return ResponseEntity.ok(book);
     }
 

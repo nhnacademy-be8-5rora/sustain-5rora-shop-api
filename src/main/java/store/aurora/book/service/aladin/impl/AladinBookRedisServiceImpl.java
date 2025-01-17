@@ -34,9 +34,9 @@ public class AladinBookRedisServiceImpl implements AladinBookRedisService {
     @Override
     public void storeIndividualBooks(List<AladinBookRequestDto> books) {
         books.stream()
-                .filter(book -> book.getIsbn13() != null) // ISBN이 존재하는 책만 저장
+                .filter(book -> book.getValidIsbn() != null && !book.getValidIsbn().isBlank()) // 유효한 ISBN이 있는 경우만 저장
                 .forEach(book -> {
-                    String bookCacheKey = "book:" + book.getIsbn13();
+                    String bookCacheKey = "book:" + book.getValidIsbn();
                     redisCacheManager.store(bookCacheKey, book, CACHE_DURATION);
                 });
     }

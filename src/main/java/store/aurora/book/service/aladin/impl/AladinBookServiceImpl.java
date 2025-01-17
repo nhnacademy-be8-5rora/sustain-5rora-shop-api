@@ -51,9 +51,10 @@ public class AladinBookServiceImpl implements AladinBookService {
     @Transactional
     @Override
     public void saveBookFromApi(AladinBookRequestDto bookDto, List<MultipartFile> additionalImages) {
-        if (bookRepository.existsByIsbn(bookDto.getIsbn13())) {
-            throw new IsbnAlreadyExistsException(bookDto.getIsbn13());
+        if (bookRepository.existsByIsbn(bookDto.getValidIsbn())) {
+            throw new IsbnAlreadyExistsException(bookDto.getValidIsbn());
         }
+
         Book book = bookMapper.aladinToEntity(bookDto);
         // 책 저장
         bookRepository.save(book);
@@ -104,8 +105,8 @@ public class AladinBookServiceImpl implements AladinBookService {
     }
 
     @Override
-    public AladinBookRequestDto getBookDetailsByIsbn(String isbn13) {
-        String bookCacheKey = "book:" + isbn13;
+    public AladinBookRequestDto getBookDetailsByIsbn(String isbn) {
+        String bookCacheKey = "book:" + isbn;
 
         // Redis에서 데이터 조회
         AladinBookRequestDto book = aladinBookRedisService.getBook(bookCacheKey);
@@ -114,7 +115,7 @@ public class AladinBookServiceImpl implements AladinBookService {
         }
 
         // Redis에 데이터가 없을 경우, 외부 API 호출
-        book = getBookDetailsFromApi(isbn13);
+        book = getBookDetailsFromApi(isbn);
 
         // Redis에 저장
         if (book != null) {
@@ -158,26 +159,28 @@ public class AladinBookServiceImpl implements AladinBookService {
     }
 
     // 외부 API를 호출하여 책 데이터 조회
-    private AladinBookRequestDto getBookDetailsFromApi(String isbn13) {
+    private AladinBookRequestDto getBookDetailsFromApi(String isbn) {
         try {
-            String response = aladinBookClient.getBookDetails(ttbKey, "ISBN13", isbn13, "js", "20131101");
+            String isbnType = (isbn.length() == 13) ? "ISBN13" : "ISBN";
+
+            String response = aladinBookClient.getBookDetails(ttbKey, isbnType, isbn, "js", "20131101");
 
             if (StringUtils.isBlank(response)) {
-                USER_LOG.info("알라딘 API 응답이 비어 있습니다. ISBN: {}", isbn13);
+                USER_LOG.info("알라딘 API 응답이 비어 있습니다. ISBN: {}", isbn);
                 return null;
             }
 
             AladinApiResponse apiResponse = objectMapper.readValue(response, AladinApiResponse.class);
             if (CollectionUtils.isEmpty(apiResponse.getItems())) {
-                USER_LOG.info("알라딘 API에서 유효한 책 정보를 찾지 못했습니다. ISBN: {}", isbn13);
+                USER_LOG.info("알라딘 API에서 유효한 책 정보를 찾지 못했습니다. ISBN: {}", isbn);
                 return null;
             }
             return apiResponse.getItems().getFirst();
 
         } catch (JsonProcessingException e) {
-            USER_LOG.warn("알라딘 API 응답 파싱 실패: 유효하지 않은 JSON 형식. ISBN: {}", isbn13, e);
+            USER_LOG.warn("알라딘 API 응답 파싱 실패: 유효하지 않은 JSON 형식. ISBN: {}", isbn, e);
         } catch (Exception e) {
-            USER_LOG.warn("알라딘 API 호출 중 알 수 없는 예외가 발생했습니다. ISBN: {}", isbn13, e);
+            USER_LOG.warn("알라딘 API 호출 중 알 수 없는 예외가 발생했습니다. ISBN: {}", isbn, e);
         }
         return null;
     }

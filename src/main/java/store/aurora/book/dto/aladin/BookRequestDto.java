@@ -62,10 +62,6 @@ public class BookRequestDto {
     private List<Long> categoryIds;
 
     @Size(max = 200, message = "태그 입력은 최대 200자까지 가능합니다.")
-    @Pattern(regexp = "^([^,]*,\\s*)*[^,]*$",
-            message = "태그 형식이 잘못되었습니다. 쉼표로 구분된 태그 형식이어야 합니다.")
     private String tags; // 선택 항목
-
-    private boolean deleted = false; // 삭제 여부 추가
 
 }

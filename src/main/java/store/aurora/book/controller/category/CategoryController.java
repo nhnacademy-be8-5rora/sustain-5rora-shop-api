@@ -29,12 +29,22 @@ public class CategoryController {
     public ResponseEntity<Page<CategoryResponseDTO>> getRootCategories(Pageable pageable) {
         return ResponseEntity.ok(categoryService.getRootCategories(pageable));
     }
+    @GetMapping("/root/all")
+    public ResponseEntity<List<CategoryResponseDTO>> getAllRootCategories() {
+        return ResponseEntity.ok(categoryService.getAllRootCategories());
+    }
 
     @GetMapping("/{parentId}/children")
     public ResponseEntity<Page<CategoryResponseDTO>> getChildrenCategories(@PathVariable Long parentId,
                                                                                 Pageable pageable) {
         return ResponseEntity.ok(categoryService.getChildrenCategories(parentId, pageable));
     }
+    @GetMapping("/{parentId}/children/all")
+    public ResponseEntity<List<CategoryResponseDTO>> getAllChildrenCategories(@PathVariable Long parentId) {
+        return ResponseEntity.ok(categoryService.getAllChildrenCategories(parentId));
+    }
+
+
 
     @GetMapping
     public ResponseEntity<List<CategoryResponseDTO>> getCategories() {

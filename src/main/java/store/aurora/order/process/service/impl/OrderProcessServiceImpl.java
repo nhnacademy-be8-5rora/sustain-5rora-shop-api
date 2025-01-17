@@ -106,8 +106,8 @@ public class OrderProcessServiceImpl implements OrderProcessService {
          */
         List<OrderDetailDTO> orderDetailList = Objects.requireNonNull(dto).getOrderDetailDTOList();
 
-        // todo: 포인트 사용 금액 적용
-        int value = getTotalAmountFromOrderDetailList(orderDetailList);
+        int value = getTotalAmountFromOrderDetailList(orderDetailList)
+                    - dto.getUsedPoint();
 
         StringBuilder orderName = new StringBuilder();
         for(OrderDetailDTO detail : orderDetailList){
@@ -145,6 +145,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .user(userService.getUser(orderInfo.getUsername()))
                 .build();
 
+        saveInformationWhenOrderComplete(newOrder, paymentKey, amount, orderInfo);
         if(orderInfo.getUsedPoint() > 0) {
             try {
                 pointSpendService.spendPoints(orderInfo.getUsername(), orderInfo.getUsedPoint());
@@ -202,7 +203,8 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         // Order detail 생성
         for (OrderDetailDTO detailDTO : orderInfo.getOrderDetailDTOList()) {
             Book book = bookService.getBookById(detailDTO.getBookId());
-            Wrap wrap = Objects.nonNull(detailDTO.getWrapId()) ? wrapService.getWrap(detailDTO.getWrapId()) : null;
+            Wrap wrap = Objects.nonNull(detailDTO.getWrapId()) && detailDTO.getWrapId() > 0L
+                    ? wrapService.getWrap(detailDTO.getWrapId()) : null;
 
             OrderDetail detail = OrderDetail.builder()
                     .order(createdOrder)

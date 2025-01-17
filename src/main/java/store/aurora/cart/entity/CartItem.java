@@ -3,14 +3,14 @@ package store.aurora.cart.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import store.aurora.book.entity.Book;
 
 @Entity
 @Table(name = "cart_items")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class CartItem {
     @Id

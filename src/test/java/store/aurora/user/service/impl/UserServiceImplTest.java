@@ -1,52 +1,45 @@
 package store.aurora.user.service.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import store.aurora.user.dto.SignUpRequest;
 import store.aurora.user.dto.UserResponseDto;
 import store.aurora.user.entity.Role;
 import store.aurora.user.entity.User;
 import store.aurora.user.entity.UserRole;
 import store.aurora.user.exception.RoleNotFoundException;
-import store.aurora.user.repository.UserRankHistoryRepository;
-import store.aurora.user.repository.UserRankRepository;
+import store.aurora.user.exception.UserNotFoundException;
 import store.aurora.user.repository.UserRepository;
-import store.aurora.user.service.DoorayMessengerService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 
+@ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
 
     @Mock private UserRepository userRepository;
-    @Mock private UserRankRepository userRankRepository;
-    @Mock private UserRankHistoryRepository userRankHistoryRepository;
-    @Mock private DoorayMessengerService doorayMessengerService;
-    @Mock private RedisTemplate<String, String> redisTemplate;
 
     @InjectMocks private UserServiceImpl userService;
 
     private User testUser;
-    private UserRole testUserRole;
-    private Role testRole;
+    String userId = "testId";
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-        testUser = new User("testId", "hyewon", LocalDate.of(2000, 1, 1), "010-0000-0000", "example@google.com", true);
+        testUser = new User(userId, "hyewon", LocalDate.of(2000, 1, 1), "010-0000-0000", "example@google.com", true);
         testUser.setPassword("password");
 
-        testRole = new Role("USER");
-        testUserRole = new UserRole(testUser, testRole);
+        Role testRole = new Role("USER");
+        UserRole testUserRole = new UserRole(testUser, testRole);
         LinkedList<UserRole> list = new LinkedList<>();
         list.add(testUserRole);
         testUser.setUserRoles(list);
@@ -82,7 +75,7 @@ class UserServiceImplTest {
         assertThrows(RoleNotFoundException.class, () -> userService.getUserByUserId("user2"));
     }
 
-    // 회원가입 테스트
+    // todo 유민 회원가입 테스트
     @Test
     void registerUser_Success() {
         // Given
@@ -91,5 +84,38 @@ class UserServiceImplTest {
 //        );
 
 
+    }
+
+    @Test
+    void testUpdateLastLogin() {
+        // Given: 테스트 사용자와 초기 데이터 설정
+        LocalDateTime initialLogin = LocalDateTime.of(2025, 1, 1, 10, 0);
+        LocalDateTime updatedLogin = LocalDateTime.of(2025, 1, 16, 12, 0);
+
+        testUser.setLastLogin(initialLogin);
+
+        // UserRepository에서 getUser 메서드 호출 시 user 반환하도록 설정
+        Mockito.when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
+
+        // When: updateLastLogin 호출
+        userService.updateLastLogin(userId, updatedLogin);
+
+        // Then: lastLogin 필드가 업데이트되었는지 검증
+        assertThat(testUser.getLastLogin()).isEqualTo(updatedLogin);
+    }
+
+    @Test
+    void testUpdateLastLogin_UserNotFound() {
+        // Given: 존재하지 않는 사용자 ID
+        LocalDateTime updatedLogin = LocalDateTime.of(2025, 1, 16, 12, 0);
+
+        // UserRepository에서 getUser 메서드 호출 시 빈 Optional 반환
+        Mockito.when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        // When & Then: 예외가 발생해야 함
+        assertThrows(
+                UserNotFoundException.class,
+                () -> userService.updateLastLogin(userId, updatedLogin)
+        );
     }
 }

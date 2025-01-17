@@ -9,11 +9,10 @@ import org.springframework.transaction.annotation.Transactional;
 import store.aurora.order.admin.dto.AdminOrderDTO;
 import store.aurora.order.admin.dto.AdminOrderDetailDTO;
 import store.aurora.order.admin.service.AdminDeliveryService;
+import store.aurora.order.admin.service.DeliveryStatusChanger;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.OrderDetail;
-import store.aurora.order.entity.Shipment;
 import store.aurora.order.entity.enums.OrderState;
-import store.aurora.order.entity.enums.ShipmentState;
 import store.aurora.order.service.OrderService;
 import store.aurora.order.service.ShipmentService;
 
@@ -27,6 +26,7 @@ import java.util.Objects;
 public class AdminDeliveryServiceImpl implements AdminDeliveryService {
     private final OrderService orderService;
     private final ShipmentService shipmentService;
+    private final DeliveryStatusChanger deliveryStatusChanger;
 
     @Override
     @Transactional(readOnly = true)
@@ -73,33 +73,25 @@ public class AdminDeliveryServiceImpl implements AdminDeliveryService {
     @Override
     @Transactional
     public void updateShipmentStatusOfOrder(Long orderId, String shipmentStatus){
-        Order order = orderService.getOrder(orderId);
-
-        OrderState orderState = OrderState.valueOf(shipmentStatus);
-        order.setState(OrderState.valueOf(orderState.toString()));
-
-        List<OrderDetail> orderDetails = order.getOrderDetails();
-        for (OrderDetail orderDetail : orderDetails) {
-            orderDetail.setState(OrderState.valueOf(shipmentStatus));
+        if (shipmentStatus.equals("SHIPPING")) {
+            deliveryStatusChanger.updateOrderStatusToShipping(orderId);
+        } else if (shipmentStatus.equals("PENDING")) {
+            deliveryStatusChanger.updateOrderStatusToPending(orderId);
         }
 
-        Shipment shipment = orderDetails.getFirst().getShipment();
-        shipment.setState(ShipmentState.valueOf(shipmentStatus));
-        shipment.setShipmentDatetime(LocalDateTime.now());
-        shipmentService.updateShipment(shipment);
-    }
-
-    private void automaticallyUpdateShipmentStatus(Order order){
-        List<OrderDetail> orderDetails = order.getOrderDetails();
-        boolean isAllShipped = orderDetails.stream()
-                .allMatch(orderDetail -> orderDetail.getState().equals(OrderState.SHIPPED));
-
-        if (isAllShipped) {
-            order.setState(OrderState.SHIPPED);
-            orderDetails.forEach(orderDetail -> orderDetail.setState(OrderState.SHIPPED));
-            Shipment shipment = orderDetails.getFirst().getShipment();
-            shipment.setState(ShipmentState.SHIPPED);
-            shipmentService.updateShipment(shipment);
-        }
+//        OrderState orderState = OrderState.valueOf(shipmentStatus);
+//        order.setState(OrderState.valueOf(orderState.toString()));
+//
+//        List<OrderDetail> orderDetails = order.getOrderDetails();
+//        for (OrderDetail orderDetail : orderDetails) {
+//            orderDetail.setState(OrderState.valueOf(shipmentStatus));
+//        }
+//
+//        Shipment shipment = orderDetails.getFirst().getShipment();
+//        shipment.setState(ShipmentState.valueOf(shipmentStatus));
+//        shipment.setShipmentDatetime(LocalDateTime.now());
+//        shipmentService.updateShipment(shipment);
+//
+//        deliveryStatusChanger.updateOrderStatusToShipping(orderId);
     }
 }

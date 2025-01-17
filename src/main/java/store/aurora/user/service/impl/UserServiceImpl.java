@@ -242,4 +242,9 @@ public class UserServiceImpl implements UserService {
                 rankName.name()
         );
     }
+
+    @Transactional
+    public void updateLastLogin(String userId, LocalDateTime lastLogin) {
+        getUser(userId).setLastLogin(lastLogin);
+    }
 }

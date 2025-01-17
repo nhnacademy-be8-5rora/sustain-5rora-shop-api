@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import store.aurora.common.dto.ErrorResponseDto;
 import store.aurora.point.entity.PointPolicyCategory;
 import store.aurora.point.service.PointHistoryService;
 import store.aurora.user.dto.SignUpRequest;
@@ -19,6 +20,7 @@ import store.aurora.user.entity.User;
 import store.aurora.user.service.DoorayMessengerService;
 import store.aurora.user.service.UserService;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Random;
 
@@ -124,4 +126,15 @@ public class UserController {
         return ResponseEntity.ok(Map.of("message", "휴면 계정이 활성화되었습니다."));
     }
 
+    @Operation(summary = "로그인 날짜 변경", description = "제공된 userId에 해당하는 유저의 마지막 로그인 날짜 업데이트")
+        @ApiResponse(responseCode = "204", description = "로그인 날짜 업데이트 성공")
+        @ApiResponse(responseCode = "404", description = "해당 유저를 찾을 수 없음",
+                content = @Content(mediaType = "application/json",
+                        schema = @Schema(implementation = ErrorResponseDto.class)))
+    @PatchMapping("/{userId}/last-login")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateLastLogin(@PathVariable String userId,
+                                @RequestBody LocalDateTime lastLogin) {
+        userService.updateLastLogin(userId, lastLogin);
+    }
 }

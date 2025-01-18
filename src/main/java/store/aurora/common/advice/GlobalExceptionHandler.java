@@ -20,7 +20,9 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import store.aurora.user.exception.AlreadyActiveUserException;
 import store.aurora.user.exception.DormantAccountException;
+import store.aurora.user.exception.VerificationException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -31,12 +33,12 @@ public class GlobalExceptionHandler {
         return createResponseEntity(e, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(DataConflictException.class)
+    @ExceptionHandler({DataConflictException.class, AlreadyActiveUserException.class})
     public ResponseEntity<ErrorResponseDto> handleDataConflictExceptions(DataConflictException e) {
         return createResponseEntity(e, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler({DataLimitExceededException.class, DataInsufficientException.class})
+    @ExceptionHandler({DataLimitExceededException.class, DataInsufficientException.class, VerificationException.class})
     public ResponseEntity<ErrorResponseDto> handleAlreadyException(RuntimeException e) {
         return createResponseEntity(e, HttpStatus.BAD_REQUEST);
     }

@@ -20,7 +20,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @RequiredArgsConstructor
 @Service
@@ -78,7 +77,7 @@ public class UserServiceImpl implements UserService {
         // 회원등급 저장
         UserRank userRank = userRankRepository.findByRankName(Rank.GENERAL);
         if (userRank == null) {
-            throw new NoSuchElementException("해당 등급을 찾을 수 없습니다.");
+            throw new RankNotFoundException("해당 등급을 찾을 수 없습니다.");
         }
         UserRankHistory userRankHistory = new UserRankHistory();
         userRankHistory.setUserRank(userRank);
@@ -91,7 +90,7 @@ public class UserServiceImpl implements UserService {
         // 권한 저장
         Role role = roleRepository.findByRoleName("ROLE_USER");
         if (role == null) {
-            throw new NoSuchElementException("해당 권한을 찾을 수 없습니다.");
+            throw new RoleNotFoundException("해당 권한을 찾을 수 없습니다.");
         }
         UserRole userRole = new UserRole();
         userRole.setRole(role);
@@ -123,7 +122,7 @@ public class UserServiceImpl implements UserService {
         // 회원등급 저장
         UserRank userRank = userRankRepository.findByRankName(Rank.GENERAL);
         if (userRank == null) {
-            throw new NoSuchElementException("해당 등급을 찾을 수 없습니다.");
+            throw new RankNotFoundException("해당 등급을 찾을 수 없습니다.");
         }
         UserRankHistory userRankHistory = new UserRankHistory();
         userRankHistory.setUserRank(userRank);
@@ -136,7 +135,7 @@ public class UserServiceImpl implements UserService {
         // 권한 저장
         Role role = roleRepository.findByRoleName("ROLE_USER");
         if (role == null) {
-            throw new NoSuchElementException("해당 권한을 찾을 수 없습니다.");
+            throw new RoleNotFoundException("해당 권한을 찾을 수 없습니다.");
         }
         UserRole userRole = new UserRole();
         userRole.setRole(role);

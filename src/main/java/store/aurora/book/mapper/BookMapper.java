@@ -3,7 +3,6 @@ package store.aurora.book.mapper;
 import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import store.aurora.book.dto.aladin.*;
 import store.aurora.book.dto.category.CategoryDTO;
 import store.aurora.book.entity.Book;
@@ -11,20 +10,18 @@ import store.aurora.book.entity.BookImage;
 import store.aurora.book.entity.Publisher;
 import store.aurora.book.entity.Series;
 import store.aurora.book.entity.category.BookCategory;
-import store.aurora.book.entity.category.Category;
 import store.aurora.book.entity.tag.BookTag;
 import store.aurora.book.entity.tag.Tag;
-import store.aurora.book.service.BookAuthorService;
-import store.aurora.book.service.BookImageService;
-import store.aurora.book.service.PublisherService;
-import store.aurora.book.service.SeriesService;
+import store.aurora.book.service.author.BookAuthorService;
+import store.aurora.book.service.image.BookImageService;
+import store.aurora.book.service.publisher.PublisherService;
+import store.aurora.book.service.series.SeriesService;
 import store.aurora.book.service.category.CategoryService;
 import store.aurora.book.service.tag.TagService;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor

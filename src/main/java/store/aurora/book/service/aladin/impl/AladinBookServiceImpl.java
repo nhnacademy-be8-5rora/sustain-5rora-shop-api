@@ -17,11 +17,11 @@ import store.aurora.book.dto.aladin.AladinBookRequestDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.exception.book.IsbnAlreadyExistsException;
 import store.aurora.book.mapper.BookMapper;
-import store.aurora.book.repository.BookRepository;
+import store.aurora.book.repository.book.BookRepository;
 import store.aurora.book.service.aladin.AladinBookRedisService;
 import store.aurora.book.service.aladin.AladinBookService;
-import store.aurora.book.service.BookAuthorService;
-import store.aurora.book.service.BookImageService;
+import store.aurora.book.service.author.BookAuthorService;
+import store.aurora.book.service.image.BookImageService;
 import store.aurora.book.util.AladinBookClient;
 import store.aurora.search.service.ElasticSearchService;
 
@@ -79,10 +79,10 @@ public class AladinBookServiceImpl implements AladinBookService {
             }
         } catch (ElasticsearchException e) {
             // Elasticsearch 관련 예외 처리
-            USER_LOG.warn("Elasticsearch 서버 오류: " + e.getMessage(), e);
+            USER_LOG.warn("Elasticsearch 서버 오류: {}", e.getMessage(), e);
         }catch (Exception e) {
             // 기타 예외 처리
-            USER_LOG.warn("Elasticsearch 저장 실패: " + e.getMessage(), e);
+            USER_LOG.warn("Elasticsearch 저장 실패: {}", e.getMessage(), e);
         }
     }
 

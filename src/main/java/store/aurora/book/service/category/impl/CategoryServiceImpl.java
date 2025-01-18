@@ -258,8 +258,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     private void checkNameInHierarchy(Category parent, String newName) {
-        Queue<Category> queue = new LinkedList<>();
-        queue.addAll(parent.getChildren());
+        Queue<Category> queue = new LinkedList<>(parent.getChildren());
 
         while (!queue.isEmpty()) {
             Category current = queue.poll();

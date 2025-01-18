@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import store.aurora.book.entity.Book;
-import store.aurora.book.service.BookService;
+import store.aurora.book.service.book.BookService;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.OrderDetail;
 import store.aurora.order.entity.Shipment;

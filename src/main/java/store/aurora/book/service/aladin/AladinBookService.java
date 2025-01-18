@@ -1,6 +1,5 @@
 package store.aurora.book.service.aladin;
 
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.dto.aladin.AladinBookRequestDto;
 

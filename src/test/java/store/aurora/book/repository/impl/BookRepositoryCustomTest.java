@@ -1,13 +1,9 @@
 package store.aurora.book.repository.impl;
 
-import com.netflix.discovery.converters.Auto;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIfSystemProperties;
-import org.junit.platform.commons.logging.Logger;
-import org.junit.platform.commons.logging.LoggerFactory;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -16,31 +12,21 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.web.bind.annotation.PutMapping;
 import store.aurora.book.config.QuerydslConfiguration;
 import store.aurora.book.dto.AuthorDTO;
 import store.aurora.book.entity.*;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
-import store.aurora.book.repository.*;
 
-import store.aurora.book.repository.category.BookCategoryRepository;
-import store.aurora.book.repository.category.CategoryRepository;
+import store.aurora.book.repository.book.BookRepository;
+import store.aurora.book.repository.like.LikeRepository;
 import store.aurora.review.entity.Review;
-import store.aurora.review.repository.ReviewRepository;
 import store.aurora.search.dto.BookSearchEntityDTO;
-import store.aurora.user.entity.Role;
 import store.aurora.user.entity.User;
-import store.aurora.user.entity.UserRole;
-import store.aurora.user.entity.UserStatus;
-import store.aurora.user.repository.RoleRepository;
-import store.aurora.user.repository.UserRepository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;

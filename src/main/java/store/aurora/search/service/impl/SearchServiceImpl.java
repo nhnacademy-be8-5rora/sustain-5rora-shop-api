@@ -6,9 +6,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-import store.aurora.book.repository.BookRepository;
+import store.aurora.book.repository.book.BookRepository;
 
-import store.aurora.book.service.LikeService;
+import store.aurora.book.service.like.LikeService;
 import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.search.service.SearchService;

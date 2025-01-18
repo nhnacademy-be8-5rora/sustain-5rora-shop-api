@@ -8,10 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import store.aurora.common.dto.ErrorResponseDto;
 import store.aurora.common.dto.ValidationErrorResponse;
-import store.aurora.common.exception.DataConflictException;
-import store.aurora.common.exception.DataInsufficientException;
-import store.aurora.common.exception.DataLimitExceededException;
-import store.aurora.common.exception.DataNotFoundException;
+import store.aurora.common.exception.*;
 import store.aurora.file.ObjectStorageException;
 
 import java.time.LocalDateTime;
@@ -19,6 +16,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import store.aurora.file.TokenRefreshException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -34,7 +32,7 @@ public class GlobalExceptionHandler {
         return createResponseEntity(e, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler({DataLimitExceededException.class, DataInsufficientException.class})
+    @ExceptionHandler({DataLimitExceededException.class, DataInsufficientException.class, ImageException.class})
     public ResponseEntity<ErrorResponseDto> handleAlreadyException(RuntimeException e) {
         return createResponseEntity(e, HttpStatus.BAD_REQUEST);
     }
@@ -70,6 +68,16 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now()
         );
         return ResponseEntity.status(e.getStatus()).body(errorResponse);
+    }
+    @ExceptionHandler(TokenRefreshException.class)
+    public ResponseEntity<ErrorResponseDto> handleTokenRefreshException(TokenRefreshException e) {
+        LOG.error("토큰 갱신 실패: {}", e.getMessage(), e);
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+                e.getMessage(),
+                HttpStatus.UNAUTHORIZED.value(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)

@@ -9,12 +9,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.Like;
-import store.aurora.book.repository.BookRepository;
-import store.aurora.book.repository.LikeRepository;
-import store.aurora.book.service.impl.LikeServiceImpl;
+import store.aurora.book.repository.book.BookRepository;
+import store.aurora.book.repository.like.LikeRepository;
+import store.aurora.book.service.like.impl.LikeServiceImpl;
 import store.aurora.user.entity.User;
 import store.aurora.user.repository.UserRepository;
-import store.aurora.book.exception.book.NotFoundBookException;
 
 import java.util.Optional;
 

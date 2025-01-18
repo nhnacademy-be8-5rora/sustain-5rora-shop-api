@@ -15,11 +15,11 @@ import store.aurora.user.exception.*;
 import store.aurora.user.repository.*;
 import store.aurora.user.service.UserService;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @RequiredArgsConstructor
 @Service
@@ -30,6 +30,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private static final int INACTIVE_PERIOD_MONTHS = 3;    // 휴면 3개월 기준
+    private final Clock clock;
     private final RedisTemplate redisTemplate;
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
@@ -76,7 +77,7 @@ public class UserServiceImpl implements UserService {
         // 회원등급 저장
         UserRank userRank = userRankRepository.findByRankName(Rank.GENERAL);
         if (userRank == null) {
-            throw new NoSuchElementException("해당 등급을 찾을 수 없습니다.");
+            throw new RankNotFoundException("해당 등급을 찾을 수 없습니다.");
         }
         UserRankHistory userRankHistory = new UserRankHistory();
         userRankHistory.setUserRank(userRank);
@@ -89,7 +90,7 @@ public class UserServiceImpl implements UserService {
         // 권한 저장
         Role role = roleRepository.findByRoleName("ROLE_USER");
         if (role == null) {
-            throw new NoSuchElementException("해당 권한을 찾을 수 없습니다.");
+            throw new RoleNotFoundException("해당 권한을 찾을 수 없습니다.");
         }
         UserRole userRole = new UserRole();
         userRole.setRole(role);
@@ -98,7 +99,7 @@ public class UserServiceImpl implements UserService {
         userRoleRepository.save(userRole);
 
         // 인증 상태 삭제
-        redisTemplate.delete(request.getPhoneNumber() + "_verified");
+//        redisTemplate.delete(request.getPhoneNumber() + "_verified");
 
         return savedUser;
     }
@@ -121,7 +122,7 @@ public class UserServiceImpl implements UserService {
         // 회원등급 저장
         UserRank userRank = userRankRepository.findByRankName(Rank.GENERAL);
         if (userRank == null) {
-            throw new NoSuchElementException("해당 등급을 찾을 수 없습니다.");
+            throw new RankNotFoundException("해당 등급을 찾을 수 없습니다.");
         }
         UserRankHistory userRankHistory = new UserRankHistory();
         userRankHistory.setUserRank(userRank);
@@ -134,7 +135,7 @@ public class UserServiceImpl implements UserService {
         // 권한 저장
         Role role = roleRepository.findByRoleName("ROLE_USER");
         if (role == null) {
-            throw new NoSuchElementException("해당 권한을 찾을 수 없습니다.");
+            throw new RoleNotFoundException("해당 권한을 찾을 수 없습니다.");
         }
         UserRole userRole = new UserRole();
         userRole.setRole(role);
@@ -164,6 +165,8 @@ public class UserServiceImpl implements UserService {
         // 탈퇴회원은 제외
         List<User> inactiveUsers = userRepository.findByLastLoginBeforeAndStatusNot(thresholdDate, UserStatus.DELETED);
 
+        if (inactiveUsers.isEmpty()) { return; }
+
         for (User user: inactiveUsers) {
             user.setStatus(UserStatus.INACTIVE);
             userRepository.save(user);
@@ -182,14 +185,22 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
-        // 인증 api에서 비밀번호 확인 인증 처리
+        // 인증 상태 확인
+        Boolean verificationStatus = (Boolean) redisTemplate.opsForValue().get(user.getPhoneNumber() + "_verified");
 
         if (user.getStatus() == UserStatus.INACTIVE) {
+            if (verificationStatus == null || !verificationStatus) {
+                throw new VerificationException("인증 코드가 확인되지 않았습니다. 인증이 완료가 되어야 휴면해제됩니다.");
+            }
             user.setStatus(UserStatus.ACTIVE);
             userRepository.save(user);
+
         } else {
             throw new AlreadyActiveUserException("이미 휴면해제된 계정입니다.");
         }
+
+        // 인증 상태 삭제
+        redisTemplate.delete(user.getPhoneNumber() + "_verified");
     }
 
     private String getRole(User user, String userId) {
@@ -216,8 +227,10 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserDetailResponseDto getPasswordAndRole(String userId) {
         User user = getUser(userId);
-        if (user.getStatus() == UserStatus.DELETED) {
+        if (user.getStatus() == UserStatus.DELETED) { // 탈퇴회원일때
             throw new UserNotFoundException(userId);
+        } else if (user.getStatus() == UserStatus.INACTIVE) {  // 휴면회원일때
+            throw new DormantAccountException("휴면 계정입니다. 휴면 해제 후 이용해주세요.");
         }
         String role = getRole(user, userId);
         return new UserDetailResponseDto(user.getPassword(), role);

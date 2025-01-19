@@ -1,7 +1,9 @@
 package store.aurora.user.repository;
 
 import jakarta.validation.constraints.NotNull;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import store.aurora.user.entity.User;
 import store.aurora.user.entity.UserStatus;
@@ -13,6 +15,9 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
 
+    @EntityGraph(attributePaths = {"orders", "orders.orderDetails"})
+    @Query("SELECT u FROM User u")
+    List<User> findAllWithOrders();
     List<User> findByLastLoginBeforeAndStatusNot(LocalDateTime lastLogin, UserStatus status);
 
     boolean existsById(String id);

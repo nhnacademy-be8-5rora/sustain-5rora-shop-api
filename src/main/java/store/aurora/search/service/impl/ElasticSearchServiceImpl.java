@@ -11,13 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import store.aurora.book.dto.AuthorDTO;
-import store.aurora.book.dto.SearchBookDTO;
-import store.aurora.book.dto.aladin.ImageDetail;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.BookImage;
-import store.aurora.book.entity.Like;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.repository.BookAuthorRepository;

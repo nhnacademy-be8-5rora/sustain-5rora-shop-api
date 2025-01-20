@@ -51,7 +51,6 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         return UUID.randomUUID().toString();
     }
 
-    // todo: point 사용량 파라미터로 받아서 적용해야 함
     @Override
     public int getTotalAmountFromOrderDetailList(List<OrderDetailDTO> orderDetailList) {
         int totalAmount = 0;
@@ -162,7 +161,6 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         return saved;
     }
 
-    // todo: 비밀번호 passwordEncoder 적용
     @Override
     public Long nonUserOrderProcess(String redisOrderId, String paymentKey, int amount){
         OrderRequestDto orderInfo = orderInfoService.getOrderInfoFromRedis(redisOrderId);

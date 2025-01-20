@@ -1,6 +1,8 @@
 package store.aurora.user.exception;
 
-public class DuplicateUserException extends RuntimeException {
+import store.aurora.common.exception.DataConflictException;
+
+public class DuplicateUserException extends DataConflictException {
   public DuplicateUserException(String message) {
     super(message);
   }

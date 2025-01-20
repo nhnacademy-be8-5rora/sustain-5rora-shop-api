@@ -18,13 +18,16 @@ public interface CategoryService {
 
     Page<CategoryResponseDTO> getRootCategories(Pageable pageable);
 
+    List<CategoryResponseDTO> getAllRootCategories();
+
     Page<CategoryResponseDTO> getChildrenCategories(Long parentId, Pageable pageable);
+
+    List<CategoryResponseDTO> getAllChildrenCategories(Long parentId);
 
     List<Book> getBooksByCategoryId(Long categoryId);
     CategoryResponseDTO findById(Long categoryId);
     List<BookCategory> createBookCategories(List<Long> categoryIds);
 
-    @Transactional
     void updateBookCategories(Book book, List<Long> categoryIds);
 
     List<CategoryResponseDTO> getCategories();

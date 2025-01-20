@@ -38,7 +38,7 @@ public class BookRequestDto {
     private LocalDate pubDate;
 
     @NotBlank(message = "ISBN은 필수 항목입니다.")
-    @Pattern(regexp = "\\d{10}|\\d{13}", message = "ISBN은 10자리 또는 13자리 숫자여야 합니다.")
+    @Pattern(regexp = "^(?:[a-zA-Z0-9]{10}|\\d{13})$", message = "ISBN은 10자리(알파벳 포함 가능) 또는 13자리 숫자여야 합니다.")
     private String isbn;
 
     @Positive(message = "판매 가격은 양수여야 합니다.")
@@ -62,10 +62,6 @@ public class BookRequestDto {
     private List<Long> categoryIds;
 
     @Size(max = 200, message = "태그 입력은 최대 200자까지 가능합니다.")
-    @Pattern(regexp = "^([^,]*,\\s*)*[^,]*$",
-            message = "태그 형식이 잘못되었습니다. 쉼표로 구분된 태그 형식이어야 합니다.")
     private String tags; // 선택 항목
-
-    private boolean deleted = false; // 삭제 여부 추가
 
 }

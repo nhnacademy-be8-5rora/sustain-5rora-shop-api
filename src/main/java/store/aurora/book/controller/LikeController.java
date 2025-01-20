@@ -1,17 +1,9 @@
 package store.aurora.book.controller;
 
-import jakarta.ws.rs.Path;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import store.aurora.book.dto.LikeDto;
-import store.aurora.book.service.LikeService;
-import store.aurora.search.dto.BookSearchResponseDTO;
-
-import java.util.List;
+import store.aurora.book.service.like.LikeService;
 
 @RestController
 @RequiredArgsConstructor

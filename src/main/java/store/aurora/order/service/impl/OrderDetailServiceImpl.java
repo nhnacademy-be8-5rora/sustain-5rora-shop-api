@@ -2,7 +2,7 @@ package store.aurora.order.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import store.aurora.book.service.BookService;
+import store.aurora.book.service.book.BookService;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.OrderDetail;
 import store.aurora.order.exception.exception404.OrderDetailNotFoundException;

@@ -89,8 +89,6 @@ public class BookMapper {
 
     // Book -> BookResponseDto 변환
     public BookResponseDto toResponseDto(Book book) {
-        if (book == null) return null;
-
         BookResponseDto bookDto = new BookResponseDto();
         bookDto.setId(book.getId());
         bookDto.setTitle(book.getTitle());

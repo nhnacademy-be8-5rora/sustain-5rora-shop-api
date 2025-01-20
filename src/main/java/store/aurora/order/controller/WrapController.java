@@ -1,10 +1,10 @@
 package store.aurora.order.controller;
 
+import feign.Response;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.security.core.parameters.P;
+import org.springframework.web.bind.annotation.*;
 import store.aurora.order.dto.WrapResponseDTO;
 import store.aurora.order.entity.Wrap;
 import store.aurora.order.service.WrapService;
@@ -12,7 +12,7 @@ import store.aurora.order.service.WrapService;
 import java.util.ArrayList;
 import java.util.List;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/order/wrap")
 public class WrapController {
@@ -25,6 +25,32 @@ public class WrapController {
     public ResponseEntity<List<WrapResponseDTO>> getWrapList(){
         List<WrapResponseDTO> wrapList = convertWrapEntityListToDtoList(wrapService.getWraps());
         return ResponseEntity.ok(wrapList);
+    }
+
+    @PostMapping("/create-wrap")
+    public void createWrap(WrapResponseDTO wrap){
+        wrapService.createWrap(Wrap.builder()
+                .name(wrap.getName())
+                .amount(wrap.getAmount())
+                .build()
+        );
+    }
+
+    @PostMapping("/update-wrap")
+    public ResponseEntity<Response> updateWrap(@RequestBody WrapResponseDTO wrap){
+        wrapService.updateWrap(Wrap.builder()
+                .id(wrap.getId())
+                .name(wrap.getName())
+                .amount(wrap.getAmount())
+                .build()
+        );
+
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/delete-wrap")
+    public void deleteWrap(@P("id") Long id){
+        wrapService.deleteByWrapId(id);
     }
 
     private List<WrapResponseDTO> convertWrapEntityListToDtoList(List<Wrap> wraps){

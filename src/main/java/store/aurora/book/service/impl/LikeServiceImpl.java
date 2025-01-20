@@ -31,6 +31,7 @@ public class LikeServiceImpl implements LikeService {
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
 
+    //엘라스틱에 반영하도록
     @Override
     public boolean pressLike(Long bookId, String userId) {
         Book findBook = bookRepository.findById(bookId).orElseThrow(() -> new NotFoundBookException(bookId));
@@ -44,7 +45,7 @@ public class LikeServiceImpl implements LikeService {
         like.setLike(!like.isLike());
 
         // 저장
-        Like savedLike = likeRepository.save(like);
+        likeRepository.save(like);
         return true; // 저장에 성공하면 true 반환
     }
 

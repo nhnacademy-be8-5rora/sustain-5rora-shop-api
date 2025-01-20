@@ -22,5 +22,6 @@ public interface BookRepositoryCustom {
     List<BookCategoryDto> findCategoryPathByBookId(Long bookId);
     Page<BookSearchEntityDTO> findBookByIdIn(List<Long> bookId,Pageable pageable);
     Tuple findMostSoldBook();
+    Page<BookSearchEntityDTO> findBooksByTagNameWithDetails(String tagName, Pageable pageable);
 }
 

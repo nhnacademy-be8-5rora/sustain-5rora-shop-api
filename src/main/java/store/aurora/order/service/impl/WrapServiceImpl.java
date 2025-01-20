@@ -2,8 +2,11 @@ package store.aurora.order.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import store.aurora.common.exception.DataAlreadyExistsException;
 import store.aurora.order.entity.Wrap;
 import store.aurora.order.exception.exception404.WrapNotFoundException;
+import store.aurora.order.exception.exception409.WrapNameAlreadyExistsException;
 import store.aurora.order.repository.WrapRepository;
 import store.aurora.order.service.WrapService;
 
@@ -28,6 +31,13 @@ public class WrapServiceImpl implements WrapService {
         if(Objects.isNull(wrap.getName())) {
             throw new IllegalArgumentException("wrap name is null");
         }
+
+        wrapRepository.findAll().forEach(w -> {
+            if(w.getName().equals(wrap.getName())) {
+                throw new WrapNameAlreadyExistsException("wrap name is duplicated");
+            }
+        });
+
         wrapRepository.save(wrap);
     }
 
@@ -45,6 +55,7 @@ public class WrapServiceImpl implements WrapService {
     }
 
     @Override
+    @Transactional
     public void updateWrap(Wrap wrap) {
         if(Objects.isNull(wrap)) {
             throw new IllegalArgumentException("wrap is null");

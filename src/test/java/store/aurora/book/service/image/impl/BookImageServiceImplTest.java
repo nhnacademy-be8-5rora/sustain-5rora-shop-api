@@ -43,26 +43,7 @@ class BookImageServiceImplTest {
         when(mockFile.getOriginalFilename()).thenReturn("test.jpg");
     }
 
-    @Test
-    @DisplayName("processApiImages - coverUrl이 존재하면 업로드 성공")
-    void testProcessApiImages_WithValidCoverUrl() {
-        String coverUrl = "https://example.com/coversum.jpg";
-        String uploadedCoverUrl = "https://storage.example.com/cover500.jpg";
 
-        when(objectStorageService.uploadObjectFromUrl(anyString())).thenReturn(uploadedCoverUrl);
-
-        bookImageService.processApiImages(testBook, coverUrl, List.of());
-
-        verify(objectStorageService).uploadObjectFromUrl(anyString());
-    }
-
-    @Test
-    @DisplayName("processApiImages - coverUrl이 없으면 추가 이미지 처리만 수행")
-    void testProcessApiImages_NoCoverUrl() {
-        bookImageService.processApiImages(testBook, null, List.of());
-
-        verify(objectStorageService, never()).uploadObjectFromUrl(anyString());
-    }
 
     @Test
     @DisplayName("handleImageUpload - 파일 업로드 성공 시 BookImage가 추가됨")

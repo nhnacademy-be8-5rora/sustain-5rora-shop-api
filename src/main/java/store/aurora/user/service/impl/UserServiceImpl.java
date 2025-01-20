@@ -256,6 +256,13 @@ public class UserServiceImpl implements UserService {
         );
     }
 
+    @Override
+    public List<String> searchByMonth(int currentMonth) {
+        return userRepository.findUserIdsByBirthMonth(currentMonth);
+    }
+
+
+
     @Transactional
     public void updateLastLogin(String userId, LocalDateTime lastLogin) {
         getUser(userId).setLastLogin(lastLogin);

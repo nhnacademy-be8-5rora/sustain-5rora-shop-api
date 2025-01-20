@@ -16,9 +16,13 @@ import store.aurora.file.ObjectStorageException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import store.aurora.user.exception.AlreadyActiveUserException;
+import store.aurora.user.exception.DormantAccountException;
+import store.aurora.user.exception.VerificationException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -29,12 +33,12 @@ public class GlobalExceptionHandler {
         return createResponseEntity(e, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(DataConflictException.class)
+    @ExceptionHandler({DataConflictException.class, AlreadyActiveUserException.class})
     public ResponseEntity<ErrorResponseDto> handleDataConflictExceptions(DataConflictException e) {
         return createResponseEntity(e, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler({DataLimitExceededException.class, DataInsufficientException.class})
+    @ExceptionHandler({DataLimitExceededException.class, DataInsufficientException.class, VerificationException.class})
     public ResponseEntity<ErrorResponseDto> handleAlreadyException(RuntimeException e) {
         return createResponseEntity(e, HttpStatus.BAD_REQUEST);
     }
@@ -60,6 +64,13 @@ public class GlobalExceptionHandler {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
         return createResponseEntity(ex, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+
+    @ExceptionHandler(DormantAccountException.class)
+    public ResponseEntity<Map<String, String>> handlerForbiddenException(DormantAccountException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", ex.getMessage()));
     }
 
     @ExceptionHandler(ObjectStorageException.class)

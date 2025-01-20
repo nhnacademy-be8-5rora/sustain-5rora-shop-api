@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import store.aurora.order.dto.OrderDetailInfoDto;
@@ -78,4 +79,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query(value = "select o from Order o join fetch o.shipmentInformation join fetch o.payments join fetch o.user where o.id = :orderId")
     Optional<Order> findOrderByOrderIdWithShipmentInformationAndPaymentsAndUser(Long orderId);
+
+    @Query(value =
+            "update orders o " +
+            "    left join order_details od on o.id = od.order_id " +
+            "    left join shipments s on od.shipment_id = s.id " +
+            "set o.state = 6, od.state = 6 " +
+            "where s.shipment_datetime <= now() - interval :threshold day and o.state = 3", nativeQuery = true)
+    @Modifying(clearAutomatically = true)
+    int updateOrderAndDetailsForExpiredShipments(@Param("threshold") int daysThreshold);
 }

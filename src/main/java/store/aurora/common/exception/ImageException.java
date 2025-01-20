@@ -1,7 +1,7 @@
 package store.aurora.common.exception;
 
-public class ImageException extends RuntimeException {
-    public ImageException(String message) {
+public abstract class ImageException extends RuntimeException {
+    protected ImageException(String message) {
         super(message);
     }
 }

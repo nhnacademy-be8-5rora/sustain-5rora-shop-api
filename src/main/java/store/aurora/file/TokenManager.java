@@ -1,5 +1,6 @@
 package store.aurora.file;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.common.util.StringUtils;
@@ -12,6 +13,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import store.aurora.key.KeyConfig;
+import store.aurora.key.KeyManagerException;
+import store.aurora.key.KeyManagerJsonParsingException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -24,25 +28,53 @@ public class TokenManager {
     private String token;
     private LocalDateTime tokenExpiry;
     private final RestTemplate restTemplate;
+    private final KeyConfig keyConfig;
 
     @Value("${nhncloud.identity.token-url}")
     private String tokenUrl;
 
-    @Value("${nhncloud.identity.tenant-id}")
+    @Value("${nhncloud.identity.secret-id}")
+    private String secretId;
+
     private String tenantId;
-
-    @Value("${nhncloud.identity.username}")
     private String username;
-
-    @Value("${nhncloud.identity.password}")
     private String password;
 
     public synchronized String getToken() {
-        if (token == null || tokenExpiry.isBefore(LocalDateTime.now())) {
+        if (token == null || tokenExpiry == null || tokenExpiry.isBefore(LocalDateTime.now())) {
+            loadCredentials();
             refreshToken();
         }
         return token;
     }
+    private void loadCredentials() {
+        try {
+            // NHN Key Manager에서 한 번에 저장된 인증 정보(JSON) 가져오기
+            String secretJson = keyConfig.keyStore(secretId);
+            // JSON 데이터가 비어 있는 경우 예외 처리
+            JsonNode authInfo = getAuthInfo(secretJson);
+            tenantId = authInfo.path("tenantId").asText();
+            username = authInfo.path("username").asText();
+            password = authInfo.path("password").asText();
+        } catch (JsonProcessingException e) {
+            throw new KeyManagerJsonParsingException("Key Manager에서 인증 정보를 JSON으로 변환하는 데 실패했습니다.", e);
+        }
+    }
+
+    private static JsonNode getAuthInfo(String secretJson) throws JsonProcessingException {
+        if (StringUtils.isEmpty(secretJson)) {
+            throw new KeyManagerException("Key Manager에서 빈 JSON 응답을 받았습니다.");
+        }
+        // JSON 파싱
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode authInfo = objectMapper.readTree(secretJson); // 예외 발생 가능
+        // 필수 필드가 누락된 경우 검증
+        if (!authInfo.hasNonNull("tenantId") || !authInfo.hasNonNull("username") || !authInfo.hasNonNull("password")) {
+            throw new KeyManagerException("Key Manager에서 인증 정보가 누락되었습니다: " + secretJson);
+        }
+        return authInfo;
+    }
+
     private void refreshToken() {
         try {
             String payload = String.format(
@@ -79,6 +111,11 @@ public class TokenManager {
             tokenExpiry = LocalDateTime.parse(expiry, formatter).minusMinutes(5); // 5분의 여유 추가
 
         }  catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError()) {
+                // 인증 정보가 만료되었을 가능성이 있으므로 다시 불러오기 시도
+                loadCredentials();
+                refreshToken();
+            }
             throw new TokenRefreshException("토큰 요청이 실패했습니다. HTTP 상태 코드: " + e.getStatusCode(), e);
         } catch (RestClientException e) {
             throw new TokenRefreshException("토큰 요청 중 네트워크 오류가 발생했습니다.", e);

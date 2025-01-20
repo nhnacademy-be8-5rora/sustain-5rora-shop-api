@@ -6,4 +6,8 @@ public class BookNotFoundException extends DataNotFoundException {
     public BookNotFoundException(Long bookId) {
         super("bookId " + bookId + " not found");
     }
+    public BookNotFoundException(String message) {
+        super(message);
+    }
+
 }

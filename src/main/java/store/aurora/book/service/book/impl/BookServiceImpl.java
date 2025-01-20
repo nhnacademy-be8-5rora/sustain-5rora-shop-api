@@ -10,16 +10,17 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.dto.BookDetailsDto;
 import store.aurora.book.dto.BookInfoDTO;
 import store.aurora.book.dto.ReviewDto;
 import store.aurora.book.dto.aladin.*;
 import store.aurora.book.entity.Book;
+import store.aurora.book.exception.book.BookDtoNullException;
 import store.aurora.book.exception.book.IsbnAlreadyExistsException;
-import store.aurora.book.exception.book.NotFoundBookException;
-import store.aurora.book.entity.*;
 import store.aurora.book.exception.book.BookNotFoundException;
+import store.aurora.book.entity.*;
 import store.aurora.book.mapper.BookMapper;
 import store.aurora.book.repository.book.BookRepository;
 import store.aurora.book.repository.image.BookImageRepository;
@@ -50,71 +51,45 @@ public class BookServiceImpl implements BookService {
 
     private static final Logger USER_LOG = LoggerFactory.getLogger("user-logger");
 
+    // 도서 등록
     @Transactional
     @Override
     public void saveBook(BookRequestDto bookDto, MultipartFile coverImage, List<MultipartFile> additionalImages) {
-        if (bookRepository.existsByIsbn(bookDto.getIsbn())) {
-            throw new IsbnAlreadyExistsException(bookDto.getIsbn());
-        }
-        Book book = bookMapper.toEntity(bookDto);
+        Book book = saveOrUpdateBook(bookDto, null); // 책 등록
+        bookImageService.processBookImages(book, null, coverImage, additionalImages); // 이미지 처리
+        saveToElasticsearch(book);
+    }
+
+    @Transactional
+    @Override
+    public void saveBookFromApi(AladinBookRequestDto bookDto, List<MultipartFile> additionalImages) {
+        validateBookDto(bookDto);
+        validateIsbnDuplicate(bookDto.getIsbn());
+
+        Book book = bookMapper.aladinToEntity(bookDto);
         // 책 저장
         bookRepository.save(book);
         // 작가 정보 저장
         bookAuthorService.parseAndSaveBookAuthors(book, bookDto.getAuthor());
-        // 커버 이미지 처리
-        bookImageService.handleImageUpload(book,coverImage, true);
-        // 추가 이미지 처리
-        bookImageService.handleAdditionalImages(book, additionalImages);
+        // 커버 이미지 url 과 추가 이미지 저장
+        bookImageService.processBookImages(book, bookDto.getCover(), null, additionalImages);
 
-        //엘라스틱 서치를 위한 레파지토리에도 저장. 실패(서버 문제 등)에도 문제없도록 try-catch 처리.
-        try {
-            // book 엔티티를 조회하고, 해당 엔티티와 저자 정보를 가져옵니다.
-            Optional<Book> optionalBook = bookRepository.findById(book.getId());
-
-            // 엔티티가 존재하지 않으면 예외를 던집니다.
-            if (optionalBook.isPresent()) {
-                Book bookEntity = optionalBook.get();
-
-                // Elasticsearch에 저장할 수 있도록 처리
-                elasticSearchService.saveBook(bookEntity);
-            } else {
-                USER_LOG.warn("Book not found with id: {}", book.getId());
-            }
-        } catch (ElasticsearchException e) {
-            // Elasticsearch 관련 예외 처리
-            USER_LOG.warn("Elasticsearch 서버 오류: " + e.getMessage(), e);
-        }catch (Exception e) {
-            // 기타 예외 처리
-            USER_LOG.warn("Elasticsearch 저장 실패: " + e.getMessage(), e);
-        }
-
+        saveToElasticsearch(book);
     }
 
+    //도서 수정
     @Transactional
     @Override
     public void updateBook(Long bookId, BookRequestDto bookDto,
                            MultipartFile coverImage,
                            List<MultipartFile> additionalImages,
                            List<Long> deleteImageIds) {
-        // 1. 기존 책 정보 조회
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new NotFoundBookException(bookId));
-        // 2. 책 정보 업데이트
-        bookMapper.updateEntityFromDto(book, bookDto);
-        // 3. 이미지 삭제 처리
-        if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
+        Book book = saveOrUpdateBook(bookDto, bookId); // 기존 책 수정
+
+        if (!CollectionUtils.isEmpty(deleteImageIds)) {
             bookImageService.deleteImages(deleteImageIds);
         }
-        // 4. 커버 이미지 처리
-        if (coverImage != null && !coverImage.isEmpty()) {
-            bookImageService.handleImageUpload(book, coverImage, true);
-        }
-        // 5. 추가 이미지 처리
-        if (additionalImages != null && !additionalImages.isEmpty()) {
-            bookImageService.handleAdditionalImages(book, additionalImages);
-        }
-        // 6. 책 저장
-        book = bookRepository.save(book);
+        bookImageService.processBookImages(book, null, coverImage, additionalImages);
 
         int retryCount = 0;
         int maxRetries = 3;
@@ -132,9 +107,20 @@ public class BookServiceImpl implements BookService {
                 }
             }
         }
-
     }
 
+    // 책 활성/비활성(soft 삭제 기능)
+    @Transactional
+    @Override
+    public void updateBookActivation(Long bookId, boolean isActive) {
+        Book book = findBookById(bookId);
+        book.setActive(isActive);
+        bookRepository.save(book);
+
+        elasticSearchService.saveBook(book);
+    }
+
+    // 활성/비활성 도서 페이징 처리해서 목록 불러오기
     @Transactional(readOnly = true)
     @Override
     public Page<BookResponseDto> getBooksByActive(boolean isActive, Pageable pageable) {
@@ -142,50 +128,25 @@ public class BookServiceImpl implements BookService {
                 .map(this::convertToDto);
     }
 
-    @Transactional
-    @Override
-    public void updateBookActivation(Long bookId, boolean isActive) {
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new NotFoundBookException(bookId));
-        book.setActive(isActive); // 활성/비활성 상태 설정
-        bookRepository.save(book);
-
-        elasticSearchService.saveBook(book);
-    }
-
-    @Override
-    public Page<BookResponseDto> getAllBooks(Pageable pageable) {
-        return bookRepository.findAll(pageable)
-                .map(this::convertToDto);
-    }
-
+    // 책 수정 폼 불러오기
     @Transactional(readOnly = true)
     @Override
     public BookDetailDto getBookDetailsForAdmin(Long bookId) {
-        if (!bookRepository.existsById(bookId)) {
-            throw new NotFoundBookException(bookId);
-        }
-
-        // 관리자용 상세정보 가져오기 (리뷰, 평점 등 제외)
-        Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new NotFoundBookException(bookId));
-
+        validateBookExists(bookId);
+        Book book = findBookById(bookId);
+        // 관리자용 상세정보 가져오기
         return bookMapper.toDetailDto(book);
     }
 
-
+    @Override
     @Transactional(readOnly = true)
     public Book getBookById(Long bookId) {
-        return bookRepository.findById(bookId)
-                .orElseThrow(() -> new BookNotFoundException(bookId));
+        return findBookById(bookId);
     }
-
+    @Override
     @Transactional(readOnly = true)
     public BookDetailsDto getBookDetails(Long bookId) {
-
-        if (!bookRepository.existsById(bookId)) {
-            throw new NotFoundBookException(bookId);
-        }
+        validateBookExists(bookId);
 
         BookDetailsDto bookDetailsDto = bookRepository.findBookDetailsByBookId(bookId);
 
@@ -204,7 +165,7 @@ public class BookServiceImpl implements BookService {
 
         return bookDetailsDto;
     }
-
+    @Override
     public List<BookInfoDTO> getBookInfo(List<Long> bookIds) {
         List<Book> books = bookRepository.findAllById(bookIds);
 
@@ -231,10 +192,10 @@ public class BookServiceImpl implements BookService {
                 .toList();
     }
 
+    @Override
     @Transactional(readOnly = true)
     public void notExistThrow(Long bookId) {
-        if (!bookRepository.existsById(bookId))
-            throw new BookNotFoundException(bookId);
+        validateBookExists(bookId);
     }
 
     @Override
@@ -291,9 +252,75 @@ public class BookServiceImpl implements BookService {
         return bookSearchResponseDTOPage.getContent().isEmpty() ? Optional.empty() : Optional.ofNullable(bookSearchResponseDTOPage.getContent().getFirst());
     }
 
-    // entity -> ResponseDto
+    //private
+
+    private void validateBookDto(Object bookDto) {
+        if (bookDto == null) {
+            throw new BookDtoNullException("bookDto가 null 입니다.");
+        }
+    }
+
+    private void validateBookExists(Long bookId) {
+        if (!bookRepository.existsById(bookId)) {
+            throw new BookNotFoundException(bookId);
+        }
+    }
+
+    private void validateIsbnDuplicate(String isbn) {
+        if (bookRepository.existsByIsbn(isbn)) {
+            throw new IsbnAlreadyExistsException(isbn);
+        }
+    }
+
+    private Book findBookById(Long bookId) {
+        return bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException(bookId));
+    }
+
+    // book -> Dto
     private BookResponseDto convertToDto(Book book) {
         return bookMapper.toResponseDto(book);
     }
 
+    // 저장와 업데이트 통합
+    private Book saveOrUpdateBook(BookRequestDto bookDto, Long bookId) {
+        validateBookDto(bookDto);
+
+        Book book;
+        if (bookId == null) { // 새 책 등록
+            validateIsbnDuplicate(bookDto.getIsbn());
+            book = bookMapper.toEntity(bookDto);
+        } else { // 기존 책 수정
+            book = findBookById(bookId);
+            bookMapper.updateEntityFromDto(book, bookDto);
+        }
+
+        bookRepository.save(book);
+        bookAuthorService.parseAndSaveBookAuthors(book, bookDto.getAuthor());
+
+        return book;
+    }
+    private void saveToElasticsearch(Book book) {
+        //엘라스틱 서치를 위한 레파지토리에도 저장. 실패(서버 문제 등)에도 문제없도록 try-catch 처리.
+        try {
+            // book 엔티티를 조회하고, 해당 엔티티와 저자 정보를 가져옵니다.
+            Optional<Book> optionalBook = bookRepository.findById(book.getId());
+
+            // 엔티티가 존재하지 않으면 예외를 던집니다.
+            if (optionalBook.isPresent()) {
+                Book bookEntity = optionalBook.get();
+
+                // Elasticsearch에 저장할 수 있도록 처리
+                elasticSearchService.saveBook(bookEntity);
+            } else {
+                USER_LOG.warn("Book not found with id: {}", book.getId());
+            }
+        } catch (ElasticsearchException e) {
+            // Elasticsearch 관련 예외 처리
+            USER_LOG.warn("Elasticsearch 서버 오류: " + e.getMessage(), e);
+        } catch (Exception e) {
+            // 기타 예외 처리
+            USER_LOG.warn("Elasticsearch 저장 실패: " + e.getMessage(), e);
+        }
+    }
 }

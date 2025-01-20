@@ -1,4 +1,4 @@
-package store.aurora.book.service.aladin;
+package store.aurora.book.service.book;
 
 import store.aurora.book.dto.aladin.AladinBookRequestDto;
 

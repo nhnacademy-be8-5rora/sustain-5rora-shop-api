@@ -2,6 +2,7 @@ package store.aurora.book.service.book;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.dto.*;
 import store.aurora.book.dto.aladin.*;
@@ -15,6 +16,8 @@ public interface BookService {
 
     void saveBook(BookRequestDto bookDto, MultipartFile coverImage, List<MultipartFile> additionalImages);
 
+    void saveBookFromApi(AladinBookRequestDto bookDto, List<MultipartFile> additionalImages);
+
     void updateBook(Long bookId, BookRequestDto bookDto,
                     MultipartFile coverImage,
                     List<MultipartFile> additionalImages,
@@ -23,8 +26,6 @@ public interface BookService {
     Page<BookResponseDto> getBooksByActive(boolean isActive, Pageable pageable);
 
     void updateBookActivation(Long bookId, boolean isActive);
-
-    Page<BookResponseDto> getAllBooks(Pageable pageable);
 
     BookDetailDto getBookDetailsForAdmin(Long bookId);
 

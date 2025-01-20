@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.Like;
-import store.aurora.book.exception.book.NotFoundBookException;
+import store.aurora.book.exception.book.BookNotFoundException;
 import store.aurora.book.repository.book.BookRepository;
 import store.aurora.book.repository.like.LikeRepository;
 import store.aurora.book.service.like.LikeService;
@@ -26,7 +26,7 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     public boolean pressLike(Long bookId, String userId) {
-        Book findBook = bookRepository.findById(bookId).orElseThrow(() -> new NotFoundBookException(bookId));
+        Book findBook = bookRepository.findById(bookId).orElseThrow(() -> new BookNotFoundException(bookId));
         User findUser = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
 
         // 이미 좋아요를 눌렀는지 확인
@@ -46,7 +46,7 @@ public class LikeServiceImpl implements LikeService {
     public Like cancelLike(Long bookId, String userId) {
         // 책과 사용자가 존재하는지 확인
         Book findBook = bookRepository.findById(bookId)
-                .orElseThrow(() -> new NotFoundBookException(bookId)); // 책이 없으면 예외 발생
+                .orElseThrow(() -> new BookNotFoundException(bookId)); // 책이 없으면 예외 발생
         User findUser = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId)); // 사용자가 없으면 예외 발생
 

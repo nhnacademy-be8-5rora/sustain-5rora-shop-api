@@ -1,4 +1,4 @@
-package store.aurora.book.service.impl;
+package store.aurora.book.service.like.impl;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,7 +11,6 @@ import store.aurora.book.entity.Book;
 import store.aurora.book.entity.Like;
 import store.aurora.book.repository.book.BookRepository;
 import store.aurora.book.repository.like.LikeRepository;
-import store.aurora.book.service.like.impl.LikeServiceImpl;
 import store.aurora.user.entity.User;
 import store.aurora.user.repository.UserRepository;
 

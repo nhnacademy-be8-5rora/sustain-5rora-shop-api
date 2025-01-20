@@ -38,7 +38,7 @@ public class BookRequestDto {
     private LocalDate pubDate;
 
     @NotBlank(message = "ISBN은 필수 항목입니다.")
-    @Pattern(regexp = "\\d{10}|\\d{13}", message = "ISBN은 10자리 또는 13자리 숫자여야 합니다.")
+    @Pattern(regexp = "^(?:[a-zA-Z0-9]{10}|\\d{13})$", message = "ISBN은 10자리(알파벳 포함 가능) 또는 13자리 숫자여야 합니다.")
     private String isbn;
 
     @Positive(message = "판매 가격은 양수여야 합니다.")

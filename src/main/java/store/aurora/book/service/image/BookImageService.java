@@ -7,7 +7,7 @@ import store.aurora.book.entity.BookImage;
 import java.util.List;
 
 public interface BookImageService {
-    void processApiImages(Book book, String coverUrl, List<MultipartFile> uploadedImages);
+    void processBookImages(Book book, String coverUrl, MultipartFile coverImage, List<MultipartFile> additionalImages);
 
     void handleImageUpload(Book book, MultipartFile image, boolean isThumbnail);
 

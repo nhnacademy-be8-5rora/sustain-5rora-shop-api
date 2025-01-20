@@ -1,13 +1,13 @@
 package store.aurora.book.service.tag.impl;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import store.aurora.book.dto.tag.TagRequestDto;
 import store.aurora.book.dto.tag.TagResponseDto;
@@ -16,10 +16,10 @@ import store.aurora.book.entity.tag.BookTag;
 import store.aurora.book.entity.tag.Tag;
 import store.aurora.book.exception.tag.TagAlreadyExistException;
 import store.aurora.book.exception.tag.TagNotFoundException;
+import store.aurora.book.parser.TagParser;
 import store.aurora.book.repository.tag.BookTagRepository;
 import store.aurora.book.repository.tag.TagRepository;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,204 +28,274 @@ import static org.mockito.Mockito.*;
 
 class TagServiceImplTest {
 
+    @InjectMocks
+    private TagServiceImpl tagService;
+
     @Mock
     private TagRepository tagRepository;
 
     @Mock
     private BookTagRepository bookTagRepository;
 
-    @InjectMocks
-    private TagServiceImpl tagService;
+    @Mock
+    private TagParser tagParser;
+
+    private Tag testTag;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        testTag = new Tag("테스트 태그");
     }
 
     @Test
+    @DisplayName("키워드로 태그 검색")
     void testSearchTags() {
-        String keyword = "av";
-        Tag tag = new Tag( "java");
-        when(tagRepository.findByNameContaining(keyword)).thenReturn(Collections.singletonList(tag));
+        // Given
+        when(tagRepository.findByNameContaining("테스트")).thenReturn(List.of(testTag));
 
-        List<TagResponseDto> result = tagService.searchTags(keyword);
+        // When
+        List<TagResponseDto> result = tagService.searchTags("테스트");
 
-        assertThat(result)
-                .hasSize(1)
-                .extracting(TagResponseDto::getName)
-                .containsExactly("java");
-
-        verify(tagRepository, times(1)).findByNameContaining(keyword);
+        // Then
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getName()).isEqualTo("테스트 태그");
     }
 
     @Test
+    @DisplayName("모든 태그 목록을 페이지네이션으로 조회")
     void testGetTags() {
-        Pageable pageable = PageRequest.of(0, 10);
-        Tag tag = new Tag("java");
-        Page<Tag> tagPage = new PageImpl<>(Collections.singletonList(tag));
-        when(tagRepository.findAllByOrderById(pageable)).thenReturn(tagPage);
+        // Given
+        Pageable pageable = mock(Pageable.class);
+        List<Tag> tags = List.of(testTag);
+        when(tagRepository.findAllByOrderById(pageable)).thenReturn(new PageImpl<>(tags));
 
+        // When
         Page<TagResponseDto> result = tagService.getTags(pageable);
 
-        assertThat(result.getContent())
-                .hasSize(1)
-                .extracting(TagResponseDto::getName)
-                .containsExactly("java");
-
-        verify(tagRepository, times(1)).findAllByOrderById(pageable);
+        // Then
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().getFirst().getName()).isEqualTo("테스트 태그");
     }
 
     @Test
+    @DisplayName("ID로 태그 조회")
     void testGetTagById() {
-        Tag tag = new Tag( "java");
-        when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
+        // Given
+        when(tagRepository.findById(1L)).thenReturn(Optional.of(testTag));
 
-        TagResponseDto result = tagService.getTagById(1L);
+        // When
+        TagResponseDto response = tagService.getTagById(1L);
 
-        assertThat(result)
-                .isNotNull()
-                .extracting(TagResponseDto::getName)
-                .isEqualTo("java");
-
-        verify(tagRepository, times(1)).findById(1L);
+        // Then
+        assertThat(response.getName()).isEqualTo("테스트 태그");
     }
 
     @Test
-    void testGetTagById_TagNotFound() {
+    @DisplayName("존재하지 않는 태그 조회 시 예외 발생")
+    void testGetTagById_NotFound() {
+        // Given
         when(tagRepository.findById(1L)).thenReturn(Optional.empty());
 
+        // When & Then
         assertThatThrownBy(() -> tagService.getTagById(1L))
-                .isInstanceOf(TagNotFoundException.class)
-                .hasMessageContaining("태그를 찾을 수 없습니다. ID: 1");
-
-        verify(tagRepository, times(1)).findById(1L);
+                .isInstanceOf(TagNotFoundException.class);
     }
 
     @Test
+    @DisplayName("새로운 태그 추가")
     void testCreateTag() {
-        TagRequestDto requestDto = new TagRequestDto("java");
-        when(tagRepository.findByName("java")).thenReturn(Optional.empty());
-        when(tagRepository.save(any(Tag.class))).thenReturn(new Tag("java"));
+        // Given
+        TagRequestDto request = new TagRequestDto("새 태그");
+        when(tagRepository.findByName(request.getName())).thenReturn(Optional.empty());
 
-        TagResponseDto result = tagService.createTag(requestDto);
+        when(tagRepository.save(any(Tag.class))).thenReturn(new Tag(1L, "새 태그"));
 
-        assertThat(result)
-                .isNotNull()
-                .extracting(TagResponseDto::getName)
-                .isEqualTo("java");
+        // When
+        TagResponseDto result = tagService.createTag(request);
 
-        verify(tagRepository, times(1)).findByName("java");
-        verify(tagRepository, times(1)).save(any(Tag.class));
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getName()).isEqualTo("새 태그");
     }
 
     @Test
-    void testCreateTag_AlreadyExists() {
-        TagRequestDto requestDto = new TagRequestDto("java");
-        when(tagRepository.findByName("java")).thenReturn(Optional.of(new Tag("java")));
+    @DisplayName("중복된 태그 추가 시 예외 발생")
+    void testCreateTag_Duplicate() {
+        // Given
+        TagRequestDto request = new TagRequestDto("테스트 태그");
+        when(tagRepository.findByName(request.getName())).thenReturn(Optional.of(testTag));
 
-        assertThatThrownBy(() -> tagService.createTag(requestDto))
-                .isInstanceOf(TagAlreadyExistException.class)
-                .hasMessageContaining("이미 존재하는 태그입니다");
-
-        verify(tagRepository, times(1)).findByName("java");
+        // When & Then
+        assertThatThrownBy(() -> tagService.createTag(request))
+                .isInstanceOf(TagAlreadyExistException.class);
     }
 
     @Test
-    void testUpdateTag() {
-        Tag tag = new Tag("java");
-        TagRequestDto requestDto = new TagRequestDto("spring");
-        when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
-        when(tagRepository.save(any(Tag.class))).thenReturn(new Tag("spring"));
+    @DisplayName("태그 수정 성공")
+    void testUpdateTag_Success() {
+        // Given
+        TagRequestDto updateRequest = new TagRequestDto("수정된 태그");
+        when(tagRepository.findById(1L)).thenReturn(Optional.of(testTag));
+        when(tagRepository.findByName(updateRequest.getName())).thenReturn(Optional.empty());
+        when(tagRepository.save(any(Tag.class))).thenReturn(new Tag(1L, "수정된 태그"));
 
-        TagResponseDto result = tagService.updateTag(1L, requestDto);
+        // When
+        TagResponseDto result = tagService.updateTag(1L, updateRequest);
 
-        assertThat(result)
-                .isNotNull()
-                .extracting(TagResponseDto::getName)
-                .isEqualTo("spring");
-
-        verify(tagRepository, times(1)).findById(1L);
-        verify(tagRepository, times(1)).save(any(Tag.class));
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getName()).isEqualTo("수정된 태그");
+        verify(tagRepository, times(1)).save(testTag);
     }
 
     @Test
+    @DisplayName("존재하지 않는 태그 수정 시 예외 발생")
+    void testUpdateTag_NotFound() {
+        // Given
+        TagRequestDto updateRequest = new TagRequestDto("수정된 태그");
+        when(tagRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> tagService.updateTag(1L, updateRequest))
+                .isInstanceOf(TagNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("중복된 태그 이름으로 수정 시 예외 발생")
+    void testUpdateTag_DuplicateName() {
+        // Given
+        TagRequestDto updateRequest = new TagRequestDto("테스트 태그");
+        when(tagRepository.findById(1L)).thenReturn(Optional.of(testTag));
+        when(tagRepository.findByName(updateRequest.getName())).thenReturn(Optional.of(testTag));
+
+        // When & Then
+        assertThatThrownBy(() -> tagService.updateTag(1L, updateRequest))
+                .isInstanceOf(TagAlreadyExistException.class);
+    }
+
+    @Test
+    @DisplayName("태그 삭제")
     void testDeleteTag() {
-        Tag tag = new Tag("java");
-        when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
+        // Given
+        when(tagRepository.findById(1L)).thenReturn(Optional.of(testTag));
 
+        // When
         tagService.deleteTag(1L);
 
-        verify(tagRepository, times(1)).findById(1L);
-        verify(tagRepository, times(1)).delete(tag);
+        // Then
+        verify(tagRepository, times(1)).delete(testTag);
     }
 
     @Test
+    @DisplayName("존재하지 않는 태그 삭제 시 예외 발생")
+    void testDeleteTag_NotFound() {
+        // Given
+        when(tagRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> tagService.deleteTag(1L))
+                .isInstanceOf(TagNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("책의 태그 정보를 포맷팅된 문자열로 반환")
+    void testGetFormattedTags() {
+        // Given
+        Book testBook = new Book();
+        BookTag bookTag = new BookTag(1L, testTag, testBook);
+        List<BookTag> bookTags = List.of(bookTag);
+
+        when(bookTagRepository.findByBook(testBook)).thenReturn(bookTags);
+        when(tagParser.formatTags(bookTags)).thenReturn("테스트 태그");
+
+        // When
+        String result = tagService.getFormattedTags(testBook);
+
+        // Then
+        assertThat(result).isEqualTo("테스트 태그");
+        verify(tagParser, times(1)).formatTags(bookTags);
+    }
+
+    @Test
+    @DisplayName("기존 태그는 반환하고, 존재하지 않는 태그는 새로 생성")
     void testGetOrCreateTagsByName() {
-        String tags = "java,spring";
-        when(tagRepository.findByName("java")).thenReturn(Optional.of(new Tag("java")));
-        when(tagRepository.findByName("spring")).thenReturn(Optional.empty());
-        when(tagRepository.save(any(Tag.class))).thenReturn(new Tag("spring"));
+        // Given
+        String tagString = "테스트 태그, 새 태그";
+        List<String> parsedTags = List.of("테스트 태그", "새 태그");
 
-        List<Tag> result = tagService.getOrCreateTagsByName(tags);
+        when(tagParser.parseTags(tagString)).thenReturn(parsedTags);
+        when(tagRepository.findByName("테스트 태그")).thenReturn(Optional.of(testTag));
+        when(tagRepository.findByName("새 태그")).thenReturn(Optional.empty());
+        when(tagRepository.save(any(Tag.class))).thenReturn(new Tag(2L, "새 태그"));
 
-        assertThat(result)
-                .hasSize(2)
-                .extracting(Tag::getName)
-                .containsExactly("java", "spring");
+        // When
+        List<Tag> result = tagService.getOrCreateTagsByName(tagString);
 
-        verify(tagRepository, times(1)).findByName("java");
-        verify(tagRepository, times(1)).findByName("spring");
+        // Then
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getName()).isEqualTo("테스트 태그");
+        assertThat(result.get(1).getName()).isEqualTo("새 태그");
         verify(tagRepository, times(1)).save(any(Tag.class));
     }
 
     @Test
-    void testGetOrCreateTagsByName_EmptyTags() {
-        when(tagRepository.findByName(anyString())).thenReturn(Optional.empty());
+    @DisplayName("빈 문자열이 입력될 경우 빈 리스트 반환")
+    void testGetOrCreateTagsByName_EmptyString() {
+        // Given
+        String emptyTags = "";
 
-        // null 입력 테스트
-        List<Tag> resultNull = tagService.getOrCreateTagsByName(null);
-        assertThat(resultNull).isEmpty();
+        // When
+        List<Tag> result = tagService.getOrCreateTagsByName(emptyTags);
 
-        // 빈 문자열 테스트
-        List<Tag> resultEmpty = tagService.getOrCreateTagsByName("");
-        assertThat(resultEmpty).isEmpty();
-
-        // 공백 문자열 테스트
-        List<Tag> resultWhitespace = tagService.getOrCreateTagsByName("   ");
-        assertThat(resultWhitespace).isEmpty();
-
-        // 잘못된 입력 테스트
-        List<Tag> resultInvalid = tagService.getOrCreateTagsByName(",");
-        assertThat(resultInvalid).isEmpty();
+        // Then
+        assertThat(result).isEmpty();
+        verify(tagRepository, never()).findByName(anyString());
+        verify(tagRepository, never()).save(any(Tag.class));
     }
 
     @Test
+    @DisplayName("null이 입력될 경우 빈 리스트 반환")
+    void testGetOrCreateTagsByName_NullInput() {
+
+        // When
+        List<Tag> result = tagService.getOrCreateTagsByName(null);
+
+        // Then
+        assertThat(result).isEmpty();
+        verify(tagRepository, never()).findByName(anyString());
+        verify(tagRepository, never()).save(any(Tag.class));
+    }
+
+    @Test
+    @DisplayName("태그 리스트를 BookTag 리스트로 변환")
     void testCreateBookTags() {
-        Tag tag = new Tag("java");
-        List<Tag> tags = Collections.singletonList(tag);
+        // Given
+        Tag tag1 = new Tag(1L, "베스트셀러");
+        Tag tag2 = new Tag(2L, "신간");
 
-        List<BookTag> result = tagService.createBookTags(tags);
+        List<Tag> tags = List.of(tag1, tag2);
 
-        assertThat(result)
-                .hasSize(1)
-                .extracting(BookTag::getTag)
-                .containsExactly(tag);
+        // When
+        List<BookTag> bookTags = tagService.createBookTags(tags);
+
+        // Then
+        assertThat(bookTags).hasSize(2);
+        assertThat(bookTags.get(0).getTag()).isEqualTo(tag1);
+        assertThat(bookTags.get(1).getTag()).isEqualTo(tag2);
     }
 
     @Test
-    void testGetFormattedTags() {
-        Book book = new Book();
-        Tag tag = new Tag("java");
-        BookTag bookTag = new BookTag();
-        bookTag.setTag(tag);
-        when(bookTagRepository.findByBook(book)).thenReturn(Collections.singletonList(bookTag));
+    @DisplayName("빈 태그 리스트 입력 시 빈 리스트 반환")
+    void testCreateBookTags_EmptyList() {
+        // Given
+        List<Tag> tags = List.of();
 
-        String result = tagService.getFormattedTags(book);
+        // When
+        List<BookTag> bookTags = tagService.createBookTags(tags);
 
-        assertThat(result).isEqualTo("java");
-
-        verify(bookTagRepository, times(1)).findByBook(book);
+        // Then
+        assertThat(bookTags).isEmpty();
     }
-
-
 }

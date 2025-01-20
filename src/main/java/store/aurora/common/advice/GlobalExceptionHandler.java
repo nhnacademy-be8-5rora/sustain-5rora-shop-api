@@ -17,6 +17,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import store.aurora.file.TokenRefreshException;
+import store.aurora.key.KeyManagerJsonParsingException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -32,7 +33,7 @@ public class GlobalExceptionHandler {
         return createResponseEntity(e, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler({DataLimitExceededException.class, DataInsufficientException.class, ImageException.class})
+    @ExceptionHandler({DataLimitExceededException.class, DataInsufficientException.class, ImageException.class,DtoNullException.class})
     public ResponseEntity<ErrorResponseDto> handleAlreadyException(RuntimeException e) {
         return createResponseEntity(e, HttpStatus.BAD_REQUEST);
     }
@@ -78,6 +79,16 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+    @ExceptionHandler(KeyManagerJsonParsingException.class)
+    public ResponseEntity<ErrorResponseDto> handleKeyManagerJsonParsingException(KeyManagerJsonParsingException e) {
+        LOG.error("JSON 파싱 오류: {}", e.getMessage(), e);
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+                e.getMessage(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)

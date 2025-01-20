@@ -52,7 +52,7 @@ public class AladinBookRequestDto {
 
     private String cover;
 
-    private AladinBookRequestDto.SeriesInfo seriesInfo;
+    private SeriesInfo seriesInfo;
 
     @Min(value = 0, message = "재고는 0 이상이어야 합니다.")
     private int stock = 100;

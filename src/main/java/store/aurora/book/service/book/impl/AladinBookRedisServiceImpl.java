@@ -1,11 +1,11 @@
-package store.aurora.book.service.aladin.impl;
+package store.aurora.book.service.book.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import store.aurora.book.dto.aladin.AladinBookRequestDto;
-import store.aurora.book.service.aladin.AladinBookRedisService;
+import store.aurora.book.service.book.AladinBookRedisService;
 import store.aurora.book.util.RedisCacheManager;
 
 import java.time.Duration;

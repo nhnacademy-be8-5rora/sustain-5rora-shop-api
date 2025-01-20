@@ -24,7 +24,7 @@ import store.aurora.book.entity.Book;
 import store.aurora.book.entity.Like;
 import store.aurora.book.entity.Publisher;
 import store.aurora.book.entity.Series;
-import store.aurora.book.exception.book.NotFoundBookException;
+import store.aurora.book.exception.book.BookNotFoundException;
 import store.aurora.book.repository.book.BookRepository;
 import store.aurora.book.repository.like.LikeRepository;
 import store.aurora.book.service.book.impl.BookServiceImpl;
@@ -130,7 +130,7 @@ public class BookServiceTest {
 
         // When / Then
         assertThatThrownBy(() -> bookService.getBookDetails(bookId))
-                .isInstanceOf(NotFoundBookException.class)
+                .isInstanceOf(BookNotFoundException.class)
                 .hasMessageContaining(String.valueOf(bookId));
 
         verify(bookRepository).existsById(bookId);

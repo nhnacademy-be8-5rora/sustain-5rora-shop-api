@@ -11,6 +11,5 @@ public interface AuthorRoleRepository extends JpaRepository<AuthorRole, Long> {
     boolean existsByRole(String role);
     Optional<AuthorRole> findByRole(String role);
     Page<AuthorRole> findAllByOrderById(Pageable pageable);
-
 }
 

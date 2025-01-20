@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.entity.Book;
 import store.aurora.book.service.BookService;
+import store.aurora.coupon.feignclient.CouponClient;
 import store.aurora.order.dto.*;
 import store.aurora.order.entity.*;
 import store.aurora.order.entity.enums.OrderState;
@@ -41,6 +42,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     private final UserService userService;
     private final PaymentService paymentService;
     private final PointSpendService pointSpendService;
+    private final CouponClient couponClient;
 
     private static final Logger LOG = LoggerFactory.getLogger("user-logger");
 
@@ -217,6 +219,8 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                     .shipment(shipment)
                     .build();
 
+            //사용된 쿠폰의 상태 변경 LIVE -> USED
+            couponClient.used(detailDTO.getCouponId());
             orderDetailService.createOrderDetail(detail);
         }
 

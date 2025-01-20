@@ -12,15 +12,13 @@ import org.springframework.web.bind.annotation.*;
 import store.aurora.common.dto.ErrorResponseDto;
 import store.aurora.point.entity.PointPolicyCategory;
 import store.aurora.point.service.PointHistoryService;
-import store.aurora.user.dto.SignUpRequest;
-import store.aurora.user.dto.UserDetailResponseDto;
-import store.aurora.user.dto.UserInfoResponseDto;
-import store.aurora.user.dto.UserResponseDto;
+import store.aurora.user.dto.*;
 import store.aurora.user.entity.User;
 import store.aurora.user.service.DoorayMessengerService;
 import store.aurora.user.service.UserService;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -87,15 +85,15 @@ public class UserController {
 
     // 인증코드 생성 및 전송
     @PostMapping("/send-verification-code")
-    public ResponseEntity<Map<String, String>> sendCode(@RequestBody SignUpRequest request) {
+    public ResponseEntity<Map<String, String>> sendCode(@RequestParam String phoneNumber) {
         String verificationCode = String.format("%06d", new Random().nextInt(999999));  // 인증 코드 생성
-        doorayMessengerService.sendVerificationCode(request.getPhoneNumber(), verificationCode);
+        doorayMessengerService.sendVerificationCode(phoneNumber, verificationCode);
         return ResponseEntity.ok(Map.of("message","인증 코드가 전송되었습니다."));
     }
 
     // 인증코드 검증
     @PostMapping("/verify-code")
-    public ResponseEntity<Map<String, String>> verifyCode(@RequestBody SignUpRequest request) {
+    public ResponseEntity<Map<String, String>> verifyCode(@RequestBody VerificationRequest request) {
         boolean isVerified = doorayMessengerService.verifyCode(request.getPhoneNumber(), request.getVerificationCode());
 
         if (!isVerified) {
@@ -124,6 +122,11 @@ public class UserController {
     public ResponseEntity<Map<String, String>> reactivateUser(@RequestParam String userId) {
         userService.reactivateUser(userId);
         return ResponseEntity.ok(Map.of("message", "휴면 계정이 활성화되었습니다."));
+    }
+
+    @GetMapping("birth/coupon")
+    List<String> getUserIdByMonth(@RequestParam int currentMonth){
+        return userService.searchByMonth(currentMonth);
     }
 
     @Operation(summary = "로그인 날짜 변경", description = "제공된 userId에 해당하는 유저의 마지막 로그인 날짜 업데이트")

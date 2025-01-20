@@ -21,10 +21,10 @@ public class UserRank {
     private Rank rankName;
 
     @Column(name = "rank_min_amount", nullable = false)
-    private int minAmount;
+    private Integer minAmount;
 
     @Column(name = "rank_max_amount")
-    private int maxAmount;
+    private Integer maxAmount;
 
     @Column(name = "point_rate", precision = 5, scale = 2, nullable = false)
     private BigDecimal pointRate;

@@ -78,20 +78,5 @@ public class AdminDeliveryServiceImpl implements AdminDeliveryService {
         } else if (shipmentStatus.equals("PENDING")) {
             deliveryStatusChanger.updateOrderStatusToPending(orderId);
         }
-
-//        OrderState orderState = OrderState.valueOf(shipmentStatus);
-//        order.setState(OrderState.valueOf(orderState.toString()));
-//
-//        List<OrderDetail> orderDetails = order.getOrderDetails();
-//        for (OrderDetail orderDetail : orderDetails) {
-//            orderDetail.setState(OrderState.valueOf(shipmentStatus));
-//        }
-//
-//        Shipment shipment = orderDetails.getFirst().getShipment();
-//        shipment.setState(ShipmentState.valueOf(shipmentStatus));
-//        shipment.setShipmentDatetime(LocalDateTime.now());
-//        shipmentService.updateShipment(shipment);
-//
-//        deliveryStatusChanger.updateOrderStatusToShipping(orderId);
     }
 }

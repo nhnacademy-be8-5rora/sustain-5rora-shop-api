@@ -143,7 +143,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .name(orderInfo.getOrdererName())
                 .orderPhone(orderInfo.getOrdererPhone())
                 .orderEmail(orderInfo.getOrdererEmail())
-//                .preferredDeliveryDate(orderInfo.getPreferredDeliveryDate())
+                .preferredDeliveryDate(orderInfo.getPreferredDeliveryDate())
                 .user(userService.getUser(orderInfo.getUsername()))
                 .build();
 
@@ -182,7 +182,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                 .orderPhone(orderInfo.getOrdererPhone())
                 .orderEmail(orderInfo.getOrdererEmail())
 
-//                .preferredDeliveryDate(orderInfo.getPreferredDeliveryDate())
+                .preferredDeliveryDate(orderInfo.getPreferredDeliveryDate())
                 .password(orderInfo.getNonMemberPassword())
                 .build();
 

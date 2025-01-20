@@ -14,13 +14,6 @@ public interface OrderProcessService {
     String getOrderUuid();
 
     /**
-     * 주문 상세 정보를 통해 주문 총 금액 계산 (결제 금액은 포인트 사용량 포함해야 함)
-     * @param orderDetailList 주문 상세 정보
-     * @return totalAmount 총 금액
-     */
-    int getTotalAmountFromOrderDetailList(List<OrderDetailDTO> orderDetailList);
-
-    /**
      * 주문 정보를 uuid를 key로 하여 redis에 저장
      * @param uuid 주문 번호
      * @param orderInfo 주문 정보

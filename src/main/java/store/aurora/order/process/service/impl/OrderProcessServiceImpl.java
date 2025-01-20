@@ -217,6 +217,8 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                     .shipment(shipment)
                     .build();
 
+            bookService.updateBookStockOnOrder(book.getId(), detailDTO.getQuantity());
+
             orderDetailService.createOrderDetail(detail);
         }
 

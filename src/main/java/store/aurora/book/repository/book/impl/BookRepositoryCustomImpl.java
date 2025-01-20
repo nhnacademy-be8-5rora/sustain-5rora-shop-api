@@ -88,6 +88,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
             case SortConstants.REVIEW_RATING -> getAverageReviewRatingSubquery(); // reviewRating에 대한 정렬 처리
             case SortConstants.LIKE -> getLikeCountSubquery();
             case SortConstants.VIEW -> getViewCountSubquery();
+            case SortConstants.REVIEWCOUNT -> getReviewCountSubquery();
             default -> book.id; // 기본값
         };
 
@@ -152,6 +153,8 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         // Count query for pagination
         long total = from(book)
                 .where(titleCondition) // 제목 필터링 조건 추가
+                .where(reviewCountCondition)
+                .where(book.active.isTrue())
                 .fetchCount();
 
         return new PageImpl<>(content, pageable, total);
@@ -181,8 +184,14 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
             case SortConstants.REVIEW_RATING -> getAverageReviewRatingSubquery(); // reviewRating에 대한 정렬 처리
             case SortConstants.LIKE -> getLikeCountSubquery();
             case SortConstants.VIEW -> getViewCountSubquery();
+            case SortConstants.REVIEWCOUNT -> getReviewCountSubquery();
             default -> book.title; // 기본값
         };
+
+        // `reviewRating` 기준으로 정렬 시, 리뷰가 100개 이상인 책만 필터링하는 조건 추가
+        BooleanExpression reviewCountCondition = (sortOrder.getProperty().equalsIgnoreCase(SortConstants.REVIEW_RATING))
+                ? getReviewCountSubquery().goe(100) // 리뷰 개수가 100개 이상인 경우에만
+                : null;
 
         // 제네릭 타입 명시적 설정
         @SuppressWarnings("unchecked")
@@ -205,6 +214,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .leftJoin(bookAuthor).on(bookAuthor.book.id.eq(book.id))
                 .leftJoin(bookAuthor.author, author)
                 .leftJoin(bookAuthor.authorRole, authorRole)
+                .where(reviewCountCondition)
                 .where(whereBuilder) // 동적으로 where 조건 추가
                 .where(book.active.isTrue())
                 .groupBy(book.id, book.title, book.regularPrice, book.salePrice, book.publishDate, publisher.name)
@@ -255,6 +265,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .leftJoin(bookAuthor).on(bookAuthor.book.id.eq(book.id))
                 .leftJoin(bookAuthor.author, author)
                 .where(whereBuilder) // 동적으로 where 조건 추가
+                .where(book.active.isTrue())
                 .fetchCount();
 
         // 페이지 처리된 결과 반환
@@ -274,19 +285,25 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         // 최하위 카테고리일 경우 해당 카테고리만 가져오고, 그렇지 않으면 해당 카테고리와 하위 카테고리들을 모두 가져오기
         var categoryHierarchySubquery = JPAExpressions.select(category.id)
                 .from(category)
-                .where(
-                        category.id.eq(categoryId) // 현재 카테고리
-                                .or(category.parent.id.eq(categoryId)) // 첫 번째 단계 (상위 카테고리의 하위 카테고리)
-                                .or(category.id.in(
+                .where(category.id.eq(categoryId) // 현재 카테고리
+                        .or(category.parent.id.eq(categoryId)) // 상위 카테고리
+                        .or(category.id.in(
+                                        JPAExpressions.select(category.id)
+                                                .from(category)
+                                                .where(category.parent.id.eq(categoryId)) // 하위 카테고리 1단계
+                                )
+                        )
+                        .or(category.id.in(
                                         JPAExpressions.select(category.id)
                                                 .from(category)
                                                 .where(category.parent.id.in(
                                                         JPAExpressions.select(category.id)
                                                                 .from(category)
-                                                                .where(category.parent.id.eq(categoryId)) // 두 번째 단계
+                                                                .where(category.parent.id.eq(categoryId)) // 하위 카테고리 2단계
                                                 ))
-                                ))
-                                .or(category.id.in(
+                                )
+                        )
+                        .or(category.id.in(
                                         JPAExpressions.select(category.id)
                                                 .from(category)
                                                 .where(category.parent.id.in(
@@ -295,12 +312,15 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                                                                 .where(category.parent.id.in(
                                                                         JPAExpressions.select(category.id)
                                                                                 .from(category)
-                                                                                .where(category.parent.id.eq(categoryId)) // 세 번째 단계
+                                                                                .where(category.parent.id.eq(categoryId)) // 하위 카테고리 3단계
                                                                 ))
                                                 ))
-                                ))
+                                )
+                        )
                 )
                 .distinct();
+
+
 
 
         // 리뷰 개수
@@ -317,9 +337,13 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
             case SortConstants.REVIEW_RATING -> getAverageReviewRatingSubquery(); // reviewRating에 대한 정렬 처리
             case SortConstants.LIKE -> getLikeCountSubquery();
             case SortConstants.VIEW -> getViewCountSubquery();
+            case SortConstants.REVIEWCOUNT -> getReviewCountSubquery();
             default -> book.title; // 기본값
         };
-
+// `reviewRating` 기준으로 정렬 시, 리뷰가 100개 이상인 책만 필터링하는 조건 추가
+        BooleanExpression reviewCountCondition = (sortOrder.getProperty().equalsIgnoreCase(SortConstants.REVIEW_RATING))
+                ? getReviewCountSubquery().goe(100) // 리뷰 개수가 100개 이상인 경우에만
+                : null;
         // 제네릭 타입 명시적 설정
         @SuppressWarnings("unchecked")
         OrderSpecifier<Long> orderSpecifier = sortOrder.getDirection().isDescending()
@@ -342,6 +366,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .leftJoin(bookCategory).on(bookCategory.book.id.eq(book.id))
                 .leftJoin(bookCategory.category, category)
                 .where(whereBuilder) // 동적으로 where 조건 추가
+                .where(reviewCountCondition)
                 .where(book.active.isTrue())
                 .groupBy(book.id, book.title, book.regularPrice, book.salePrice, book.publishDate, publisher.name)
                 .orderBy(orderSpecifier) // 정렬 조건 추가
@@ -391,6 +416,9 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .leftJoin(bookCategory).on(bookCategory.book.id.eq(book.id))
                 .leftJoin(bookCategory.category, category)
                 .where(whereBuilder) // 동적으로 where 조건 추가
+                .where(reviewCountCondition)
+                .where(book.active.isTrue())
+                .distinct() // 중복 제거
                 .fetchCount();
 
         // 페이지 처리된 결과 반환
@@ -566,6 +594,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
             case SortConstants.REVIEW_RATING -> getAverageReviewRatingSubquery(); // reviewRating에 대한 정렬 처리
             case SortConstants.LIKE -> getLikeCountSubquery();
             case SortConstants.VIEW -> getViewCountSubquery();
+            case SortConstants.REVIEWCOUNT -> getReviewCountSubquery();
             default -> book.id; // 기본값
         };
 
@@ -632,6 +661,8 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
         // Count query for pagination
         long total = from(book)
                 .where(book.id.in(bookId)) // bookId에 포함된 책만 조회
+                .where(reviewCountCondition)
+                .where(book.active.isTrue())
                 .fetchCount();
 
         return new PageImpl<>(content, pageable, total);
@@ -666,7 +697,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
     }
 
     // 좋아요 수를 가져오는 서브쿼리
-    public Expression<Long> getLikeCountSubquery() {
+    private Expression<Long> getLikeCountSubquery() {
         return JPAExpressions.select(like.count())
                 .from(like)
                 .where(like.book.id.eq(book.id))
@@ -691,6 +722,113 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .groupBy(orderDetail.book.id)
                 .orderBy(orderDetail.quantity.sum().desc())
                 .fetchFirst(); // 첫 번째 결과만 가져옴
+    }
+
+    @Override
+    public Page<BookSearchEntityDTO> findBooksByTagNameWithDetails(String tagName, Pageable pageable) {
+        if (Objects.isNull(tagName) || tagName.isBlank()) {
+            return Page.empty(pageable);
+        }
+
+        // 리뷰 개수
+        var reviewCountSubquery = JPAExpressions.select(review.count().intValue()) // int로 변환
+                .from(review)
+                .where(review.book.id.eq(book.id));
+
+        // 정렬 조건 설정
+        Sort.Order sortOrder = pageable.getSort().stream().findFirst().orElse(Sort.Order.asc("title")); // 기본 정렬 기준
+        Expression<?> orderByExpression = switch (sortOrder.getProperty().toLowerCase()) {
+            case SortConstants.SALE_PRICE -> book.salePrice;
+            case SortConstants.PUBLISH_DATE -> book.publishDate;
+            case SortConstants.TITLE -> book.title;
+            case SortConstants.REVIEW_RATING -> getAverageReviewRatingSubquery(); // reviewRating에 대한 정렬 처리
+            case SortConstants.LIKE -> getLikeCountSubquery();
+            case SortConstants.VIEW -> getViewCountSubquery();
+            default -> book.title; // 기본값
+        };
+// `reviewRating` 기준으로 정렬 시, 리뷰가 100개 이상인 책만 필터링하는 조건 추가
+        BooleanExpression reviewCountCondition = (sortOrder.getProperty().equalsIgnoreCase(SortConstants.REVIEW_RATING))
+                ? getReviewCountSubquery().goe(100) // 리뷰 개수가 100개 이상인 경우에만
+                : null;
+        // 제네릭 타입 명시적 설정
+        @SuppressWarnings("unchecked")
+        OrderSpecifier<Long> orderSpecifier = sortOrder.getDirection().isDescending()
+                ? new OrderSpecifier<>(Order.DESC, (Expression<Long>) orderByExpression)
+                : new OrderSpecifier<>(Order.ASC, (Expression<Long>) orderByExpression);
+
+
+        // 메인 쿼리: 저자 이름 검색 및 도서 정보 조회
+        BooleanBuilder whereBuilder = new BooleanBuilder();
+        whereBuilder.and(Expressions.stringTemplate("LOWER({0})", tag.name).like("%" + tagName.toLowerCase() + "%")); // 대소문자 구분 없이 태그이름 조건
+
+        // reviewrating으로 정렬할 때, 리뷰 개수가 100개 이상인 책만 가져오기
+        if (SortConstants.REVIEW_RATING.equalsIgnoreCase(sortOrder.getProperty())) {
+            whereBuilder.and(reviewCountSubquery.goe(100)); // 리뷰 개수가 100개 이상인 책만 가져오기
+        }
+
+        List<Tuple> results = from(book)
+                .leftJoin(book.publisher, publisher)
+                .leftJoin(bookAuthor).on(bookAuthor.book.id.eq(book.id))
+                .leftJoin(bookAuthor.author, author)
+                .leftJoin(bookAuthor.authorRole, authorRole)
+                .leftJoin(book.bookTags,bookTag)
+                .leftJoin(bookTag.tag,tag)
+                .where(whereBuilder) // 동적으로 where 조건 추가
+                .where(book.active.isTrue())
+                .groupBy(book.id, book.title, book.regularPrice, book.salePrice, book.publishDate, publisher.name)
+                .orderBy(orderSpecifier) // 동적 정렬 조건 추가
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .select(
+                        book.id,
+                        book.title,
+                        book.regularPrice,
+                        book.salePrice,
+                        book.isSale,
+                        book.publishDate,
+                        publisher.name,
+                        // 여러 저자와 역할을 쉼표로 묶어서 반환
+                        JPAExpressions.select(Expressions.stringTemplate(
+                                        StringConstants.GROUP_CONCAT_AUTHOR_ROLE,
+                                        author.name, authorRole.role
+                                ))
+                                .from(bookAuthor)
+                                .leftJoin(bookAuthor.author, author)
+                                .leftJoin(bookAuthor.authorRole, authorRole)
+                                .where(bookAuthor.book.id.eq(book.id)),
+                        getBookImagePathSubquery(),
+                        // 카테고리 아이디를 List로 변환
+                        JPAExpressions.select(Expressions.stringTemplate(
+                                        StringConstants.GROUP_CONCAT_CATEGORY_ID,
+                                        category.id
+                                ))
+                                .from(bookCategory)
+                                .leftJoin(bookCategory.category, category)
+                                .where(bookCategory.book.id.eq(book.id)),
+                        getViewCountSubquery(), // 조회수 추가
+                        reviewCountSubquery, // 리뷰 갯수 추가
+                        getAverageReviewRatingSubquery() // 평균 리뷰 점수 추가
+                )
+                .fetch();
+
+        // 결과 변환
+        List<BookSearchEntityDTO> content = (results == null || results.isEmpty())
+                ? Collections.emptyList() // 결과가 없을 경우 빈 리스트 반환
+                : results.stream()
+                .map(this::convertToDTO) // 메서드 호출
+                .toList();
+
+        // 총 데이터 수 계산
+        long total = from(book)
+                .leftJoin(bookTag).on(bookTag.book.id.eq(book.id))
+                .leftJoin(bookTag.tag, tag)
+                .where(whereBuilder) // 동적으로 where 조건 추가
+                .where(book.active.isTrue())
+                .where(reviewCountCondition)
+                .fetchCount();
+
+        // 페이지 처리된 결과 반환
+        return new PageImpl<>(content, pageable, total);
     }
 
     private BookSearchEntityDTO convertToDTO(Tuple tuple) {

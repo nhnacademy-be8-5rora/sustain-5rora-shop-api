@@ -1,5 +1,6 @@
 package store.aurora.book.repository.impl;
 
+import com.querydsl.core.Tuple;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +18,7 @@ import store.aurora.book.dto.AuthorDTO;
 import store.aurora.book.entity.*;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
+import store.aurora.book.repository.*;
 
 import store.aurora.book.repository.book.BookRepository;
 import store.aurora.book.repository.like.LikeRepository;
@@ -42,9 +44,6 @@ public class BookRepositoryCustomTest {
 
     @Autowired
     private BookRepository bookRepository;
-
-    @Mock
-    private LikeRepository likeRepository;
 
     @BeforeEach
     public void setup() {
@@ -81,7 +80,6 @@ public class BookRepositoryCustomTest {
 
         entityManager.merge(book1);
         entityManager.merge(book2);
-
         // BookCategory 생성
         entityManager.merge(new BookCategory(1L, book1, category1));
         entityManager.merge(new BookCategory(2L, book1, category2));
@@ -122,7 +120,6 @@ public class BookRepositoryCustomTest {
 
         entityManager.merge(review1);
         entityManager.merge(review2);
-
 
     }
 

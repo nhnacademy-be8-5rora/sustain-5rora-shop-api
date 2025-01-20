@@ -112,6 +112,29 @@ public class BookServiceImpl implements BookService {
     // 책 활성/비활성(soft 삭제 기능)
     @Transactional
     @Override
+    public void updateBookStockOnOrder(Long bookId, int quantity) {
+        /*
+        *  1. 재고 감소
+        *  2. 재고 감소 후 책 정보 저장
+        *  3. todo: 재고 부족 시 어떻게 할지?
+         */
+
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new BookNotFoundException(bookId));
+
+        int newStock = book.getStock() - quantity;
+
+        if (newStock < 0) {
+            throw new IllegalArgumentException("재고가 부족합니다.");
+        }
+
+        book.setStock(quantity);
+        bookRepository.save(book);
+    }
+
+
+    @Transactional
+    @Override
     public void updateBookActivation(Long bookId, boolean isActive) {
         Book book = findBookById(bookId);
         book.setActive(isActive);

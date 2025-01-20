@@ -27,6 +27,8 @@ public interface BookService {
 
     void updateBookActivation(Long bookId, boolean isActive);
 
+    void updateBookStockOnOrder(Long bookId, int quantity);
+
     BookDetailDto getBookDetailsForAdmin(Long bookId);
 
     Book getBookById(Long bookId);

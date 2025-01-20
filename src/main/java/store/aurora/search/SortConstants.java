@@ -7,6 +7,7 @@ public class SortConstants {
     public static final String REVIEW_RATING = "reviewrating";
     public static final String LIKE = "like";
     public static final String VIEW = "view";
+    public static final String REVIEWCOUNT = "reviewcount";
 
     // Private constructor to prevent instantiation
     private SortConstants() {

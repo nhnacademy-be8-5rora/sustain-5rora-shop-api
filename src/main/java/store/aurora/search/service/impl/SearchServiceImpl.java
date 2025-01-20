@@ -45,6 +45,7 @@ public class SearchServiceImpl implements SearchService {
         } else {
             bookSearchEntityDTOPage = switch (type) {
                 case "author" -> bookRepository.findBooksByAuthorNameWithDetails(keyword, pageable);
+                case "tag" -> bookRepository.findBooksByTagNameWithDetails(keyword,pageable);
                 default -> bookRepository.findBooksByTitleWithDetails(keyword, pageable);
             };
         }

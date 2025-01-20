@@ -24,10 +24,11 @@ import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.search.repository.ElasticSearchRepository;
 
 import java.time.LocalDate;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-public class ElasticSearchServiceImplTest {
+class ElasticSearchServiceImplTest {
 
     @InjectMocks
     private ElasticSearchServiceImpl elasticSearchService;
@@ -62,8 +63,6 @@ public class ElasticSearchServiceImplTest {
     @Mock
     private ReviewService reviewService;
     private static final String USER_ID = "testUserId";
-    private static final String KEYWORD = "testKeyword";
-    private static final Pageable PAGEABLE = PageRequest.of(0, 8);
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -139,11 +138,41 @@ public class ElasticSearchServiceImplTest {
         return book;
     }
     @Test
-    void testSearchBooks_withNonFullTextSearchType() {
-        // 1. type이 "fullText"가 아닌 경우
-        Page<BookSearchResponseDTO> result = elasticSearchService.searchBooks("otherType", KEYWORD, PAGEABLE, USER_ID);
+    void testSearchBooks_withWeight() {
+        // given
+        String type = "weight";
+        String keyword = "testKeyword";
+        Pageable pageable = PageRequest.of(0, 10);
 
-        // 2. 반환값이 null인지 검증
-        assertTrue(result.isEmpty());  // "fullText"가 아니므로 null 반환되어야 함
+        // Mocking the repository method to return a mocked page of results
+        Page<BookSearchResponseDTO> mockPage = mock(Page.class);
+        when(elasticSearchRepository.searchBooksWithWeightedFields(eq(keyword), eq(pageable), eq(USER_ID)))
+                .thenReturn(mockPage);
+
+        // when
+        Page<BookSearchResponseDTO> result = elasticSearchService.searchBooks(type, keyword, pageable, USER_ID);
+
+        // then
+        assertEquals(mockPage, result);  // Verifying that the result is the mocked page
     }
+
+    @Test
+    void testSearchBooks_byField() {
+        // given
+        String type = "title";  // Assuming searching by 'title'
+        String keyword = "testKeyword";
+        Pageable pageable = PageRequest.of(0, 10);
+
+        // Mocking the repository method to return a mocked page of results
+        Page<BookSearchResponseDTO> mockPage = mock(Page.class);
+        when(elasticSearchRepository.searchBooksByField(eq(type), eq(keyword), eq(pageable)))
+                .thenReturn(mockPage);
+
+        // when
+        Page<BookSearchResponseDTO> result = elasticSearchService.searchBooks(type, keyword, pageable, USER_ID);
+
+        // then
+        assertEquals(mockPage, result);  // Verifying that the result is the mocked page
+    }
+
 }

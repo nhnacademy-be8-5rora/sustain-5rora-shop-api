@@ -74,7 +74,7 @@ public class AladinBookServiceImpl implements AladinBookService {
     }
 
     private String createCacheKey(String query, String queryType, String searchTarget, int start) {
-        String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8);
+        String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8); //공백, 특수 문자, 한글이 안전하게 저장됨
         return String.format("search:%s:type:%s:target:%s:page:%d", encodedQuery,queryType,searchTarget,start);
     }
 

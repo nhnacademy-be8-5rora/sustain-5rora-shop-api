@@ -311,4 +311,43 @@ public class BookServiceTest {
 
     }
 
+    @Test
+    @DisplayName("주문 시 책 재고 업데이트 테스트")
+    void updateBookStockOnOrder() {
+        // Given
+        Long bookId = 1L;
+        int orderQuantity = 5;
+        Book book = new Book();
+        book.setId(bookId);
+        book.setStock(10);
+
+        when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
+
+        // When
+        bookService.updateBookStockOnOrder(bookId, orderQuantity);
+
+        // Then
+        assertThat(book.getStock()).isEqualTo(5);
+        verify(bookRepository).save(book);
+    }
+
+    @Test
+    @DisplayName("주문 시 책 재고 부족 예외 테스트")
+    void testUpdateBookStockOnOrder_InsufficientStock() {
+        // Given
+        Long bookId = 1L;
+        int orderQuantity = 15;
+        Book book = new Book();
+        book.setId(bookId);
+        book.setStock(10);
+
+        when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
+
+        // When / Then
+        assertThatThrownBy(() -> bookService.updateBookStockOnOrder(bookId, orderQuantity))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("재고가 부족합니다.");
+
+        verify(bookRepository, never()).save(book);
+    }
 }

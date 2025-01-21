@@ -8,6 +8,7 @@ import store.aurora.common.setting.repository.SettingRepository;
 import store.aurora.common.setting.service.SettingService;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,7 +19,7 @@ public class SettingServiceImpl implements SettingService {
     private static final String DEFAULT_MIN_AMOUNT_VALUE = "30000";
 
     @Override
-    public SettingTable saveSetting(String key, String value) {
+    public void saveSetting(String key, String value) {
         if(Objects.isNull(key) || Objects.isNull(value)){
             throw new IllegalArgumentException("key or value is null");
         }
@@ -26,7 +27,6 @@ public class SettingServiceImpl implements SettingService {
         SettingTable setting = new SettingTable();
         setting.setKey(key);
         setting.setValue(value);
-        return repo.save(setting);
     }
 
     @Override
@@ -35,19 +35,12 @@ public class SettingServiceImpl implements SettingService {
             throw new IllegalArgumentException("key is null");
         }
 
-        String value = repo.getReferenceById(key).getValue();
-        if(Objects.isNull(value)){
+        Optional<SettingTable> setting = repo.findById(key);
+        if(setting.isEmpty()){
             throw new SettingValueNotExistsException("value is null" + "\nkey: " + key);
         }
-        return value;
-    }
 
-    @Override
-    public void deleteSettingValue(String key) {
-        if(Objects.isNull(key)){
-            throw new IllegalArgumentException("key is null");
-        }
-        repo.deleteById(key);
+        return setting.get().getValue();
     }
 
     @Override

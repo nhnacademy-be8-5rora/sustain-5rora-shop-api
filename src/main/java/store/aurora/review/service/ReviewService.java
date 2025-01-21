@@ -1,12 +1,18 @@
 package store.aurora.review.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.entity.Book;
 import store.aurora.book.exception.book.BookNotFoundException;
 import store.aurora.book.repository.book.BookRepository;
+import store.aurora.book.entity.BookImage;
+import store.aurora.book.service.author.BookAuthorService;
+import store.aurora.book.service.image.BookImageService;
 import store.aurora.file.ObjectStorageService;
 import store.aurora.order.repository.OrderDetailRepository;
 import store.aurora.review.dto.ReviewRequest;
@@ -25,6 +31,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +41,9 @@ public class ReviewService {
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
     private final OrderDetailRepository orderDetailRepository;
+
+    private final BookAuthorService bookAuthorService;
+    private final BookImageService bookImageService;
 
     @Transactional
     // 리뷰 등록
@@ -105,30 +115,17 @@ public class ReviewService {
 
     // 리뷰 목록 조회 (사용자 ID로 조회)
     @Transactional(readOnly = true)
-    public List<ReviewResponse> getReviewsByUserId(String userId) {
+    public Page<ReviewResponse> getReviewsByUserId(String userId, Pageable pageable) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
-        return reviewRepository.findByUser(user).stream()
-                .map(review -> {
-                    ReviewResponse response = new ReviewResponse();
-                    response.setId(review.getId());
-                    response.setRating(review.getReviewRating());
-                    response.setContent(review.getReviewContent());
-                    response.setReviewCreateAt(review.getReviewCreateAt());
-                    response.setBookId(review.getBook().getId());
-                    response.setUserId(review.getUser().getId());
+        List<Review> reviews = reviewRepository.findByUserIdWithBook(user.getId(), pageable);
 
-                    List<ReviewImage> reviewImages = review.getReviewImages();
-                    List<String> reviewImgPaths = new ArrayList<>();
-                    for(ReviewImage reviewImage : reviewImages) {
-                        reviewImgPaths.add(reviewImage.getImageFilePath());
-                    }
-                    response.setImageFilePath(reviewImgPaths);
+        List<ReviewResponse> reviewResponses = reviews.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
 
-                    return response;
-                })
-                .toList();
+        return new PageImpl<>(reviewResponses, pageable, reviewResponses.size());
     }
 
     // 리뷰 조회
@@ -155,7 +152,6 @@ public class ReviewService {
 
         return response;
     }
-
 
 
     // 리뷰 수정
@@ -196,6 +192,8 @@ public class ReviewService {
         existingReview.setReviewImages(existingImages);
         reviewRepository.save(existingReview);
     }
+
+
     public Double calculateAverageRating(Long bookId) {
         List<Review> reviews = reviewRepository.findByBookId(bookId);
 
@@ -209,6 +207,37 @@ public class ReviewService {
                 .sum();
 
         return totalRating / reviews.size();  // 리뷰 개수로 나눠서 평균 계산
+    }
+
+    // ReviewResponseDto 로 변환
+    public ReviewResponse convertToDto(Review review) {
+        ReviewResponse response = new ReviewResponse();
+
+        // 리뷰 기본 정보 설정
+        response.setId(review.getId());
+        response.setRating(review.getReviewRating());
+        response.setContent(review.getReviewContent());
+        response.setReviewCreateAt(review.getReviewCreateAt());
+
+        // 책 정보 설정
+        Book book = review.getBook();
+        response.setBookId(book.getId());
+        response.setTitle(book.getTitle());
+        response.setAuthor(bookAuthorService.getFormattedAuthors(book));
+        // 책 이미지 설정
+        BookImage thumbnailImage = bookImageService.getThumbnail(book);
+        response.setCover(thumbnailImage != null ? thumbnailImage.getFilePath() : null);
+
+        // 사용자 정보 설정
+        response.setUserId(review.getUser().getId());
+
+        // 리뷰 이미지 처리
+        List<String> reviewImgPaths = review.getReviewImages().stream()
+                .map(ReviewImage::getImageFilePath)
+                .collect(Collectors.toList());
+        response.setImageFilePath(reviewImgPaths);
+
+        return response;
     }
 
 }

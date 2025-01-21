@@ -249,8 +249,8 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Optional<BookSearchResponseDTO>  findMostSeller() {
-        Tuple bookIdTuple = bookRepository.findMostSoldBook();
+    public Optional<BookSearchResponseDTO>  findMostSoldByLastMonth() {
+        Tuple bookIdTuple = bookRepository.findMostSoldByLastMonth();
         if (bookIdTuple == null) {
             // bookIdTuple이 null일 경우 로그를 남기고 빈 값 반환
             USER_LOG.info("No most sold book found for last month.");

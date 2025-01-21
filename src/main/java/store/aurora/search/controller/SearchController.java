@@ -32,7 +32,7 @@ public class SearchController {
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String orderBy,
             @RequestParam(required = false) String orderDirection,
-            @RequestParam(required = false, defaultValue = "1") String pageNum) {
+            @RequestParam(required = false, defaultValue = "0") String pageNum) {
 
         int page = validateAndParsePageNum(pageNum);
         if (page < 0) {

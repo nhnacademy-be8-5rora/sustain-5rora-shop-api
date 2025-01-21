@@ -40,7 +40,7 @@ class PublisherServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        testPublisher = new Publisher(1L, "테스트 출판사");
+        testPublisher = new Publisher( "테스트 출판사");
     }
 
     @Test

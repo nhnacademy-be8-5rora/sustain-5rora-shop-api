@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.dto.BookDetailsDto;
+import store.aurora.book.dto.aladin.AladinBookRequestDto;
 import store.aurora.book.dto.aladin.BookDetailDto;
 import store.aurora.book.dto.aladin.BookRequestDto;
 import store.aurora.book.dto.aladin.BookResponseDto;
@@ -28,41 +29,60 @@ import java.util.Optional;
 public class BookController {
     private final BookService bookService;
 
+    //활성화된 도서 목록
+    @GetMapping
+    public ResponseEntity<Page<BookResponseDto>> getAllBooks(@RequestParam(defaultValue = "0") int page,
+                                                             @RequestParam(defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BookResponseDto> books = bookService.getBooksByActive(true,pageable);
+        return ResponseEntity.ok(books);
+    }
+
     // 직접 도서 등록
-    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> registerDirectBook(@Valid @ModelAttribute BookRequestDto bookDto,
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> createBook(@Valid @ModelAttribute BookRequestDto bookDto,
                                                    @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
                                                    @RequestPart(value = "additionalImages", required = false) List<MultipartFile> additionalImages
     ) {
         bookService.saveBook(bookDto, coverImage, additionalImages);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-
-    @GetMapping
-    public ResponseEntity<Page<BookResponseDto>> getAllBooks(Pageable pageable) {
-        Page<BookResponseDto> books = bookService.getBooksByActive(true,pageable);
-        return ResponseEntity.ok(books);
+    // 알라딘 api 이용
+    @PostMapping("/aladin")
+    public ResponseEntity<Void> createApiBook(@Valid @ModelAttribute AladinBookRequestDto bookDto,
+                                                @RequestPart(value = "additionalImages", required = false) List<MultipartFile> additionalImages) {
+        bookService.saveBookFromApi(bookDto, additionalImages);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+    // 비활성화된 도서 목록
     @GetMapping("/deactivate")
-    public ResponseEntity<Page<BookResponseDto>> getDeactivateBooks(Pageable pageable) {
+    public ResponseEntity<Page<BookResponseDto>> getDeactivateBooks(@RequestParam(defaultValue = "0") int page,
+                                                                    @RequestParam(defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page, size);
         Page<BookResponseDto> books = bookService.getBooksByActive(false,pageable);
         return ResponseEntity.ok(books);
     }
-
-    @PostMapping("/{bookId}/deactivate")
-    public ResponseEntity<Void> deactivateBook(@PathVariable Long bookId) {
+    //도서 비활성화
+    @PostMapping("/{book-id}/deactivate")
+    public ResponseEntity<Void> deactivateBook(@PathVariable("book-id") Long bookId) {
         bookService.updateBookActivation(bookId, false);
         return ResponseEntity.noContent().build();
     }
-
-    @PostMapping("/{bookId}/activate")
-    public ResponseEntity<Void> activateBook(@PathVariable Long bookId) {
+    //도서 활성화
+    @PostMapping("/{book-id}/activate")
+    public ResponseEntity<Void> activateBook(@PathVariable("book-id") Long bookId) {
         bookService.updateBookActivation(bookId, true);
         return ResponseEntity.noContent().build();
     }
-
-    @PutMapping(value = "/{bookId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> editBook(@PathVariable Long bookId,
+    //도서 수정 데이터 반환
+    @GetMapping("/{book-id}/edit")
+    public ResponseEntity<BookDetailDto> getBookDetailsForAdmin(@PathVariable("book-id") Long bookId) {
+        BookDetailDto bookDetails = bookService.getBookDetailsForAdmin(bookId);
+        return ResponseEntity.ok(bookDetails);
+    }
+    //도서 수정
+    @PutMapping(value = "/{book-id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> editBook(@PathVariable("book-id") Long bookId,
                                          @Valid @ModelAttribute BookRequestDto bookDto,
                                          @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
                                          @RequestPart(value = "additionalImages", required = false) List<MultipartFile> additionalImages,
@@ -71,14 +91,8 @@ public class BookController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{bookId}/edit")
-    public ResponseEntity<BookDetailDto> getBookDetailsForAdmin(@PathVariable Long bookId) {
-        BookDetailDto bookDetails = bookService.getBookDetailsForAdmin(bookId);
-        return ResponseEntity.ok(bookDetails);
-    }
-
-    @GetMapping("/{bookId}")
-    public ResponseEntity<BookDetailsDto> getBookDetails(@PathVariable Long bookId) {
+    @GetMapping("/{book-id}")
+    public ResponseEntity<BookDetailsDto> getBookDetails(@PathVariable("book-id") Long bookId) {
         BookDetailsDto bookDetails = bookService.getBookDetails(bookId);
         return ResponseEntity.ok(bookDetails);
     }

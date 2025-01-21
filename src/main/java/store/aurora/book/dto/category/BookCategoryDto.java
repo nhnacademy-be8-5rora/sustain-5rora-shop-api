@@ -17,5 +17,10 @@ public class BookCategoryDto {
     private String name;
     private Integer depth;
     private List<BookCategoryDto> children = new ArrayList<>();
+
+    public BookCategoryDto(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 }
 

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import store.aurora.book.dto.aladin.*;
 import store.aurora.book.dto.category.CategoryDTO;
+import store.aurora.book.dto.category.CategoryResponseDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.BookImage;
 import store.aurora.book.entity.Publisher;
@@ -124,7 +125,7 @@ public class BookMapper {
         bookDetailDto.setPackaging(book.isPackaging());
         bookDetailDto.setSeriesName(book.getSeries() != null ? book.getSeries().getName() : null);
         bookDetailDto.setCategories(book.getBookCategories().stream()
-                .map(bookCategory -> new CategoryDTO(
+                .map(bookCategory -> new CategoryResponseDTO(
                         bookCategory.getCategory().getId(),
                         bookCategory.getCategory().getName()
                 ))

@@ -1,10 +1,10 @@
 package store.aurora.book.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -19,6 +19,8 @@ public class Publisher {
 
     @Column(nullable = false, length = 50, unique = true)
     private String name;
+    @OneToMany
+    List<Book> books = new ArrayList<>();
 
     public Publisher(String name) {
         this.name = name;

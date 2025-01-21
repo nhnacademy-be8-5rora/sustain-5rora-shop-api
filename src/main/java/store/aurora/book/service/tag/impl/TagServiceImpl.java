@@ -29,15 +29,6 @@ public class TagServiceImpl implements TagService {
     private final BookTagRepository bookTagRepository;
     private final TagParser tagParser;
 
-    @Transactional(readOnly = true)
-    @Override
-    public List<TagResponseDto> searchTags(String keyword) {
-        return tagRepository.findByNameContaining(keyword)
-                .stream()
-                .map(this::mapToResponseDto)
-                .toList();
-    }
-
     @Override
     public Page<TagResponseDto> getTags(Pageable pageable) {
         return tagRepository.findAllByOrderById(pageable)

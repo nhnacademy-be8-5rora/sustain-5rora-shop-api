@@ -55,7 +55,7 @@ public class BookRepositoryCustomTest {
         entityManager.merge(user2);
 
         // Publisher 생성
-        Publisher publisher = new Publisher(1L, "Penguin Books");
+        Publisher publisher = new Publisher("Penguin Books");
         entityManager.merge(publisher);  // Publisher 객체가 이미 존재하는 경우 merge() 사용
 
         // Series 생성

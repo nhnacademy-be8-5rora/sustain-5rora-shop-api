@@ -3,6 +3,7 @@ package store.aurora.order.dto;
 
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -19,6 +20,7 @@ public class OrderRequestDto {
     private String ordererName;
     private String ordererPhone;
     private String ordererEmail;
+    private LocalDate preferredDeliveryDate;
 
     // 받는 사람 정보
     private String receiverName;

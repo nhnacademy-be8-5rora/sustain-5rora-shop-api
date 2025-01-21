@@ -1,9 +1,11 @@
 package store.aurora.book.repository.impl;
+
 import com.querydsl.core.Tuple;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
@@ -19,6 +21,9 @@ import store.aurora.book.entity.category.Category;
 import store.aurora.book.entity.tag.BookTag;
 import store.aurora.book.entity.tag.Tag;
 import store.aurora.book.repository.*;
+
+import store.aurora.book.repository.book.BookRepository;
+import store.aurora.book.repository.like.LikeRepository;
 import store.aurora.review.entity.Review;
 import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.user.entity.User;

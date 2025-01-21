@@ -3,7 +3,6 @@ package store.aurora.order.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store.aurora.common.exception.DataAlreadyExistsException;
 import store.aurora.order.entity.Wrap;
 import store.aurora.order.exception.exception404.WrapNotFoundException;
 import store.aurora.order.exception.exception409.WrapNameAlreadyExistsException;

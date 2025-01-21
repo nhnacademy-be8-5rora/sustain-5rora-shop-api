@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import store.aurora.book.service.LikeService;
+import store.aurora.book.service.like.LikeService;
 
 @RestController
 @RequiredArgsConstructor

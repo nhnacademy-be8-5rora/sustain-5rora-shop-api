@@ -6,19 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import store.aurora.book.dto.AuthorDTO;
-import store.aurora.book.dto.LikeDto;
-import store.aurora.book.service.LikeService;
-import store.aurora.search.dto.BookSearchResponseDTO;
-
-import java.time.LocalDate;
-import java.util.Arrays;
+import store.aurora.book.service.like.LikeService;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;

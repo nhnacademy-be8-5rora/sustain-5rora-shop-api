@@ -16,7 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.mockito.junit.jupiter.MockitoExtension;
 import store.aurora.book.dto.BookInfoDTO;
-import store.aurora.book.service.BookService;
+import store.aurora.book.service.book.BookService;
 import store.aurora.cart.dto.CartDTO;
 import store.aurora.cart.dto.CartItemDTO;
 

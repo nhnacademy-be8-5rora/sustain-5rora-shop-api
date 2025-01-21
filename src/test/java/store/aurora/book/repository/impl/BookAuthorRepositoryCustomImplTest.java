@@ -8,6 +8,13 @@ import org.springframework.context.annotation.Import;
 import store.aurora.book.config.QuerydslConfiguration;
 import store.aurora.book.entity.*;
 import store.aurora.book.repository.*;
+import store.aurora.book.repository.author.AuthorRepository;
+import store.aurora.book.repository.author.AuthorRoleRepository;
+import store.aurora.book.repository.author.BookAuthorRepository;
+import store.aurora.book.repository.author.impl.BookAuthorRepositoryCustomImpl;
+import store.aurora.book.repository.book.BookRepository;
+import store.aurora.book.repository.publisher.PublisherRepository;
+import store.aurora.book.repository.series.SeriesRepository;
 import store.aurora.document.AuthorDocument;
 
 import java.time.LocalDate;

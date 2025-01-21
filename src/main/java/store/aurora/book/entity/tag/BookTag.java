@@ -25,4 +25,8 @@ public class BookTag {
     @ManyToOne
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
+
+    public BookTag(Tag tag) {
+        this.tag = tag;
+    }
 }

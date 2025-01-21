@@ -10,8 +10,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import store.aurora.book.repository.BookRepository;
-import store.aurora.book.service.LikeService;
+import store.aurora.book.repository.book.BookRepository;
+import store.aurora.book.service.like.LikeService;
 import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.search.dto.BookSearchResponseDTO;
 

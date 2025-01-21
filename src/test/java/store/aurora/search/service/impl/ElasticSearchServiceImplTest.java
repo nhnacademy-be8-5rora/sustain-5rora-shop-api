@@ -14,13 +14,13 @@ import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.entity.tag.BookTag;
 import store.aurora.book.entity.tag.Tag;
-import store.aurora.book.repository.BookAuthorRepository;
-import store.aurora.book.repository.BookRepository;
-import store.aurora.book.repository.BookViewRepository;
-import store.aurora.book.repository.LikeRepository;
+
+import store.aurora.book.repository.author.BookAuthorRepository;
+import store.aurora.book.repository.book.BookViewRepository;
+import store.aurora.book.repository.like.LikeRepository;
 import store.aurora.book.repository.category.BookCategoryRepository;
 import store.aurora.book.repository.category.CategoryRepository;
-import store.aurora.book.service.BookImageService;
+import store.aurora.book.service.image.BookImageService;
 import store.aurora.review.repository.ReviewRepository;
 import store.aurora.review.service.ReviewService;
 import store.aurora.search.dto.BookSearchResponseDTO;
@@ -70,6 +70,7 @@ class ElasticSearchServiceImplTest {
     private static final String USER_ID = "testUserId";
     @BeforeEach
     void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test

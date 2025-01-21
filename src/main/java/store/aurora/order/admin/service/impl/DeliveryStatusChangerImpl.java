@@ -28,7 +28,7 @@ public class DeliveryStatusChangerImpl implements DeliveryStatusChanger {
     private static final String SHIPPED = "SHIPPED";
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public void updateOrderStatusToShipping(Long orderId) {
         changeShipmentState(orderService.getOrder(orderId), SHIPPING);
 
@@ -36,7 +36,7 @@ public class DeliveryStatusChangerImpl implements DeliveryStatusChanger {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public void updateOrderStatusToPending(Long orderId) {
         changeShipmentState(orderService.getOrder(orderId), PENDING);
     }

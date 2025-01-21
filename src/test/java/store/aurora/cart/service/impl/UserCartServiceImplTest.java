@@ -14,7 +14,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import store.aurora.book.dto.BookInfoDTO;
 import store.aurora.book.entity.Book;
-import store.aurora.book.service.BookService;
+import store.aurora.book.service.book.BookService;
 import store.aurora.cart.dto.CachedCart;
 import store.aurora.cart.dto.CartDTO;
 import store.aurora.cart.dto.CartItemDTO;

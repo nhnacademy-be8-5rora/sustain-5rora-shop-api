@@ -3,7 +3,6 @@ package store.aurora.user.service.impl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import store.aurora.order.entity.Order;
 import store.aurora.order.entity.enums.OrderState;
 import store.aurora.order.repository.OrderDetailRepository;
 import store.aurora.user.entity.User;
@@ -14,14 +13,13 @@ import store.aurora.user.repository.UserRankRepository;
 import store.aurora.user.repository.UserRepository;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.List;
 import java.util.Optional;
 import java.time.LocalDate;
-import java.util.List;
 
-@RequiredArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class UserRankService {
 
     private final UserRepository userRepository;
@@ -103,4 +101,8 @@ public class UserRankService {
                 .orElse(null);
     }
 
+
+    public List<UserRank> getAllUserRanks() {
+        return userRankRepository.findAll();
+    }
 }

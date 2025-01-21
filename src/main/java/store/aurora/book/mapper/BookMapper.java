@@ -1,29 +1,28 @@
 package store.aurora.book.mapper;
 
-import io.micrometer.common.util.StringUtils;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import store.aurora.book.dto.aladin.*;
+import store.aurora.book.dto.category.CategoryDTO;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.BookImage;
 import store.aurora.book.entity.Publisher;
-import store.aurora.book.entity.Series;
-import store.aurora.book.entity.category.BookCategory;
-import store.aurora.book.entity.category.Category;
 import store.aurora.book.entity.tag.BookTag;
 import store.aurora.book.entity.tag.Tag;
-import store.aurora.book.service.BookAuthorService;
-import store.aurora.book.service.BookImageService;
-import store.aurora.book.service.PublisherService;
-import store.aurora.book.service.SeriesService;
+import store.aurora.book.service.author.BookAuthorService;
+import store.aurora.book.service.image.BookImageService;
+import store.aurora.book.service.publisher.PublisherService;
+import store.aurora.book.service.series.SeriesService;
 import store.aurora.book.service.category.CategoryService;
 import store.aurora.book.service.tag.TagService;
+
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -41,7 +40,7 @@ public class BookMapper {
         book.setTitle(bookDto.getTitle());
         book.setExplanation(bookDto.getDescription());
         book.setContents(!StringUtils.isBlank(bookDto.getContents()) ? bookDto.getContents() : null);
-        book.setIsbn(bookDto.getIsbn13());
+        book.setIsbn(bookDto.getValidIsbn());
         book.setSalePrice(bookDto.getPriceSales());
         book.setRegularPrice(bookDto.getPriceStandard());
         book.setPublishDate(!StringUtils.isBlank(bookDto.getPubDate())
@@ -50,27 +49,17 @@ public class BookMapper {
         book.setSale(bookDto.isSale());
         book.setPackaging(bookDto.isPackaging());
 
-        // Publisher
+        // Publisher 설정
         book.setPublisher(publisherService.getOrCreatePublisher(bookDto.getPublisher()));
 
-        // Series
-        if (bookDto.getSeriesInfo() != null && !StringUtils.isBlank(bookDto.getSeriesInfo().getSeriesName())) {
-            book.setSeries(seriesService.getOrCreateSeries(bookDto.getSeriesInfo().getSeriesName()));
-        }
+        // Series 설정
+        Optional.ofNullable(bookDto.getSeriesInfo())
+                .map(AladinBookRequestDto.SeriesInfo::getSeriesName)
+                .filter(StringUtils::isBlank)
+                .ifPresent(seriesName -> book.setSeries(seriesService.getOrCreateSeries(seriesName)));
 
-        // Categories
-        List<BookCategory> bookCategories = categoryService.createBookCategories(bookDto.getCategoryIds());
-        bookCategories.forEach(book::addBookCategory);
+        addCategoriesAndTags(book, bookDto.getCategoryIds(), bookDto.getTags());
 
-        // Tags
-        if (!StringUtils.isBlank(bookDto.getTags())) {
-            // 태그 파싱 및 생성/조회
-            List<Tag> tags = tagService.getOrCreateTagsByName(bookDto.getTags());
-
-            // BookTag 생성 및 연결
-            List<BookTag> bookTags = tagService.createBookTags(tags);
-            bookTags.forEach(book::addBookTag);
-        }
         return book;
     }
 
@@ -87,52 +76,36 @@ public class BookMapper {
         book.setSale(bookDto.isSale());
         book.setPackaging(bookDto.isPackaging());
 
-        // Publisher
         book.setPublisher(publisherService.getOrCreatePublisher(bookDto.getPublisher()));
 
-        // Series
-        if (!StringUtils.isBlank(bookDto.getSeriesName())) {
+        if (StringUtils.isBlank(bookDto.getSeriesName())) {
             book.setSeries(seriesService.getOrCreateSeries(bookDto.getSeriesName()));
         }
+        addCategoriesAndTags(book, bookDto.getCategoryIds(), bookDto.getTags());
 
-        // Categories
-        List<BookCategory> bookCategories = categoryService.createBookCategories(bookDto.getCategoryIds());
-        bookCategories.forEach(book::addBookCategory);
-
-        // Tags
-        if (!StringUtils.isBlank(bookDto.getTags())) {
-            // 태그 파싱 및 생성/조회
-            List<Tag> tags = tagService.getOrCreateTagsByName(bookDto.getTags());
-
-            // BookTag 생성 및 연결
-            List<BookTag> bookTags = tagService.createBookTags(tags);
-            bookTags.forEach(book::addBookTag);
-        }
         return book;
     }
 
 
     // Book -> BookResponseDto 변환
     public BookResponseDto toResponseDto(Book book) {
+        if (book == null) return null;
+
         BookResponseDto bookDto = new BookResponseDto();
         bookDto.setId(book.getId());
         bookDto.setTitle(book.getTitle());
         bookDto.setAuthor(bookAuthorService.getFormattedAuthors(book));
-        BookImage thumbnailImage = bookImageService.getThumbnail(book);
-        if (thumbnailImage != null) {
-            bookDto.setCover(thumbnailImage.getFilePath());
-        } else {
-            bookDto.setCover(null);
-        }
+        bookDto.setCover(Optional.ofNullable(bookImageService.getThumbnail(book))
+                .map(BookImage::getFilePath).orElse(null));
         bookDto.setDescription(book.getExplanation());
         bookDto.setIsbn13(book.getIsbn());
         bookDto.setPriceSales(book.getSalePrice());
         bookDto.setPriceStandard(book.getRegularPrice());
-        bookDto.setPubDate(book.getPublishDate() != null ? book.getPublishDate().toString() : null);
+        bookDto.setPubDate(Optional.ofNullable(book.getPublishDate()).map(LocalDate::toString).orElse(null));
         bookDto.setStock(book.getStock());
         bookDto.setSale(book.isSale());
         bookDto.setPackaging(book.isPackaging());
-        bookDto.setPublisher(book.getPublisher().getName());
+        bookDto.setPublisher(Optional.ofNullable(book.getPublisher()).map(Publisher::getName).orElse("Unknown Publisher"));
         return bookDto;
     }
 
@@ -152,8 +125,11 @@ public class BookMapper {
         bookDetailDto.setSale(book.isSale());
         bookDetailDto.setPackaging(book.isPackaging());
         bookDetailDto.setSeriesName(book.getSeries() != null ? book.getSeries().getName() : null);
-        bookDetailDto.setCategoryIds(book.getBookCategories().stream()
-                .map(category -> category.getCategory().getId())
+        bookDetailDto.setCategories(book.getBookCategories().stream()
+                .map(bookCategory -> new CategoryDTO(
+                        bookCategory.getCategory().getId(),
+                        bookCategory.getCategory().getName()
+                ))
                 .toList());
         bookDetailDto.setTags(tagService.getFormattedTags(book));
         // Cover 이미지 처리
@@ -183,26 +159,30 @@ public class BookMapper {
         book.setPackaging(bookDto.isPackaging());
 
         // Publisher 업데이트
-        Publisher publisher = publisherService.getOrCreatePublisher(bookDto.getPublisher());
-        book.setPublisher(publisher);
+        book.setPublisher(publisherService.getOrCreatePublisher(bookDto.getPublisher()));
 
         // Series 업데이트
-        if (!StringUtils.isBlank(bookDto.getSeriesName())) {
-            Series series = seriesService.getOrCreateSeries(bookDto.getSeriesName());
-            book.setSeries(series);
+        if (StringUtils.isBlank(bookDto.getSeriesName())) {
+            book.setSeries(seriesService.getOrCreateSeries(bookDto.getSeriesName()));
         }
         // Category 업데이트
         categoryService.updateBookCategories(book, bookDto.getCategoryIds());
 
         // 태그 업데이트
-        if (!StringUtils.isBlank(bookDto.getTags())) {
+        if (StringUtils.isBlank(bookDto.getTags())) {
             List<Tag> tags = tagService.getOrCreateTagsByName(bookDto.getTags());
             book.clearBookTags();
-            for (Tag tag : tags) {
-                BookTag bookTag = new BookTag();
-                bookTag.setTag(tag);
-                book.addBookTag(bookTag);
-            }
+            tags.forEach(tag -> book.addBookTag(new BookTag(tag)));
+        }
+    }
+
+    private void addCategoriesAndTags(Book book, List<Long> categoryIds, String tags) {
+        if (!CollectionUtils.isEmpty(categoryIds)) {
+            categoryService.createBookCategories(categoryIds).forEach(book::addBookCategory);
+        }
+
+        if (StringUtils.isBlank(tags)) {
+            tagService.createBookTags(tagService.getOrCreateTagsByName(tags)).forEach(book::addBookTag);
         }
     }
 }

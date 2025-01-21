@@ -12,6 +12,7 @@ import store.aurora.book.entity.tag.BookTag;
 import store.aurora.book.entity.tag.Tag;
 import store.aurora.book.exception.tag.TagAlreadyExistException;
 import store.aurora.book.exception.tag.TagNotFoundException;
+import store.aurora.book.parser.TagParser;
 import store.aurora.book.repository.tag.BookTagRepository;
 import store.aurora.book.repository.tag.TagRepository;
 import store.aurora.book.service.tag.TagService;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 public class TagServiceImpl implements TagService {
     private final TagRepository tagRepository;
     private final BookTagRepository bookTagRepository;
+    private final TagParser tagParser;
 
     @Transactional(readOnly = true)
     @Override
@@ -82,7 +84,7 @@ public class TagServiceImpl implements TagService {
         if (tags == null || tags.trim().isEmpty()) { // null 체크 추가
             return Collections.emptyList();
         }
-        List<String> tagNames = parseTags(tags);
+        List<String> tagNames = tagParser.parseTags(tags);
 
         return tagNames.stream()
                 .map(tagName -> tagRepository.findByName(tagName)
@@ -107,20 +109,7 @@ public class TagServiceImpl implements TagService {
     @Override
     public String getFormattedTags(Book book) {
         List<BookTag> bookTags = bookTagRepository.findByBook(book);
-
-        return bookTags.stream()
-                .map(bookTag -> bookTag.getTag().getName())
-                .collect(Collectors.joining(", "));
-    }
-
-    private List<String> parseTags(String tags) {
-        if (tags == null || tags.trim().isEmpty()) {
-            return Collections.emptyList(); // null 또는 빈 문자열이면 빈 리스트 반환
-        }
-        return Arrays.stream(tags.split(","))
-                .map(String::trim) // 공백 제거
-                .filter(tag -> !tag.isEmpty()) // 빈 태그 제거
-                .toList();
+        return tagParser.formatTags(bookTags);
     }
 
     private void validateDuplicateTagName(String name) {

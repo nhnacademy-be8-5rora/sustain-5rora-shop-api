@@ -17,6 +17,6 @@ public class AuthorRole {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, length = 10)
     private String role;
 }

@@ -50,8 +50,13 @@ public class ReviewController {
 //                                               @RequestParam Integer rating,
 //                                               @RequestParam String content) {
         if (files == null) { files = new ArrayList<>(); }
+
+        List<MultipartFile> validFiles = files.stream()
+                .filter(file -> file != null && !file.isEmpty())
+                .toList();
+
         try {
-            Review savedReview = reviewService.saveReview(request, files, bookId, userId);
+            Review savedReview = reviewService.saveReview(request, validFiles, bookId, userId);
 
             try{
                 pointHistoryService.earnReviewPoint(savedReview.getUser(), !savedReview.getReviewImages().isEmpty());

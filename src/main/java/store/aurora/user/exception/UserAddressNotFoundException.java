@@ -1,6 +1,6 @@
 package store.aurora.user.exception;
 
-import store.aurora.common.exception.DataAlreadyExistsException;
+import store.aurora.common.exception.DataConflictException;
 import store.aurora.common.exception.DataNotFoundException;
 
 public class UserAddressNotFoundException extends DataNotFoundException {

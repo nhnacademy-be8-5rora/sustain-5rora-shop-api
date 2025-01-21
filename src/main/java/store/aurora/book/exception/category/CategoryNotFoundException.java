@@ -1,6 +1,8 @@
 package store.aurora.book.exception.category;
 
-public class CategoryNotFoundException extends RuntimeException {
+import store.aurora.common.exception.DataNotFoundException;
+
+public class CategoryNotFoundException extends DataNotFoundException {
     public CategoryNotFoundException(String message) {
         super(message);
     }

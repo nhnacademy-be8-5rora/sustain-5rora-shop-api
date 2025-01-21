@@ -8,9 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -26,10 +24,10 @@ import store.aurora.book.entity.Book;
 import store.aurora.book.entity.Like;
 import store.aurora.book.entity.Publisher;
 import store.aurora.book.entity.Series;
-import store.aurora.book.exception.book.NotFoundBookException;
-import store.aurora.book.repository.BookRepository;
-import store.aurora.book.repository.LikeRepository;
-import store.aurora.book.service.impl.BookServiceImpl;
+import store.aurora.book.exception.book.BookNotFoundException;
+import store.aurora.book.repository.book.BookRepository;
+import store.aurora.book.repository.like.LikeRepository;
+import store.aurora.book.service.book.impl.BookServiceImpl;
 import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.user.entity.User;
@@ -37,7 +35,6 @@ import store.aurora.user.entity.User;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -133,7 +130,7 @@ public class BookServiceTest {
 
         // When / Then
         assertThatThrownBy(() -> bookService.getBookDetails(bookId))
-                .isInstanceOf(NotFoundBookException.class)
+                .isInstanceOf(BookNotFoundException.class)
                 .hasMessageContaining(String.valueOf(bookId));
 
         verify(bookRepository).existsById(bookId);

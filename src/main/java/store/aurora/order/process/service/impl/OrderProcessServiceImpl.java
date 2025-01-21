@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.entity.Book;
-import store.aurora.book.service.BookService;
+import store.aurora.book.service.book.BookService;
 import store.aurora.coupon.feignclient.CouponClient;
 import store.aurora.order.dto.*;
 import store.aurora.order.entity.*;

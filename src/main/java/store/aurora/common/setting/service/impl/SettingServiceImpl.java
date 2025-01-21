@@ -27,6 +27,8 @@ public class SettingServiceImpl implements SettingService {
         SettingTable setting = new SettingTable();
         setting.setKey(key);
         setting.setValue(value);
+
+        repo.save(setting);
     }
 
     @Override

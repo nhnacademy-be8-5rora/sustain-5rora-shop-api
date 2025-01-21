@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import store.aurora.book.dto.author.ParsedAuthorDto;
 import store.aurora.book.entity.Author;
 import store.aurora.book.entity.AuthorRole;
@@ -43,7 +42,6 @@ class BookAuthorServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         testBook = new Book(); // 책 객체 생성
         testBook.setId(1L);
         testBook.setTitle("테스트 책");

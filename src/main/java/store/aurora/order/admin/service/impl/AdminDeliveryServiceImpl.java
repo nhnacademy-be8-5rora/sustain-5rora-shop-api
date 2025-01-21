@@ -90,6 +90,8 @@ public class AdminDeliveryServiceImpl implements AdminDeliveryService {
             deliveryStatusChanger.updateOrderStatusToShipping(orderId);
         } else if (shipmentStatus.equals("PENDING")) {
             deliveryStatusChanger.updateOrderStatusToPending(orderId);
+        } else{
+            throw new IllegalArgumentException("Invalid shipment status");
         }
     }
 }

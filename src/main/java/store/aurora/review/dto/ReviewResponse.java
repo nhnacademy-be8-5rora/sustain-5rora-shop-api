@@ -1,16 +1,18 @@
 package store.aurora.review.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
-import store.aurora.review.entity.ReviewImage;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ReviewResponse {
     private Long id;
     private Integer rating;
@@ -18,5 +20,8 @@ public class ReviewResponse {
     private List<String> imageFilePath;
     private LocalDateTime reviewCreateAt;
     private Long BookId;
+    private String title;
+    private String author;
+    private String cover;
     private String userId;
 }

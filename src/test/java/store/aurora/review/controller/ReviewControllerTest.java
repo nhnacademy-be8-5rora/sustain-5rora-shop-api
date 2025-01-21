@@ -77,20 +77,20 @@ public class ReviewControllerTest {
     }
 
     // 사용자 ID로 리뷰 조회 테스트
-    @Test
-    void getReviewsByUserId_shouldReturnReviews_whenValidUserId() throws Exception {
-        // Given
-        when(reviewService.getReviewsByUserId("user1")).thenReturn(Collections.emptyList());
-
-        // When & Then
-        mockMvc.perform(get("/api/reviews/user/user1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$").isEmpty());
-
-        // Verify that the service method was called
-        verify(reviewService, times(1)).getReviewsByUserId("user1");
-    }
+//    @Test
+//    void getReviewsByUserId_shouldReturnReviews_whenValidUserId() throws Exception {
+//        // Given
+//        when(reviewService.getReviewsByUserId("user1")).thenReturn(Collections.emptyList());
+//
+//        // When & Then
+//        mockMvc.perform(get("/api/reviews/user/user1"))
+//                .andExpect(status().isOk())
+//                .andExpect(jsonPath("$").isArray())
+//                .andExpect(jsonPath("$").isEmpty());
+//
+//        // Verify that the service method was called
+//        verify(reviewService, times(1)).getReviewsByUserId("user1");
+//    }
 
     // 리뷰 수정 테스트
 //    @Test

@@ -14,9 +14,7 @@ import store.aurora.order.entity.Order;
 import store.aurora.order.entity.OrderDetail;
 import store.aurora.order.entity.enums.OrderState;
 import store.aurora.order.service.OrderService;
-import store.aurora.order.service.ShipmentService;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -25,7 +23,6 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class AdminDeliveryServiceImpl implements AdminDeliveryService {
     private final OrderService orderService;
-    private final ShipmentService shipmentService;
     private final DeliveryStatusChanger deliveryStatusChanger;
 
     @Override
@@ -78,20 +75,5 @@ public class AdminDeliveryServiceImpl implements AdminDeliveryService {
         } else if (shipmentStatus.equals("PENDING")) {
             deliveryStatusChanger.updateOrderStatusToPending(orderId);
         }
-
-//        OrderState orderState = OrderState.valueOf(shipmentStatus);
-//        order.setState(OrderState.valueOf(orderState.toString()));
-//
-//        List<OrderDetail> orderDetails = order.getOrderDetails();
-//        for (OrderDetail orderDetail : orderDetails) {
-//            orderDetail.setState(OrderState.valueOf(shipmentStatus));
-//        }
-//
-//        Shipment shipment = orderDetails.getFirst().getShipment();
-//        shipment.setState(ShipmentState.valueOf(shipmentStatus));
-//        shipment.setShipmentDatetime(LocalDateTime.now());
-//        shipmentService.updateShipment(shipment);
-//
-//        deliveryStatusChanger.updateOrderStatusToShipping(orderId);
     }
 }

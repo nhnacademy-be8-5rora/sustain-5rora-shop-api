@@ -16,6 +16,7 @@ import store.aurora.book.entity.tag.BookTag;
 import store.aurora.book.entity.tag.Tag;
 
 import store.aurora.book.repository.author.BookAuthorRepository;
+import store.aurora.book.repository.book.BookRepository;
 import store.aurora.book.repository.book.BookViewRepository;
 import store.aurora.book.repository.like.LikeRepository;
 import store.aurora.book.repository.category.BookCategoryRepository;
@@ -29,6 +30,7 @@ import store.aurora.search.repository.ElasticSearchRepository;
 import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
+
 @ExtendWith(MockitoExtension.class)
 class ElasticSearchServiceImplTest {
 
@@ -70,7 +72,6 @@ class ElasticSearchServiceImplTest {
     private static final String USER_ID = "testUserId";
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
     }
 
     @Test

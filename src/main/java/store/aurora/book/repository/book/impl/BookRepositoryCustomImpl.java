@@ -1,4 +1,4 @@
-package store.aurora.book.repository.impl;
+package store.aurora.book.repository.book.impl;
 
 
 import com.querydsl.core.BooleanBuilder;

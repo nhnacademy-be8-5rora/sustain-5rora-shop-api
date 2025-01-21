@@ -21,6 +21,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import store.aurora.user.exception.AlreadyActiveUserException;
+import store.aurora.user.exception.DeletedAccountException;
 import store.aurora.user.exception.DormantAccountException;
 import store.aurora.user.exception.VerificationException;
 
@@ -67,8 +68,8 @@ public class GlobalExceptionHandler {
     }
 
 
-    @ExceptionHandler(DormantAccountException.class)
-    public ResponseEntity<Map<String, String>> handlerForbiddenException(DormantAccountException ex) {
+    @ExceptionHandler({DormantAccountException.class, DeletedAccountException.class})
+    public ResponseEntity<Map<String, String>> handlerForbiddenException(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Map.of("error", ex.getMessage()));
     }

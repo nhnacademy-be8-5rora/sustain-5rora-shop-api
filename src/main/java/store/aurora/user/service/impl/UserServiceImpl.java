@@ -228,7 +228,7 @@ public class UserServiceImpl implements UserService {
     public UserDetailResponseDto getPasswordAndRole(String userId) {
         User user = getUser(userId);
         if (user.getStatus() == UserStatus.DELETED) { // 탈퇴회원일때
-            throw new UserNotFoundException(userId);
+            throw new DeletedAccountException("탈퇴한 계정입니다.");
         } else if (user.getStatus() == UserStatus.INACTIVE) {  // 휴면회원일때
             throw new DormantAccountException("휴면 계정입니다. 휴면 해제 후 이용해주세요.");
         }

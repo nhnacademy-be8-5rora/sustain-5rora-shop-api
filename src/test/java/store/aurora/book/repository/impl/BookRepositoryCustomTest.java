@@ -207,7 +207,6 @@ public class BookRepositoryCustomTest {
 
 
     }
-
     @DisplayName("작가 이름을 통해 책의 세부사항을 가져오는지 확인. (책이 존재하는경우)")
     @Test
     public void testFindBooksByAuthorNameWithDetails() {

@@ -109,7 +109,6 @@ public class BookServiceImpl implements BookService {
         }
     }
 
-    // 책 활성/비활성(soft 삭제 기능)
     @Transactional
     @Override
     public void updateBookStockOnOrder(Long bookId, int quantity) {
@@ -132,7 +131,7 @@ public class BookServiceImpl implements BookService {
         bookRepository.save(book);
     }
 
-
+    // 책 활성/비활성(soft 삭제 기능)
     @Transactional
     @Override
     public void updateBookActivation(Long bookId, boolean isActive) {

@@ -3,7 +3,6 @@ package store.aurora.book.service.tag;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.tag.TagRequestDto;
 import store.aurora.book.dto.tag.TagResponseDto;
 import store.aurora.book.entity.Book;
@@ -15,8 +14,6 @@ import java.util.List;
 public interface TagService {
 
     TagResponseDto createTag(TagRequestDto requestDto);
-
-    List<TagResponseDto> searchTags(String keyword);
 
     Page<TagResponseDto> getTags(Pageable pageable);
 

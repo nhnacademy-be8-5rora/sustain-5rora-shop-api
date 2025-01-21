@@ -50,7 +50,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public void updateCategoryName(Long categoryId, String newName) {
+    public void updateCategory(Long categoryId, String newName) {
         Category category = findCategoryByIdOrThrow(categoryId);
 
         checkNameInHierarchy(category, newName);
@@ -108,17 +108,6 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryRepository.findByParentId(parentId)
                 .stream()
                 .map(this::mapToResponseDTO)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<Book> getBooksByCategoryId(Long categoryId) {
-        Category category = categoryRepository.findCategoryWithBooksById(categoryId)
-                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
-
-        return category.getBookCategories().stream()
-                .map(BookCategory::getBook)
                 .toList();
     }
 
@@ -241,8 +230,6 @@ public class CategoryServiceImpl implements CategoryService {
         if (existsInSameParent) {
             throw new CategoryAlreadyExistException("같은 상위 카테고리 아래에 동일한 이름의 카테고리가 이미 존재합니다.");
         }
-
-
         if (parent != null) {
             checkParentHierarchy(name, parent);
         }

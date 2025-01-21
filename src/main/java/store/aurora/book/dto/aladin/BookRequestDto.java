@@ -64,4 +64,16 @@ public class BookRequestDto {
     @Size(max = 200, message = "태그 입력은 최대 200자까지 가능합니다.")
     private String tags; // 선택 항목
 
+    public BookRequestDto(String title, String author, String description, String publisher, LocalDate pubDate, String isbn, int priceSales, int priceStandard, List<Long> categoryIds) {
+        this.title = title;
+        this.author = author;
+        this.description = description;
+        this.publisher = publisher;
+        this.pubDate = pubDate;
+        this.isbn = isbn;
+        this.priceSales = priceSales;
+        this.priceStandard = priceStandard;
+        this.categoryIds = categoryIds;
+    }
+
 }

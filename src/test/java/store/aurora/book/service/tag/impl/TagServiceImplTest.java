@@ -48,19 +48,6 @@ class TagServiceImplTest {
         testTag = new Tag("테스트 태그");
     }
 
-    @Test
-    @DisplayName("키워드로 태그 검색")
-    void testSearchTags() {
-        // Given
-        when(tagRepository.findByNameContaining("테스트")).thenReturn(List.of(testTag));
-
-        // When
-        List<TagResponseDto> result = tagService.searchTags("테스트");
-
-        // Then
-        assertThat(result).hasSize(1);
-        assertThat(result.getFirst().getName()).isEqualTo("테스트 태그");
-    }
 
     @Test
     @DisplayName("모든 태그 목록을 페이지네이션으로 조회")

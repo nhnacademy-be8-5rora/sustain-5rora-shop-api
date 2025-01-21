@@ -19,6 +19,7 @@ import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.*;
 import store.aurora.book.dto.category.BookCategoryDto;
+import store.aurora.book.dto.publisher.PublisherResponseDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.entity.QBook;
@@ -467,7 +468,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 book.getExplanation(),
                 book.getContents(),
                 book.getPublishDate(),
-                new PublisherDto(book.getPublisher().getId(), book.getPublisher().getName()),
+                new PublisherResponseDto(book.getPublisher().getId(), book.getPublisher().getName()),
                 bookImages,
                 reviews,
                 tagNames,  // 태그 이름들

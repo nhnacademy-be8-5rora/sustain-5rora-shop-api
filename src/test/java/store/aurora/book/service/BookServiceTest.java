@@ -18,8 +18,8 @@ import store.aurora.book.dto.BookDetailsDto;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.BookImageDto;
-import store.aurora.book.dto.PublisherDto;
 import store.aurora.book.dto.ReviewDto;
+import store.aurora.book.dto.publisher.PublisherResponseDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.Like;
 import store.aurora.book.entity.Publisher;
@@ -87,7 +87,7 @@ public class BookServiceTest {
         mockBookDetails.setExplanation("Test Explanation");
         mockBookDetails.setContents("Test Contents");
         mockBookDetails.setPublishDate(LocalDate.now());
-        mockBookDetails.setPublisher(new PublisherDto(1L, "Test Publish"));
+        mockBookDetails.setPublisher(new PublisherResponseDto(1L, "Test Publish"));
         mockBookDetails.setBookImages(bookImageDtoList);
         mockBookDetails.setReviews(reviewDtoList);
         mockBookDetails.setTagNames(new ArrayList<>());
@@ -145,7 +145,7 @@ public class BookServiceTest {
         PageRequest pageable = PageRequest.of(0, 8);
 
         // 1. Publisher와 Series 객체 생성
-        Publisher publisher = new Publisher(1L, "Publisher Name");
+        Publisher publisher = new Publisher("Publisher Name");
         Series series = new Series(1L, "Series Name");
 
         // 2. Book 객체 생성

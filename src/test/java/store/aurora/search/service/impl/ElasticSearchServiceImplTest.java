@@ -3,7 +3,9 @@ package store.aurora.search.service.impl;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +15,7 @@ import store.aurora.book.entity.category.Category;
 import store.aurora.book.entity.tag.BookTag;
 import store.aurora.book.entity.tag.Tag;
 import store.aurora.book.repository.BookAuthorRepository;
+import store.aurora.book.repository.BookRepository;
 import store.aurora.book.repository.BookViewRepository;
 import store.aurora.book.repository.LikeRepository;
 import store.aurora.book.repository.category.BookCategoryRepository;
@@ -24,14 +27,16 @@ import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.search.repository.ElasticSearchRepository;
 
 import java.time.LocalDate;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
-
+@ExtendWith(MockitoExtension.class)
 class ElasticSearchServiceImplTest {
 
     @InjectMocks
     private ElasticSearchServiceImpl elasticSearchService;
+
+    @Mock
+    private BookRepository bookRepository;
 
     @Mock
     private BookViewRepository bookViewRepository;
@@ -65,7 +70,6 @@ class ElasticSearchServiceImplTest {
     private static final String USER_ID = "testUserId";
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
     }
 
     @Test

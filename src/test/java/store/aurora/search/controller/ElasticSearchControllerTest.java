@@ -1,18 +1,16 @@
 package store.aurora.search.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.search.service.ElasticSearchService;
 import store.aurora.book.dto.AuthorDTO;
@@ -23,23 +21,16 @@ import java.util.List;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@WebMvcTest(controllers = ElasticSearchController.class)
 class ElasticSearchControllerTest {
+    @Autowired
+    private MockMvc mockMvc;  // MockMvc는 @WebMvcTest에서 자동으로 설정됩니다.
 
-    private MockMvc mockMvc;
-
-    @Mock
-    private ElasticSearchService elasticSearchService;
-
-    @InjectMocks
-    private ElasticSearchController elasticSearchController;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(elasticSearchController).build();
-    }
+    @MockBean
+    private ElasticSearchService elasticSearchService;  // @MockBean으로 ElasticSearchService를 Mock 처리
 
     @Test
     @DisplayName("성공적인 책 검색 결과 반환")
@@ -74,7 +65,7 @@ class ElasticSearchControllerTest {
         objectMapper.findAndRegisterModules();  // This is important for LocalDate handling
 
         // When & Then
-        mockMvc.perform(get("/api/books/search/elasticSearch")
+        mockMvc.perform(get("/api/books/search/elastic-search")
                         .header("X-USER-ID", userId)
                         .param("type", type)
                         .param("keyword", keyword)
@@ -90,12 +81,12 @@ class ElasticSearchControllerTest {
 
     @Test
     @DisplayName("잘못된 페이지 번호로 인한 400 오류 반환")
-    void testGetBooks_BadRequest_InvalidPageNum() throws Exception {
+    void testSearchBooks_BadRequest_InvalidPageNum() throws Exception {
         // Given
         int invalidPageNum = -1;
 
         // When & Then
-        mockMvc.perform(get("/api/books/search/elasticSearch")
+        mockMvc.perform(get("/api/books/search/elastic-search")
                         .param("pageNum", String.valueOf(invalidPageNum))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
@@ -103,7 +94,7 @@ class ElasticSearchControllerTest {
 
     @Test
     @DisplayName("검색 결과가 없을 때 204 No Content 반환 (null 반환)")
-    void testGetBooks_NoContent_NullPage() throws Exception {
+    void testSearchBooks_NoContent_NullPage() throws Exception {
         // Given
         String type = "fullText";
         String keyword = "포켓몬스터";
@@ -115,7 +106,7 @@ class ElasticSearchControllerTest {
                 .thenReturn(null);
 
         // When & Then
-        mockMvc.perform(get("/api/books/search/elasticSearch")
+        mockMvc.perform(get("/api/books/search/elastic-search")
                         .header("X-USER-ID", userId)
                         .param("type", type)
                         .param("keyword", keyword)
@@ -123,9 +114,10 @@ class ElasticSearchControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());  // Expect 204 No Content
     }
+
     @Test
     @DisplayName("검색 결과가 없을 때 204 No Content 반환 (empty 반환)")
-    void testGetBooks_NoContent_EmptyPage() throws Exception {
+    void testSearchBooks_NoContent_EmptyPage() throws Exception {
         // Given
         String type = "fullText";
         String keyword = "포켓몬스터";
@@ -137,12 +129,38 @@ class ElasticSearchControllerTest {
                 .thenReturn(Page.empty());
 
         // When & Then
-        mockMvc.perform(get("/api/books/search/elasticSearch")
+        mockMvc.perform(get("/api/books/search/elastic-search")
                         .header("X-USER-ID", userId)
                         .param("type", type)
                         .param("keyword", keyword)
                         .param("pageNum", String.valueOf(pageNum))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());  // Expect 204 No Content
+    }
+
+    @Test
+    @DisplayName("성공적인 동기화")
+    void testSyncBooks_Success() throws Exception {
+        // Given
+        long count = 10L;  // 성공적으로 동기화된 책의 개수
+        when(elasticSearchService.saveBooksNotInElasticSearch()).thenReturn(count);  // mock 처리
+
+        // When & Then
+        mockMvc.perform(post("/api/books/search/elastic-search/sync")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())  // Expect 200 OK
+                .andExpect(jsonPath("$").value(count));  // Return the count of synced books
+    }
+
+    @Test
+    @DisplayName("동기화 실패")
+    void testSyncBooks_Failure() throws Exception {
+        // Given
+        when(elasticSearchService.saveBooksNotInElasticSearch()).thenThrow(new RuntimeException("Sync failed"));
+
+        // When & Then
+        mockMvc.perform(post("/api/books/search/elastic-search/sync")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());  // Expect 400 Bad Request on failure
     }
 }

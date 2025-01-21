@@ -374,6 +374,5 @@ public class BookRepositoryCustomTest {
             assertThat(book.getViewCount()).isGreaterThanOrEqualTo(0);
         });
 
-
     }
 }

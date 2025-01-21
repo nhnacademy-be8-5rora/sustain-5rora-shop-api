@@ -12,8 +12,6 @@ import store.aurora.book.dto.tag.TagRequestDto;
 import store.aurora.book.dto.tag.TagResponseDto;
 import store.aurora.book.service.tag.TagService;
 
-import java.util.Collections;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/tags")

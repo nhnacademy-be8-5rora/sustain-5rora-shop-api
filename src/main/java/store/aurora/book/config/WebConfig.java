@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/uploaded-files/**")
-                .addResourceLocations("file:/Users/ksc4305/nhn/5rora/apiEx/upload/");
+        registry.addResourceHandler("/images/**")
+                .addResourceLocations("file:/home/5rora-images/");
     }
 }

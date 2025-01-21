@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import store.aurora.common.dto.ErrorResponseDto;
 import store.aurora.common.dto.ValidationErrorResponse;
 import store.aurora.common.exception.*;
-import store.aurora.file.ObjectStorageException;
+import store.aurora.file.FileStorageException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -73,8 +73,8 @@ public class GlobalExceptionHandler {
                 .body(Map.of("error", ex.getMessage()));
     }
 
-    @ExceptionHandler(ObjectStorageException.class)
-    public ResponseEntity<ErrorResponseDto> handleObjectStorageException(ObjectStorageException e) {
+    @ExceptionHandler(FileStorageException.class)
+    public ResponseEntity<ErrorResponseDto> handleObjectStorageException(FileStorageException e) {
         ErrorResponseDto errorResponse = new ErrorResponseDto(
                 e.getMessage(),
                 e.getStatus().value(),

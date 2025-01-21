@@ -12,7 +12,7 @@ import store.aurora.book.exception.book.BookNotFoundException;
 import store.aurora.book.exception.image.ImageNotFoundException;
 import store.aurora.book.repository.image.BookImageRepository;
 import store.aurora.book.service.image.BookImageService;
-import store.aurora.file.ObjectStorageService;
+import store.aurora.file.LocalStorageService;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BookImageServiceImpl implements BookImageService {
 
-    private final ObjectStorageService objectStorageService;
+    private final LocalStorageService localStorageService;
     private final BookImageRepository bookImageRepository;
 
     @Transactional
@@ -29,8 +29,8 @@ public class BookImageServiceImpl implements BookImageService {
         // 1. 알라딘 API에서 제공하는 커버 이미지 URL이 있는 경우 저장
         if (StringUtils.isNotBlank(coverUrl)) {
             String modifiedCoverUrl = modifyCoverUrl(coverUrl);
-            String uploadedCoverUrl = objectStorageService.uploadObjectFromUrl(modifiedCoverUrl);
-            addBookImage(book, uploadedCoverUrl, true); // 썸네일로 저장
+            String uploadedCoverPath = localStorageService.uploadFileFromUrl(modifiedCoverUrl, book.getId(), "thumbnail");
+            addBookImage(book, uploadedCoverPath, true); // 썸네일로 저장
         }
 
         // 2. 사용자가 직접 업로드한 커버 이미지가 있는 경우 저장
@@ -50,8 +50,8 @@ public class BookImageServiceImpl implements BookImageService {
         if (file == null || file.isEmpty()) {
             return;
         }
-        String uploadedFileUrl = objectStorageService.uploadObject(file);
-        addBookImage(book, uploadedFileUrl, isThumbnail);
+        String uploadedFilePath = localStorageService.uploadFile(file, book.getId(), isThumbnail ? "thumbnails" : "additional");
+        addBookImage(book, uploadedFilePath, isThumbnail);
     }
 
     @Override
@@ -80,8 +80,7 @@ public class BookImageServiceImpl implements BookImageService {
 
         imagesToDelete.forEach(image -> {
             // 1. 오브젝트 스토리지에서 이미지 삭제
-            objectStorageService.deleteObject(image.getFilePath());
-
+            localStorageService.deleteFile(image.getFilePath());
             // 2. Book 엔티티에서 이미지 제거
             Book book = image.getBook();
             if (book == null) {

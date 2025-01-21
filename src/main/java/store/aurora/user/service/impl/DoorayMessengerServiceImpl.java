@@ -26,7 +26,7 @@ public class DoorayMessengerServiceImpl implements DoorayMessengerService {
         // 메세지 전송
         MessagePayload messagePayload = new MessagePayload();
         messagePayload.setBotName("5rora");
-        messagePayload.setText(verificationCode);
+        messagePayload.setText("인증번호 : " + verificationCode);
 
         Long serviceId = 3204376758577275363L;
         Long botId = 3942252259979529648L;

@@ -26,6 +26,7 @@ public class TotalAmountGetterImpl implements store.aurora.order.process.service
 
         for (OrderDetailDTO detail : orderDetailList) {
             // 책 가격
+            // 책이 없는 경우는 bookService에서 에러 처리 되어 있음
             int bookSalePrice = bookService.getBookById(detail.getBookId()).getSalePrice();
 
             // 책 가격 계산

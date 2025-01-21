@@ -1,6 +1,5 @@
 package store.aurora.book.dto.category;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,4 +19,9 @@ public class CategoryResponseDTO {
     private String parentName;
     private int depth;
     private List<CategoryResponseDTO> children = new ArrayList<>();
+
+    public CategoryResponseDTO(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 }

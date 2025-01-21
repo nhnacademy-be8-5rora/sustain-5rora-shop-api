@@ -3,7 +3,7 @@ package store.aurora.book.dto;
 
 import lombok.*;
 import store.aurora.book.dto.category.BookCategoryDto;
-import store.aurora.book.dto.category.CategoryResponseDTO;
+import store.aurora.book.dto.publisher.PublisherResponseDto;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,7 +23,7 @@ public class BookDetailsDto {
     private String explanation;
     private String contents;
     private LocalDate publishDate;
-    private PublisherDto publisher;
+    private PublisherResponseDto publisher;
     private List<BookImageDto> bookImages;
     private List<ReviewDto> reviews;
     private List<String> tagNames;

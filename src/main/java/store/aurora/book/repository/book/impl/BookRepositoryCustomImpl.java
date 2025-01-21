@@ -16,8 +16,10 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
+import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.*;
 import store.aurora.book.dto.category.BookCategoryDto;
+import store.aurora.book.dto.publisher.PublisherResponseDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.entity.QBook;
@@ -27,7 +29,6 @@ import store.aurora.order.entity.enums.OrderState;
 import store.aurora.search.SortConstants;
 import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.search.service.StringConstants;
-
 import static store.aurora.book.entity.QBook.book;
 import static store.aurora.book.entity.QBookAuthor.bookAuthor;
 import static store.aurora.book.entity.QBookView.bookView;
@@ -45,16 +46,12 @@ import static store.aurora.review.entity.QReview.review;
 import static store.aurora.review.entity.QReviewImage.reviewImage;
 import static store.aurora.user.entity.QUser.user;
 import static store.aurora.order.entity.QOrder.order;
-
-
-
-
 import java.time.LocalDate;
 import java.util.*;
 import java.util.Objects;
 
-
 @Slf4j
+@Transactional(readOnly = true)
 public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implements BookRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
@@ -471,7 +468,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 book.getExplanation(),
                 book.getContents(),
                 book.getPublishDate(),
-                new PublisherDto(book.getPublisher().getId(), book.getPublisher().getName()),
+                new PublisherResponseDto(book.getPublisher().getId(), book.getPublisher().getName()),
                 bookImages,
                 reviews,
                 tagNames,  // 태그 이름들
@@ -706,7 +703,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
 
     @Override
 // 저번 달 1일부터 마지막 날까지 가장 많이 팔린 책 id 뽑기
-    public Tuple findMostSoldBook() {
+    public Tuple findMostSoldByLastMonth() {
 
         // 현재 날짜 기준으로 저번 달의 시작일과 종료일 계산
         LocalDate now = LocalDate.now();
@@ -848,7 +845,5 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .averageReviewRating(Optional.ofNullable(tuple.get(12, Double.class)).orElse(0.0)) // 기본값 0.0
                 .build();
     }
-
-
 
 }

@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
-import java.util.List;
-
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Getter
 @Setter
@@ -26,4 +24,14 @@ public class BookResponseDto {
     private int stock;
     private boolean isSale = false;
     private boolean isPackaging = false;
+
+    public BookResponseDto(Long id, String title, String author, String description, String publisher, String pubDate, String isbn13) {
+        this.id = id;
+        this.title = title;
+        this.author = author;
+        this.description = description;
+        this.publisher = publisher;
+        this.pubDate = pubDate;
+        this.isbn13 = isbn13;
+    }
 }

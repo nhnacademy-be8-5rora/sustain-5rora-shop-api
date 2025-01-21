@@ -196,7 +196,8 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                     .build();
 
             //사용된 쿠폰의 상태 변경 LIVE -> USED
-            //couponClient.used(detailDTO.getCouponId());
+//            couponClient.used(detailDTO.getCouponId());
+
             bookService.updateBookStockOnOrder(book.getId(), detailDTO.getQuantity());
 
             orderDetailService.createOrderDetail(detail);

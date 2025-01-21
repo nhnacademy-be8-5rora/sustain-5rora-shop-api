@@ -18,8 +18,8 @@ import store.aurora.book.dto.BookDetailsDto;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.BookImageDto;
-import store.aurora.book.dto.PublisherDto;
 import store.aurora.book.dto.ReviewDto;
+import store.aurora.book.dto.publisher.PublisherResponseDto;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.Like;
 import store.aurora.book.entity.Publisher;
@@ -87,7 +87,7 @@ public class BookServiceTest {
         mockBookDetails.setExplanation("Test Explanation");
         mockBookDetails.setContents("Test Contents");
         mockBookDetails.setPublishDate(LocalDate.now());
-        mockBookDetails.setPublisher(new PublisherDto(1L, "Test Publish"));
+        mockBookDetails.setPublisher(new PublisherResponseDto(1L, "Test Publish"));
         mockBookDetails.setBookImages(bookImageDtoList);
         mockBookDetails.setReviews(reviewDtoList);
         mockBookDetails.setTagNames(new ArrayList<>());
@@ -145,7 +145,7 @@ public class BookServiceTest {
         PageRequest pageable = PageRequest.of(0, 8);
 
         // 1. Publisher와 Series 객체 생성
-        Publisher publisher = new Publisher(1L, "Publisher Name");
+        Publisher publisher = new Publisher("Publisher Name");
         Series series = new Series(1L, "Series Name");
 
         // 2. Book 객체 생성
@@ -246,9 +246,9 @@ public class BookServiceTest {
     @DisplayName("가장 많이 팔린 책이 없을 경우 빈 책을 반환해야 한다")
     void testFindMostSeller_whenNoMostSoldBook() {
         // bookRepository.findMostSoldBook()이 null을 반환할 때
-        when(bookRepository.findMostSoldBook()).thenReturn(null);
+        when(bookRepository.findMostSoldByLastMonth()).thenReturn(null);
 
-        Optional<BookSearchResponseDTO> result = bookService.findMostSeller();
+        Optional<BookSearchResponseDTO> result = bookService.findMostSoldByLastMonth();
 
         assertTrue(result.isEmpty(), "책이 없으면 Optional이 비어 있어야 한다");
     }
@@ -257,7 +257,7 @@ public class BookServiceTest {
     @DisplayName("주어진 book ID에 대한 책을 찾을 수 없을 경우 Optional이 비어 있어야 한다")
     void testFindMostSeller_whenNoBookFoundForBookId() {
         // bookRepository.findMostSoldBook()이 값을 반환하는 경우
-        when(bookRepository.findMostSoldBook()).thenReturn(bookIdTuple);
+        when(bookRepository.findMostSoldByLastMonth()).thenReturn(bookIdTuple);
         when(bookIdTuple.get(0, Long.class)).thenReturn(1L);
 
         // bookRepository.findBookByIdIn()이 빈 페이지를 반환하는 경우
@@ -265,7 +265,7 @@ public class BookServiceTest {
         when(bookRepository.findBookByIdIn(anyList(), eq(pageable)))
                 .thenReturn(Page.empty());
 
-        Optional<BookSearchResponseDTO>  result = bookService.findMostSeller();
+        Optional<BookSearchResponseDTO>  result = bookService.findMostSoldByLastMonth();
 
         assertTrue(result.isEmpty(), "책이 없으면 Optional이 비어 있어야 한다");
     }
@@ -274,7 +274,7 @@ public class BookServiceTest {
     @DisplayName("책을 찾았을 경우 책 정보 DTO를 반환해야 한다")
     void testFindMostSeller_whenBookFound() {
         // bookRepository.findMostSoldBook()이 값을 반환하는 경우
-        when(bookRepository.findMostSoldBook()).thenReturn(bookIdTuple);
+        when(bookRepository.findMostSoldByLastMonth()).thenReturn(bookIdTuple);
         when(bookIdTuple.get(0, Long.class)).thenReturn(1L);
 
         // bookRepository.findBookByIdIn()이 책을 반환하는 경우
@@ -299,7 +299,7 @@ public class BookServiceTest {
 
         when(bookRepository.findBookByIdIn(anyList(), eq(pageable))).thenReturn(bookPage);
 
-        Optional<BookSearchResponseDTO> result = bookService.findMostSeller();
+        Optional<BookSearchResponseDTO> result = bookService.findMostSoldByLastMonth();
 
         assertTrue(result.isPresent(), "책을 찾았을 경우 책 정보 DTO가 존재해야 한다");
         BookSearchResponseDTO existBook = result.get();  // 값이 있을 때에만 호출

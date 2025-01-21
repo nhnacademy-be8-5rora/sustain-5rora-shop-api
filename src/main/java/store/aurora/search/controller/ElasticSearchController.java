@@ -13,17 +13,17 @@ import store.aurora.search.service.ElasticSearchService;
 
 
 @RestController
-@RequestMapping("/api/books/search/elasticSearch")
+@RequestMapping("/api/books/search/elastic-search")
 @RequiredArgsConstructor
 public class ElasticSearchController {
 
     private final ElasticSearchService elasticSearchService;
 
     @GetMapping
-    public ResponseEntity<Page<BookSearchResponseDTO>> getBooks(@RequestHeader(name ="X-USER-ID",required = false) String userId,
-                                           @RequestParam(required = false) String type,
-                                           @RequestParam(required = false) String keyword,
-                                           @RequestParam(required = false,defaultValue = "1") int pageNum) {
+    public ResponseEntity<Page<BookSearchResponseDTO>> searchBooks(@RequestHeader(name ="X-USER-ID",required = false) String userId,
+                                                                   @RequestParam(required = false) String type,
+                                                                   @RequestParam(required = false) String keyword,
+                                                                   @RequestParam(required = false,defaultValue = "0") int pageNum) {
 
         //front에서 이미 -1을 한 상태로 pageNum을 보내줌.
         if (pageNum < 0) {

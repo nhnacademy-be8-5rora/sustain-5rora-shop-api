@@ -3,6 +3,7 @@ package store.aurora.book.controller.tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,8 +12,6 @@ import store.aurora.book.dto.tag.TagRequestDto;
 import store.aurora.book.dto.tag.TagResponseDto;
 import store.aurora.book.service.tag.TagService;
 
-import java.util.Collections;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/tags")
@@ -27,33 +26,27 @@ public class TagController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<TagResponseDto>> getTags(Pageable pageable) {
+    public ResponseEntity<Page<TagResponseDto>> getAllTags(@RequestParam(defaultValue = "0") int page,
+                                                        @RequestParam(defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page, size);
         Page<TagResponseDto> tags = tagService.getTags(pageable);
         return ResponseEntity.ok(tags);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<TagResponseDto> getTagById(@PathVariable Long id) {
+    @GetMapping("/{tag-id}")
+    public ResponseEntity<TagResponseDto> getTagById(@PathVariable("tag-id") Long id) {
         return ResponseEntity.ok(tagService.getTagById(id));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<TagResponseDto> updateTag(@PathVariable Long id, @Valid @RequestBody TagRequestDto requestDto) {
+    @PutMapping("/{tag-id}")
+    public ResponseEntity<TagResponseDto> updateTag(@PathVariable("tag-id") Long id, @Valid @RequestBody TagRequestDto requestDto) {
         return ResponseEntity.ok(tagService.updateTag(id, requestDto));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTag(@PathVariable Long id) {
+    @DeleteMapping("/{tag-id}")
+    public ResponseEntity<Void> deleteTag(@PathVariable("tag-id") Long id) {
         tagService.deleteTag(id);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<TagResponseDto>> searchTags(@RequestParam String keyword) {
-        if (keyword.isBlank()) {
-            return ResponseEntity.ok(Collections.emptyList()); // 빈 리스트 반환
-        }
-        List<TagResponseDto> tags = tagService.searchTags(keyword);
-        return ResponseEntity.ok(tags);
-    }
 }

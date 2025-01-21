@@ -3,6 +3,7 @@ package store.aurora.book.controller.series;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,14 +21,16 @@ public class SeriesController {
 
     // 모든 시리즈 조회 (페이징)
     @GetMapping
-    public ResponseEntity<Page<SeriesResponseDto>> getAllSeries(Pageable pageable) {
+    public ResponseEntity<Page<SeriesResponseDto>> getAllSeries(@RequestParam(defaultValue = "0") int page,
+                                                                @RequestParam(defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page, size);
         Page<SeriesResponseDto> series = seriesService.getAllSeries(pageable);
         return ResponseEntity.ok(series);
     }
 
     // 특정 시리즈 조회
-    @GetMapping("/{id}")
-    public ResponseEntity<SeriesResponseDto> getSeriesById(@PathVariable Long id) {
+    @GetMapping("/{series-id}")
+    public ResponseEntity<SeriesResponseDto> getSeriesById(@PathVariable("series-id") Long id) {
         SeriesResponseDto series = seriesService.getSeriesById(id);
         return ResponseEntity.ok(series);
     }
@@ -40,15 +43,15 @@ public class SeriesController {
     }
 
     // 시리즈 수정
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> updateSeries(@PathVariable Long id, @Valid @RequestBody SeriesRequestDto requestDto) {
+    @PutMapping("/{series-id}")
+    public ResponseEntity<Void> updateSeries(@PathVariable("series-id") Long id, @Valid @RequestBody SeriesRequestDto requestDto) {
         seriesService.updateSeries(id, requestDto);
         return ResponseEntity.noContent().build(); // 상태 코드만 반환
     }
 
     // 시리즈 삭제
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSeries(@PathVariable Long id) {
+    @DeleteMapping("/{series-id}")
+    public ResponseEntity<Void> deleteSeries(@PathVariable("series-id") Long id) {
         seriesService.deleteSeries(id);
         return ResponseEntity.noContent().build(); // 상태 코드만 반환
     }

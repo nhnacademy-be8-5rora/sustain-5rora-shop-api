@@ -41,7 +41,7 @@ public interface BookService {
 
     Page<BookSearchResponseDTO> getBooksByLike(String userId, Pageable pageable);
 
-    Optional<BookSearchResponseDTO> findMostSeller();
+    Optional<BookSearchResponseDTO> findMostSoldByLastMonth();
 
 
 }

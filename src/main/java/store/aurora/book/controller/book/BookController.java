@@ -84,7 +84,7 @@ public class BookController {
     }
 
     //유저가 좋아요 누른 책 리스트 반환
-    @GetMapping("/likes")
+    @GetMapping("/my-like-books")
     public ResponseEntity<Page<BookSearchResponseDTO>> getBooksByLike(@RequestHeader(value = "X-USER-ID") String userId,
                                                                       @RequestParam Long pageNum) {
         // 페이지 번호를 0부터 시작하는 방식으로 변환 (pageNum - 1)
@@ -96,10 +96,10 @@ public class BookController {
         // 책 목록을 ResponseEntity로 반환
         return ResponseEntity.ok(books);  // 좋아요 상태에 맞는 책 목록 반환
     }
-
-    @GetMapping("/most")
-    public ResponseEntity<BookSearchResponseDTO> getBooksByMost() {
-        Optional<BookSearchResponseDTO> book = bookService.findMostSeller();
+    //직전 달 기준 가장 많이 팔린 책 1권 가져오기
+    @GetMapping("/most-sold")
+    public ResponseEntity<BookSearchResponseDTO> getMostSoldBooksByPreviousMonth() {
+        Optional<BookSearchResponseDTO> book = bookService.findMostSoldByLastMonth();
 
         // 책이 있으면 200 OK와 책 정보 반환
         if (book.isPresent()) {

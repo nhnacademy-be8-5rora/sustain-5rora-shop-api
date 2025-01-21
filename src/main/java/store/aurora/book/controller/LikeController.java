@@ -1,6 +1,7 @@
 package store.aurora.book.controller;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import store.aurora.book.service.like.LikeService;
@@ -12,8 +13,6 @@ public class LikeController {
 
     private final LikeService likeService;
 
-
-    // merge
     @PostMapping("/likes/{bookId}")
     public ResponseEntity<Boolean> doLike(@PathVariable Long bookId,
                                           @RequestHeader(value = "X-USER-ID") String userId) {

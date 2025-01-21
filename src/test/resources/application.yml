@@ -39,9 +39,8 @@ nhncloud:
 
   identity:
     token-url: "https://api-identity-infrastructure.nhncloudservice.com/v2.0/tokens"
-    tenant-id: "c20e3b10d61749a2a52346ed0261d79e"
-    username: "rkdtkscjs1@naver.com"
-    password: "tksrkd1!"
+    secret-id: c99b0f6f27964801bf1d837a65783677
+
 
 ### key manager
 key:

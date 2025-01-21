@@ -8,10 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import store.aurora.common.dto.ErrorResponseDto;
 import store.aurora.common.dto.ValidationErrorResponse;
-import store.aurora.common.exception.DataConflictException;
-import store.aurora.common.exception.DataInsufficientException;
-import store.aurora.common.exception.DataLimitExceededException;
-import store.aurora.common.exception.DataNotFoundException;
+import store.aurora.common.exception.*;
 import store.aurora.file.ObjectStorageException;
 
 import java.time.LocalDateTime;
@@ -20,6 +17,8 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import store.aurora.file.TokenRefreshException;
+import store.aurora.key.KeyManagerJsonParsingException;
 import store.aurora.user.exception.AlreadyActiveUserException;
 import store.aurora.user.exception.DormantAccountException;
 import store.aurora.user.exception.VerificationException;
@@ -38,7 +37,7 @@ public class GlobalExceptionHandler {
         return createResponseEntity(e, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler({DataLimitExceededException.class, DataInsufficientException.class, VerificationException.class})
+    @ExceptionHandler({DataLimitExceededException.class, DataInsufficientException.class, ImageException.class,DtoNullException.class,VerificationException.class})
     public ResponseEntity<ErrorResponseDto> handleAlreadyException(RuntimeException e) {
         return createResponseEntity(e, HttpStatus.BAD_REQUEST);
     }
@@ -75,7 +74,32 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ObjectStorageException.class)
     public ResponseEntity<ErrorResponseDto> handleObjectStorageException(ObjectStorageException e) {
-        return createResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+                e.getMessage(),
+                e.getStatus().value(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(e.getStatus()).body(errorResponse);
+    }
+    @ExceptionHandler(TokenRefreshException.class)
+    public ResponseEntity<ErrorResponseDto> handleTokenRefreshException(TokenRefreshException e) {
+        LOG.error("토큰 갱신 실패: {}", e.getMessage(), e);
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+                e.getMessage(),
+                HttpStatus.UNAUTHORIZED.value(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+    @ExceptionHandler(KeyManagerJsonParsingException.class)
+    public ResponseEntity<ErrorResponseDto> handleKeyManagerJsonParsingException(KeyManagerJsonParsingException e) {
+        LOG.error("JSON 파싱 오류: {}", e.getMessage(), e);
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+                e.getMessage(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)

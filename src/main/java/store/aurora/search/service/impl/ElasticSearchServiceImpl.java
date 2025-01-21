@@ -11,20 +11,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.BookImage;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
-import store.aurora.book.repository.BookAuthorRepository;
-import store.aurora.book.repository.BookRepository;
-import store.aurora.book.repository.BookViewRepository;
-import store.aurora.book.repository.LikeRepository;
+
+import store.aurora.book.repository.author.BookAuthorRepository;
+import store.aurora.book.repository.book.BookRepository;
 import store.aurora.book.repository.category.BookCategoryRepository;
 import store.aurora.book.repository.category.CategoryRepository;
-import store.aurora.book.service.BookImageService;
+import store.aurora.book.service.image.BookImageService;
 import store.aurora.document.*;
-import store.aurora.review.repository.ReviewRepository;
-import store.aurora.review.service.ReviewService;
 import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.search.repository.ElasticSearchRepository;
 import store.aurora.search.service.ElasticSearchService;
@@ -38,10 +36,6 @@ import java.util.List;
 public class ElasticSearchServiceImpl implements ElasticSearchService {
 
     private final ElasticSearchRepository elasticSearchRepository;
-    private final BookViewRepository bookViewRepository;
-    private final ReviewRepository reviewRepository;
-    private final ReviewService reviewService;
-    private final LikeRepository likeRepository;
     private final BookImageService bookImageService;
     private final BookAuthorRepository bookAuthorRepository;
     private final ElasticsearchClient elasticsearchClient;

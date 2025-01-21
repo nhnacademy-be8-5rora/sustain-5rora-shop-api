@@ -1,5 +1,6 @@
 package store.aurora.book.dto.aladin;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -38,8 +39,9 @@ public class AladinBookRequestDto {
     @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "출판 날짜는 yyyy-MM-dd 형식이어야 합니다.")
     private String pubDate;
 
-    @NotBlank(message = "ISBN은 필수 항목입니다.")
-    @Pattern(regexp = "\\d{13}", message = "ISBN은 13자리 숫자여야 합니다.")
+    @Pattern(regexp = "^(?:[a-zA-Z0-9]{10}|\\d{13})$", message = "ISBN은 10자리(알파벳 포함 가능) 또는 13자리 숫자여야 합니다.")
+    private String isbn;  // 10자리 또는 13자리 ISBN 허용
+
     private String isbn13;
 
     @Positive(message = "판매 가격은 양수여야 합니다.")
@@ -50,7 +52,7 @@ public class AladinBookRequestDto {
 
     private String cover;
 
-    private AladinBookRequestDto.SeriesInfo seriesInfo;
+    private SeriesInfo seriesInfo;
 
     @Min(value = 0, message = "재고는 0 이상이어야 합니다.")
     private int stock = 100;
@@ -65,6 +67,11 @@ public class AladinBookRequestDto {
 
     @Size(max = 200, message = "태그 입력은 최대 200자까지 가능합니다.")
     private String tags;
+
+    @JsonIgnore
+    public String getValidIsbn() {
+        return (isbn13 != null && !isbn13.isBlank()) ? isbn13 : isbn;
+    }
 
     @Getter
     @Setter

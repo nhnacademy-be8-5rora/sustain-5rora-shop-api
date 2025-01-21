@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import store.aurora.book.dto.BookInfoDTO;
 import store.aurora.book.entity.Book;
-import store.aurora.book.service.BookService;
+import store.aurora.book.service.book.BookService;
 import store.aurora.cart.dto.CachedCart;
 import store.aurora.cart.dto.CartDTO;
 import store.aurora.cart.dto.CartItemDTO;

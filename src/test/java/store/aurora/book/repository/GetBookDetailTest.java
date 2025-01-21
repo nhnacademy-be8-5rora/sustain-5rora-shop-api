@@ -1,32 +1,25 @@
 package store.aurora.book.repository;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.test.annotation.DirtiesContext;
 import store.aurora.book.config.QuerydslConfiguration;
 import store.aurora.book.dto.BookDetailsDto;
-import store.aurora.book.dto.BookImageDto;
 import store.aurora.book.dto.category.BookCategoryDto;
 import store.aurora.book.entity.Book;
-import store.aurora.book.entity.BookImage;
 import store.aurora.book.entity.Publisher;
 import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
+import store.aurora.book.repository.book.BookRepository;
 import store.aurora.book.repository.category.BookCategoryRepository;
 import store.aurora.book.repository.category.CategoryRepository;
-import store.aurora.cart.repository.CartItemRepository;
-import store.aurora.cart.repository.CartRepository;
-import store.aurora.review.entity.Review;
-import store.aurora.review.repository.ReviewRepository;
-import store.aurora.user.repository.UserRepository;
+import store.aurora.book.repository.image.BookImageRepository;
+import store.aurora.book.repository.publisher.PublisherRepository;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;

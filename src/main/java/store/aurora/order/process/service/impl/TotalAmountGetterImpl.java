@@ -3,7 +3,7 @@ package store.aurora.order.process.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import store.aurora.book.service.BookService;
+import store.aurora.book.service.book.BookService;
 import store.aurora.order.dto.OrderDetailDTO;
 import store.aurora.order.process.service.DeliveryFeeService;
 import store.aurora.order.service.WrapService;

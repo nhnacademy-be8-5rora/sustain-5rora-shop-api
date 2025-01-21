@@ -13,6 +13,7 @@ import store.aurora.order.entity.enums.PaymentState;
 import store.aurora.order.entity.enums.ShipmentState;
 import store.aurora.order.process.service.DeliveryFeeService;
 import store.aurora.order.process.service.OrderInfoService;
+import store.aurora.order.process.service.TotalAmountGetter;
 import store.aurora.order.service.*;
 import store.aurora.order.process.service.OrderProcessService;
 import store.aurora.point.exception.PointInsufficientException;
@@ -29,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class OrderProcessServiceImpl implements OrderProcessService {
     private final BookService bookService;
     private final OrderService orderService;
@@ -43,6 +43,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     private final PaymentService paymentService;
     private final PointSpendService pointSpendService;
     private final CouponClient couponClient;
+    private final TotalAmountGetter totalAmountGetter;
 
     private static final Logger LOG = LoggerFactory.getLogger("user-logger");
 
@@ -51,36 +52,8 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         return UUID.randomUUID().toString();
     }
 
-    // todo: point 사용량 파라미터로 받아서 적용해야 함
     @Override
-    public int getTotalAmountFromOrderDetailList(List<OrderDetailDTO> orderDetailList) {
-        int totalAmount = 0;
-        for (OrderDetailDTO detail : orderDetailList) {
-            // 책 가격
-            int bookSalePrice = bookService.getBookById(detail.getBookId()).getSalePrice();
-
-            // 책 가격 계산
-            int amount = bookSalePrice * detail.getQuantity();
-
-            // wrap 금액 적용
-            if(Objects.nonNull(detail.getWrapId()))
-                amount += wrapService.getWrap(detail.getWrapId()).getAmount()
-                        * detail.getQuantity();
-
-            // 할인 금액 적용
-            if(Objects.nonNull(detail.getDiscountAmount()))
-                amount -= detail.getDiscountAmount();
-
-            totalAmount += amount;
-        }
-
-        // 배송비 계산
-        totalAmount += deliveryFeeService.getDeliveryFee(totalAmount);
-
-        return totalAmount;
-    }
-
-    @Override
+    @Transactional
     public void saveOrderInfoInRedisWithUuid(String uuid, OrderRequestDto orderInfo){
         orderInfoService.saveOrderInfoInRedisWithUuid(uuid, orderInfo);
     }
@@ -91,6 +64,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OrderResponseDto getOrderResponseFromOrderRequestDtoInRedis(String uuid){
         OrderResponseDto response = new OrderResponseDto();
 
@@ -108,7 +82,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
          */
         List<OrderDetailDTO> orderDetailList = Objects.requireNonNull(dto).getOrderDetailDTOList();
 
-        int value = getTotalAmountFromOrderDetailList(orderDetailList)
+        int value = totalAmountGetter.getTotalAmountFromOrderDetailList(orderDetailList)
                     - dto.getUsedPoint();
 
         StringBuilder orderName = new StringBuilder();
@@ -129,6 +103,8 @@ public class OrderProcessServiceImpl implements OrderProcessService {
     }
 
     // todo-3 장바구니 물품 주문한 경우, 주문한 책 장바구니에서 지우는 로직 추가
+    @Transactional
+    @Override
     public Order userOrderProcess(String redisOrderId, String paymentKey, int amount){
         OrderRequestDto orderInfo = orderInfoService.getOrderInfoFromRedis(redisOrderId);
 
@@ -162,7 +138,7 @@ public class OrderProcessServiceImpl implements OrderProcessService {
         return saved;
     }
 
-    // todo: 비밀번호 passwordEncoder 적용
+    @Transactional
     @Override
     public Long nonUserOrderProcess(String redisOrderId, String paymentKey, int amount){
         OrderRequestDto orderInfo = orderInfoService.getOrderInfoFromRedis(redisOrderId);
@@ -220,7 +196,8 @@ public class OrderProcessServiceImpl implements OrderProcessService {
                     .build();
 
             //사용된 쿠폰의 상태 변경 LIVE -> USED
-            //couponClient.used(detailDTO.getCouponId());
+//            couponClient.used(detailDTO.getCouponId());
+
             bookService.updateBookStockOnOrder(book.getId(), detailDTO.getQuantity());
 
             orderDetailService.createOrderDetail(detail);

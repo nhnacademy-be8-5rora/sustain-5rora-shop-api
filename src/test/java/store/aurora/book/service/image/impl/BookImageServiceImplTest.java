@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.entity.Book;
@@ -40,9 +39,6 @@ class BookImageServiceImplTest {
     void setUp() {
         testBook = new Book();
 
-        // 공통적인 모의 객체 설정
-        when(mockFile.isEmpty()).thenReturn(false);
-        when(mockFile.getOriginalFilename()).thenReturn("test.jpg");
     }
 
 

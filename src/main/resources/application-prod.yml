@@ -16,6 +16,12 @@ spring:
       username:
       password: na
 
+  #elasticSearch info
+  elasticsearch:
+    uris: http://115.94.72.197:9200
+    username: elastic
+    password: nhnacademy123!
+
   rabbitmq:
     virtual-host: vh1_prod
 

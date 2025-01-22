@@ -78,16 +78,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
 
         // 정렬 기준 추출
         Sort.Order sortOrder = pageable.getSort().stream().findFirst().orElse(Sort.Order.asc("id")); // 기본 정렬 기준
-        Expression<?> orderByExpression = switch (sortOrder.getProperty().toLowerCase()) {
-            case SortConstants.SALE_PRICE -> book.salePrice;
-            case SortConstants.PUBLISH_DATE -> book.publishDate;
-            case SortConstants.TITLE -> book.title;
-            case SortConstants.REVIEW_RATING -> getAverageReviewRatingSubquery(); // reviewRating에 대한 정렬 처리
-            case SortConstants.LIKE -> getLikeCountSubquery();
-            case SortConstants.VIEW -> getViewCountSubquery();
-            case SortConstants.REVIEWCOUNT -> getReviewCountSubquery();
-            default -> book.id; // 기본값
-        };
+        Expression<?> orderByExpression = getOrderByExpression(sortOrder.getProperty().toLowerCase());
 
         // `reviewRating` 기준으로 정렬 시, 리뷰가 100개 이상인 책만 필터링하는 조건 추가
         BooleanExpression reviewCountCondition = (sortOrder.getProperty().equalsIgnoreCase(SortConstants.REVIEW_RATING))
@@ -174,17 +165,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
 
         // 정렬 조건 설정
         Sort.Order sortOrder = pageable.getSort().stream().findFirst().orElse(Sort.Order.asc("title")); // 기본 정렬 기준
-        Expression<?> orderByExpression = switch (sortOrder.getProperty().toLowerCase()) {
-            case SortConstants.SALE_PRICE -> book.salePrice;
-            case SortConstants.PUBLISH_DATE -> book.publishDate;
-            case SortConstants.TITLE -> book.title;
-            case SortConstants.REVIEW_RATING -> getAverageReviewRatingSubquery(); // reviewRating에 대한 정렬 처리
-            case SortConstants.LIKE -> getLikeCountSubquery();
-            case SortConstants.VIEW -> getViewCountSubquery();
-            case SortConstants.REVIEWCOUNT -> getReviewCountSubquery();
-            default -> book.title; // 기본값
-        };
-
+        Expression<?> orderByExpression = getOrderByExpression(sortOrder.getProperty().toLowerCase());
         // `reviewRating` 기준으로 정렬 시, 리뷰가 100개 이상인 책만 필터링하는 조건 추가
         BooleanExpression reviewCountCondition = (sortOrder.getProperty().equalsIgnoreCase(SortConstants.REVIEW_RATING))
                 ? getReviewCountSubquery().goe(100) // 리뷰 개수가 100개 이상인 경우에만
@@ -327,16 +308,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
 
         // 정렬 조건 설정
         Sort.Order sortOrder = pageable.getSort().stream().findFirst().orElse(Sort.Order.asc(SortConstants.TITLE)); // 기본 정렬 기준
-        Expression<?> orderByExpression = switch (sortOrder.getProperty().toLowerCase()) {
-            case SortConstants.SALE_PRICE -> book.salePrice;
-            case SortConstants.PUBLISH_DATE -> book.publishDate;
-            case SortConstants.TITLE -> book.title;
-            case SortConstants.REVIEW_RATING -> getAverageReviewRatingSubquery(); // reviewRating에 대한 정렬 처리
-            case SortConstants.LIKE -> getLikeCountSubquery();
-            case SortConstants.VIEW -> getViewCountSubquery();
-            case SortConstants.REVIEWCOUNT -> getReviewCountSubquery();
-            default -> book.title; // 기본값
-        };
+        Expression<?> orderByExpression = getOrderByExpression(sortOrder.getProperty().toLowerCase());
 // `reviewRating` 기준으로 정렬 시, 리뷰가 100개 이상인 책만 필터링하는 조건 추가
         BooleanExpression reviewCountCondition = (sortOrder.getProperty().equalsIgnoreCase(SortConstants.REVIEW_RATING))
                 ? getReviewCountSubquery().goe(100) // 리뷰 개수가 100개 이상인 경우에만
@@ -584,16 +556,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
 
         // 정렬 기준 추출
         Sort.Order sortOrder = pageable.getSort().stream().findFirst().orElse(Sort.Order.asc("id")); // 기본 정렬 기준
-        Expression<?> orderByExpression = switch (sortOrder.getProperty().toLowerCase()) {
-            case SortConstants.SALE_PRICE -> book.salePrice;
-            case SortConstants.PUBLISH_DATE -> book.publishDate;
-            case SortConstants.TITLE -> book.title;
-            case SortConstants.REVIEW_RATING -> getAverageReviewRatingSubquery(); // reviewRating에 대한 정렬 처리
-            case SortConstants.LIKE -> getLikeCountSubquery();
-            case SortConstants.VIEW -> getViewCountSubquery();
-            case SortConstants.REVIEWCOUNT -> getReviewCountSubquery();
-            default -> book.id; // 기본값
-        };
+        Expression<?> orderByExpression = getOrderByExpression(sortOrder.getProperty().toLowerCase());
 
         // `reviewRating` 기준으로 정렬 시, 리뷰가 100개 이상인 책만 필터링하는 조건 추가
         BooleanExpression reviewCountCondition = (sortOrder.getProperty().equalsIgnoreCase(SortConstants.REVIEW_RATING))
@@ -734,15 +697,7 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
 
         // 정렬 조건 설정
         Sort.Order sortOrder = pageable.getSort().stream().findFirst().orElse(Sort.Order.asc("title")); // 기본 정렬 기준
-        Expression<?> orderByExpression = switch (sortOrder.getProperty().toLowerCase()) {
-            case SortConstants.SALE_PRICE -> book.salePrice;
-            case SortConstants.PUBLISH_DATE -> book.publishDate;
-            case SortConstants.TITLE -> book.title;
-            case SortConstants.REVIEW_RATING -> getAverageReviewRatingSubquery(); // reviewRating에 대한 정렬 처리
-            case SortConstants.LIKE -> getLikeCountSubquery();
-            case SortConstants.VIEW -> getViewCountSubquery();
-            default -> book.title; // 기본값
-        };
+        Expression<?> orderByExpression = getOrderByExpression(sortOrder.getProperty().toLowerCase());
 // `reviewRating` 기준으로 정렬 시, 리뷰가 100개 이상인 책만 필터링하는 조건 추가
         BooleanExpression reviewCountCondition = (sortOrder.getProperty().equalsIgnoreCase(SortConstants.REVIEW_RATING))
                 ? getReviewCountSubquery().goe(100) // 리뷰 개수가 100개 이상인 경우에만
@@ -845,5 +800,18 @@ public class BookRepositoryCustomImpl extends QuerydslRepositorySupport implemen
                 .averageReviewRating(Optional.ofNullable(tuple.get(12, Double.class)).orElse(0.0)) // 기본값 0.0
                 .build();
     }
+    // 정렬 기준에 맞는 Expression을 반환하는 메서드
+    public Expression<? extends Comparable<?>> getOrderByExpression(String sortProperty) {
+        return switch (sortProperty.toLowerCase()) {
+            case SortConstants.SALE_PRICE -> book.salePrice;  // QBook 사용
+            case SortConstants.PUBLISH_DATE -> book.publishDate;  // QBook 사용
+            case SortConstants.TITLE -> book.title;  // QBook 사용
+            case SortConstants.REVIEW_RATING -> getAverageReviewRatingSubquery();  // 리뷰 평점에 대한 서브쿼리
+            case SortConstants.LIKE -> getLikeCountSubquery();  // 좋아요 수에 대한 서브쿼리
+            case SortConstants.VIEW -> getViewCountSubquery();  // 조회 수에 대한 서브쿼리
+            default -> book.title;  // 기본적으로 title로 정렬
+        };
+    }
 
 }
+

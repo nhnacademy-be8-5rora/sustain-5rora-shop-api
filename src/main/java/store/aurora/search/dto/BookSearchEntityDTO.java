@@ -137,25 +137,5 @@ public class BookSearchEntityDTO {
 
         return new AuthorDTO(name, role);
     }
-    @Override
-    public String toString() {
-        return "BookSearchEntityDTO{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", regularPrice=" + regularPrice +
-                ", salePrice=" + salePrice +
-                ", isSale=" + isSale +
-                ", publishDate=" + publishDate +
-                ", publisherName='" + publisherName + '\'' +
-                ", authors=" + authors +
-                ", imgPath='" + imgPath + '\'' +
-                ", categoryIdList=" + categoryIdList + // 카테고리 이름 리스트 추가
-                ", viewCount=" + viewCount + // viewCount 추가
-                ", reviewCount=" + reviewCount+
-                ", reviewRating=" + reviewRating +
-                '}';
-    }
-
-
 
 }

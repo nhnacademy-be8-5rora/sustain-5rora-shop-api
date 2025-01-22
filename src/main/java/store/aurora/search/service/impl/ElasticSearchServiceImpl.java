@@ -1,9 +1,6 @@
 package store.aurora.search.service.impl;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
-import co.elastic.clients.elasticsearch.core.search.Hit;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +24,6 @@ import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.search.repository.ElasticSearchRepository;
 import store.aurora.search.service.ElasticSearchService;
 
-import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -143,53 +139,4 @@ public class ElasticSearchServiceImpl implements ElasticSearchService {
 
         return bookDocument;
     }
-
-
-    @Override
-    public Long saveBooksNotInElasticSearch() {
-        List<Long> allBooksInDb  = bookRepository.findAll().stream().map(Book::getId).toList();
-        List<Long> allBooksInElastic= findAllBooks();
-        // allBooksInDb에서 allBooksInElastic에 없는 ID 필터링
-        List<Long> idsNotInElastic = allBooksInDb.stream()
-                .filter(id -> !allBooksInElastic.contains(id))
-                .toList();
-
-        List<Book> books = bookRepository.findALlByIdIn(idsNotInElastic);
-        Long count = 0L;  // Long으로 선언하여 반환 타입과 맞춤
-        for (Book book : books) {
-            try {
-                saveBook(book); // 저장 시도
-                count++; // 성공한 경우에만 카운트 증가
-            } catch (Exception e) {
-                USER_LOG.warn("책 저장 실패: {} - {}", book.getId(), e.getMessage());
-            }
-        }
-
-        return count;
-    }
-
-    private List<Long> findAllBooks() {
-        try {
-            // 쿼리 생성
-            SearchRequest request = new SearchRequest.Builder()
-                    .index("5rora")
-                    .query(q -> q.matchAll(m -> m)) // match_all 쿼리
-                    .size(1000)  // 한번에 1000개 가져오기
-                    .storedFields(List.of())       // _id만 가져오기 위해 stored_fields 사용
-                    .build();
-
-            // Elasticsearch 요청 실행
-            SearchResponse<Void> response = elasticsearchClient.search(request, Void.class);
-
-            // _id 추출
-            return response.hits().hits().stream()
-                    .map(Hit::id) // Hit 객체에서 id만 추출
-                    .map(Long::parseLong) // String -> Long 변환
-                    .toList();
-
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Elasticsearch 요청 실패: " + e.getMessage(), e);
-        }
-    }
-
 }

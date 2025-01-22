@@ -23,6 +23,11 @@ spring:
       validation-query: SELECT 1       # 연결 유효성 검사 쿼리
       test-on-borrow: true             # 풀에서 가져올 때 유효성 검사
       test-while-idle: true            # 유휴 상태에서 유효성 검사
+  #elasticSearch info
+  elasticsearch:
+    uris: http://115.94.72.197:9200
+    username: elastic
+    password: nhnacademy123!
 
   sql:
     init:

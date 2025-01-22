@@ -18,6 +18,10 @@ public class DeliveryFeeServiceImpl implements DeliveryFeeService {
      */
     @Override
     public int getDeliveryFee(int totalAmount) {
+        if(totalAmount < 0){
+            throw new IllegalArgumentException("totalAmount is less than 0");
+        }
+
         if (totalAmount >= settingService.getMinAmount()) {
             return 0;
         } else {

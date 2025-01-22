@@ -48,7 +48,6 @@ public class OrderDetail {
     private Long couponId;
 
     // 책
-    // TODO: NOT NULL
     @ManyToOne
     @JoinColumn(name = "book_id")
 //    @JoinColumn(name = "book_id", nullable = false)

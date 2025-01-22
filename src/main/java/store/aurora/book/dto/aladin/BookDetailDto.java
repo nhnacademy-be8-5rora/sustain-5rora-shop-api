@@ -1,7 +1,7 @@
 package store.aurora.book.dto.aladin;
 
 import lombok.*;
-import store.aurora.book.dto.category.CategoryDTO;
+import store.aurora.book.dto.category.CategoryResponseDTO;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -39,7 +39,8 @@ public class BookDetailDto {
 
     private String seriesName;
 
-    private List<CategoryDTO> categories = new ArrayList<>();
+    private List<CategoryResponseDTO> categories = new ArrayList<>();
 
     private String tags;
+
 }

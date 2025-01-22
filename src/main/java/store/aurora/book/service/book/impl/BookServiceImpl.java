@@ -109,7 +109,6 @@ public class BookServiceImpl implements BookService {
         }
     }
 
-    // 책 활성/비활성(soft 삭제 기능)
     @Transactional
     @Override
     public void updateBookStockOnOrder(Long bookId, int quantity) {
@@ -132,7 +131,7 @@ public class BookServiceImpl implements BookService {
         bookRepository.save(book);
     }
 
-
+    // 책 활성/비활성(soft 삭제 기능)
     @Transactional
     @Override
     public void updateBookActivation(Long bookId, boolean isActive) {
@@ -250,8 +249,8 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Optional<BookSearchResponseDTO>  findMostSeller() {
-        Tuple bookIdTuple = bookRepository.findMostSoldBook();
+    public Optional<BookSearchResponseDTO>  findMostSoldByLastMonth() {
+        Tuple bookIdTuple = bookRepository.findMostSoldByLastMonth();
         if (bookIdTuple == null) {
             // bookIdTuple이 null일 경우 로그를 남기고 빈 값 반환
             USER_LOG.info("No most sold book found for last month.");

@@ -13,7 +13,7 @@ import java.util.List;
 
 public interface CategoryService {
     void createCategory(CategoryRequestDTO requestDTO);
-    void updateCategoryName(Long categoryId, String newName);
+    void updateCategory(Long categoryId, String newName);
     void deleteCategory(Long categoryId);
 
     Page<CategoryResponseDTO> getRootCategories(Pageable pageable);
@@ -24,7 +24,6 @@ public interface CategoryService {
 
     List<CategoryResponseDTO> getAllChildrenCategories(Long parentId);
 
-    List<Book> getBooksByCategoryId(Long categoryId);
     CategoryResponseDTO findById(Long categoryId);
     List<BookCategory> createBookCategories(List<Long> categoryIds);
 

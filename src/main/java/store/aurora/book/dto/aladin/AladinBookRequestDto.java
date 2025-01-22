@@ -83,4 +83,12 @@ public class AladinBookRequestDto {
         private String seriesName; // 시리즈 이름
     }
 
+    public AladinBookRequestDto(String title, String author, String description, String publisher, String pubDate, String isbn) {
+        this.title = title;
+        this.author = author;
+        this.description = description;
+        this.publisher = publisher;
+        this.pubDate = pubDate;
+        this.isbn = isbn;
+    }
 }

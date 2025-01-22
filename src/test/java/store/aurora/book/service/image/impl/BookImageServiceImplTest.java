@@ -3,9 +3,10 @@ package store.aurora.book.service.image.impl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.multipart.MultipartFile;
 import store.aurora.book.entity.Book;
 import store.aurora.book.entity.BookImage;
@@ -17,6 +18,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class BookImageServiceImplTest {
 
     @InjectMocks
@@ -35,12 +37,8 @@ class BookImageServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         testBook = new Book();
 
-        // 공통적인 모의 객체 설정
-        when(mockFile.isEmpty()).thenReturn(false);
-        when(mockFile.getOriginalFilename()).thenReturn("test.jpg");
     }
 
 

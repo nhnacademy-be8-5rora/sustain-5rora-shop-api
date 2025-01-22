@@ -3,6 +3,7 @@ package store.aurora.book.controller.author;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +20,14 @@ public class AuthorController {
     private final AuthorService authorService;
 
     @GetMapping
-    public ResponseEntity<Page<AuthorResponseDto>> getAllAuthors(Pageable pageable) {
+    public ResponseEntity<Page<AuthorResponseDto>> getAllAuthors(@RequestParam(defaultValue = "0") int page,
+                                                                 @RequestParam(defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(authorService.getAllAuthors(pageable));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<AuthorResponseDto> getAuthorById(@PathVariable Long id) {
+    @GetMapping("/{author-id}")
+    public ResponseEntity<AuthorResponseDto> getAuthorById(@PathVariable("author-id") Long id) {
         return ResponseEntity.ok(authorService.getAuthorById(id));
     }
 
@@ -34,14 +37,14 @@ public class AuthorController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> updateAuthor(@PathVariable Long id, @Valid @RequestBody AuthorRequestDto requestDto) {
+    @PutMapping("/{author-id}")
+    public ResponseEntity<Void> updateAuthor(@PathVariable("author-id") Long id, @Valid @RequestBody AuthorRequestDto requestDto) {
         authorService.updateAuthor(id, requestDto);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAuthor(@PathVariable Long id) {
+    @DeleteMapping("/{author-id}")
+    public ResponseEntity<Void> deleteAuthor(@PathVariable("author-id") Long id) {
         authorService.deleteAuthor(id);
         return ResponseEntity.noContent().build();
     }

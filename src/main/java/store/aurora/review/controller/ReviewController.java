@@ -6,7 +6,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -93,9 +95,12 @@ public class ReviewController {
                     schema = @Schema(implementation = Review.class)))
     @ApiResponse(responseCode = "404", description = "해당 유저를 찾을 수 없음")
     @ApiResponse(responseCode = "500", description = "서버 오류")
-    public ResponseEntity<List<ReviewResponse>> getReviewsByUserId(@PathVariable String userId) {
-        List<ReviewResponse> reviews = reviewService.getReviewsByUserId(userId);
-        return ResponseEntity.ok(reviews);
+    public Page<ReviewResponse> getReviewsByUserId(@PathVariable String userId,
+                                                   @RequestParam(defaultValue = "0") int page,
+                                                   @RequestParam(defaultValue = "5") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return reviewService.getReviewsByUserId(userId, pageable);
+//        return ResponseEntity.ok(reviewResponsePage);
     }
 
     // 리뷰 상세 조회

@@ -14,9 +14,10 @@ import store.aurora.order.entity.Order;
 import store.aurora.order.entity.OrderDetail;
 import store.aurora.order.entity.enums.OrderState;
 import store.aurora.order.service.OrderService;
-import store.aurora.order.service.ShipmentService;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -25,7 +26,6 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class AdminDeliveryServiceImpl implements AdminDeliveryService {
     private final OrderService orderService;
-    private final ShipmentService shipmentService;
     private final DeliveryStatusChanger deliveryStatusChanger;
 
     @Override
@@ -43,31 +43,44 @@ public class AdminDeliveryServiceImpl implements AdminDeliveryService {
     }
 
     private AdminOrderDTO convertToAdminOrderDTO(Order order) {
-        AdminOrderDTO orderDto = new AdminOrderDTO();
-        orderDto.setOrderId(order.getId());
-        orderDto.setShipmentState(order.getState().toString());
 
-        List<AdminOrderDetailDTO> detailList = new ArrayList<>();
-        for (OrderDetail detail : order.getOrderDetails()) {
-            AdminOrderDetailDTO detailDto = convertToAdminOrderDetailDTO(detail);
-            detailList.add(detailDto);
+        Long orderId = order.getId();
+        String shipmentState = order.getState().toString();
+
+
+        LocalDateTime shipmentDatetime = order.getOrderDetails().getFirst().getShipment().getShipmentDatetime();
+        String shipmentDateString = null;
+        if(Objects.nonNull(shipmentDatetime)){
+            shipmentDateString = shipmentDatetime.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH:mm"));
         }
 
-        orderDto.setOrderDetailList(detailList);
-        return orderDto;
+        LocalDate preferShipmentDateTime = order.getPreferredDeliveryDate();
+        String preferDate = null;
+        if(Objects.nonNull(preferShipmentDateTime)){
+            preferDate = preferShipmentDateTime.format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일"));
+        }
+
+        List<AdminOrderDetailDTO> orderDetailList = new ArrayList<>();
+        for (OrderDetail detail : order.getOrderDetails()) {
+            orderDetailList.add(convertToAdminOrderDetailDTO(detail));
+        }
+
+        return AdminOrderDTO.builder()
+                .orderId(orderId)
+                .shipmentState(shipmentState)
+                .shipmentDate(shipmentDateString)
+                .preferShipmentDate(preferDate)
+                .orderDetailList(orderDetailList)
+                .build();
     }
 
     private AdminOrderDetailDTO convertToAdminOrderDetailDTO(OrderDetail detail) {
-        String shipmentDatetime = null;
-        if (Objects.nonNull(detail.getShipment()) && Objects.nonNull(detail.getShipment().getShipmentDatetime())) {
-            shipmentDatetime = detail.getShipment().getShipmentDatetime().toString();
-        }
+        return AdminOrderDetailDTO.builder()
+                .bookName(detail.getBook().getTitle())
+                .price(detail.getAmountDetail())
+                .quantity(detail.getQuantity())
+                .build();
 
-        return new AdminOrderDetailDTO(
-                detail.getId(),
-                detail.getState().toString(),
-                shipmentDatetime
-        );
     }
 
     @Override
@@ -77,21 +90,8 @@ public class AdminDeliveryServiceImpl implements AdminDeliveryService {
             deliveryStatusChanger.updateOrderStatusToShipping(orderId);
         } else if (shipmentStatus.equals("PENDING")) {
             deliveryStatusChanger.updateOrderStatusToPending(orderId);
+        } else{
+            throw new IllegalArgumentException("Invalid shipment status");
         }
-
-//        OrderState orderState = OrderState.valueOf(shipmentStatus);
-//        order.setState(OrderState.valueOf(orderState.toString()));
-//
-//        List<OrderDetail> orderDetails = order.getOrderDetails();
-//        for (OrderDetail orderDetail : orderDetails) {
-//            orderDetail.setState(OrderState.valueOf(shipmentStatus));
-//        }
-//
-//        Shipment shipment = orderDetails.getFirst().getShipment();
-//        shipment.setState(ShipmentState.valueOf(shipmentStatus));
-//        shipment.setShipmentDatetime(LocalDateTime.now());
-//        shipmentService.updateShipment(shipment);
-//
-//        deliveryStatusChanger.updateOrderStatusToShipping(orderId);
     }
 }

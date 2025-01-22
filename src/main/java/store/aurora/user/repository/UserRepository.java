@@ -16,9 +16,6 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
 
-    @EntityGraph(attributePaths = {"orders", "orders.orderDetails"})
-    @Query("SELECT u FROM User u")
-    List<User> findAllWithOrders();
     List<User> findByLastLoginBeforeAndStatusNot(LocalDateTime lastLogin, UserStatus status);
 
     boolean existsById(String id);

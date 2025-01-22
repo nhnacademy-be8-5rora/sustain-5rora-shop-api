@@ -17,5 +17,13 @@ public class ReviewDto {
     private LocalDateTime reviewCreatedAt;
     private String userName;
     private List<String> reviewImages;
+
+
+    public ReviewDto(Long reviewId, String userName, String reviewContent, int reviewRating) {
+        this.reviewId = reviewId;
+        this.userName = userName;
+        this.reviewContent = reviewContent;
+        this.reviewRating = reviewRating;
+    }
 }
 

@@ -37,17 +37,5 @@ public class ElasticSearchController {
         }
         return ResponseEntity.ok(books);
     }
-    //db에는 저장됐지만 , 엘라스틱서치에는 저장안된 책들 모두 저장하는것
-    // todo 일단 size를 1000개 고정으로 만들어둠. 입력받아서 하도록 바꾸어야함,
-    @PostMapping("/sync")
-    public ResponseEntity<Long> syncBooksToElasticSearch() {
-        try {
-            // 엘라스틱서치에 데이터 저장
-            Long count = elasticSearchService.saveBooksNotInElasticSearch();
 
-            return ResponseEntity.ok(count);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
 }

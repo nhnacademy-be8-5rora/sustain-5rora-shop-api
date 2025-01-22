@@ -10,5 +10,4 @@ import store.aurora.search.dto.BookSearchResponseDTO;
 public interface ElasticSearchService {
     Page<BookSearchResponseDTO> searchBooks(String type,String keyword, Pageable pageable, String userId);
     void saveBook(Book book);
-    Long saveBooksNotInElasticSearch();
 }

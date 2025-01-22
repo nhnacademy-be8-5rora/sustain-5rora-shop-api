@@ -21,7 +21,6 @@ import java.util.List;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(controllers = ElasticSearchController.class)
@@ -138,29 +137,4 @@ class ElasticSearchControllerTest {
                 .andExpect(status().isNoContent());  // Expect 204 No Content
     }
 
-    @Test
-    @DisplayName("성공적인 동기화")
-    void testSyncBooks_Success() throws Exception {
-        // Given
-        long count = 10L;  // 성공적으로 동기화된 책의 개수
-        when(elasticSearchService.saveBooksNotInElasticSearch()).thenReturn(count);  // mock 처리
-
-        // When & Then
-        mockMvc.perform(post("/api/books/search/elastic-search/sync")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())  // Expect 200 OK
-                .andExpect(jsonPath("$").value(count));  // Return the count of synced books
-    }
-
-    @Test
-    @DisplayName("동기화 실패")
-    void testSyncBooks_Failure() throws Exception {
-        // Given
-        when(elasticSearchService.saveBooksNotInElasticSearch()).thenThrow(new RuntimeException("Sync failed"));
-
-        // When & Then
-        mockMvc.perform(post("/api/books/search/elastic-search/sync")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());  // Expect 400 Bad Request on failure
-    }
 }

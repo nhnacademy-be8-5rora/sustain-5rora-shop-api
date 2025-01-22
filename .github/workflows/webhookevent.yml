@@ -20,5 +20,5 @@ jobs:
     steps:
     - name: webhookevent
       run: |
-        curl -H "Content-Type: application/json" -X POST -d '{"botName": "MyBot", "botIconImage": "https://static.dooray.com/static_images/dooray-bot.png", "text":"shop api develop branch pushed"}' https://nhnacademy.dooray.com/services/3204376758577275363/3957499258579580748/mMmqF9faSVeBjhRdMu9fSA
+        curl -H "Content-Type: application/json" -X POST -d '{"botName": "MyBot", "botIconImage": "https://static.dooray.com/static_images/dooray-bot.png", "text":"sustain shop api develop branch pushed"}' https://nhnacademy.dooray.com/services/3204376758577275363/3957499258579580748/mMmqF9faSVeBjhRdMu9fSA
 

@@ -28,9 +28,4 @@ public class StorageInfo {
 //    @Setter
 //    @OneToMany(mappedBy = "storageInfo", cascade = CascadeType.ALL, orphanRemoval = true)
 //    private List<ReviewImage> reviewImages;
-
-    public StorageInfo(String storageName, String storageUrl) {
-        this.storageName = storageName;
-        this.storageUrl = storageUrl;
-    }
 }

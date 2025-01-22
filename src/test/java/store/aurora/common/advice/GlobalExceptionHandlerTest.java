@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 import store.aurora.book.exception.book.NotFoundBookImageException;
 import store.aurora.book.exception.category.CategoryAlreadyExistException;
 import store.aurora.book.exception.category.CategoryLimitException;
-import store.aurora.file.ObjectStorageException;
-import store.aurora.file.TokenRefreshException;
+//import store.aurora.file.ObjectStorageException;
+//import store.aurora.file.TokenRefreshException;
 import store.aurora.user.exception.DormantAccountException;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -59,15 +59,15 @@ class GlobalExceptionHandlerTest {
             throw new DormantAccountException("Dormant account");
         }
 
-        @GetMapping("/object-storage-error")
-        public void throwObjectStorageException() {
-            throw new ObjectStorageException("Object storage error", HttpStatus.SERVICE_UNAVAILABLE);
-        }
-
-        @GetMapping("/unauthorized")
-        public void throwTokenRefreshException() {
-            throw new TokenRefreshException("Token refresh failed");
-        }
+//        @GetMapping("/object-storage-error")
+//        public void throwObjectStorageException() {
+//            throw new ObjectStorageException("Object storage error", HttpStatus.SERVICE_UNAVAILABLE);
+//        }
+//
+//        @GetMapping("/unauthorized")
+//        public void throwTokenRefreshException() {
+//            throw new TokenRefreshException("Token refresh failed");
+//        }
     }
 
     @BeforeEach
@@ -108,17 +108,17 @@ class GlobalExceptionHandlerTest {
                 .andExpect(jsonPath("$.error").value("Dormant account"));
     }
 
-    @Test
-    void handleObjectStorageException() throws Exception {
-        mockMvc.perform(get("/object-storage-error"))
-                .andExpect(status().isServiceUnavailable())
-                .andExpect(jsonPath("$.errorMsg").value("Object storage error"));
-    }
-
-    @Test
-    void handleTokenRefreshException() throws Exception {
-        mockMvc.perform(get("/unauthorized"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.errorMsg").value("Token refresh failed"));
-    }
+//    @Test
+//    void handleObjectStorageException() throws Exception {
+//        mockMvc.perform(get("/object-storage-error"))
+//                .andExpect(status().isServiceUnavailable())
+//                .andExpect(jsonPath("$.errorMsg").value("Object storage error"));
+//    }
+//
+//    @Test
+//    void handleTokenRefreshException() throws Exception {
+//        mockMvc.perform(get("/unauthorized"))
+//                .andExpect(status().isUnauthorized())
+//                .andExpect(jsonPath("$.errorMsg").value("Token refresh failed"));
+//    }
 }

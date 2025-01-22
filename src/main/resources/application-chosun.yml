@@ -31,6 +31,12 @@ spring:
       username:
       password: na
 
+  #elasticSearch info
+  elasticsearch:
+    uris: http://10.116.64.14:9200
+    username: elastic
+    password: nhnacademy123!
+
   rabbitmq:
     host: 10.116.64.14
     port: 15672

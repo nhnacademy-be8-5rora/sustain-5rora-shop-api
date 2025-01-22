@@ -13,6 +13,6 @@ public interface BookRepository extends JpaRepository<Book, Long> , BookReposito
     boolean existsByPublisherId(Long id);
     boolean existsBySeriesId(Long id);
     Page<Book> findByActive(boolean isActive, Pageable pageable);
-    List<Book> findALlByIdIn(List<Long> ids);
+    List<Book> findAllByIdIn(List<Long> ids);
 
 }

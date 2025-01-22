@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import store.aurora.common.dto.ErrorResponseDto;
 import store.aurora.common.dto.ValidationErrorResponse;
 import store.aurora.common.exception.*;
-import store.aurora.file.FileStorageException;
+//import store.aurora.file.ObjectStorageException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,7 +17,11 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import store.aurora.file.TokenRefreshException;
+//import store.aurora.file.TokenRefreshException;
+import store.aurora.file.exception.DirectoryCreationException;
+import store.aurora.file.exception.ImageDeleteException;
+import store.aurora.file.exception.ImageDownloadException;
+import store.aurora.file.exception.ImageSaveException;
 import store.aurora.key.KeyManagerJsonParsingException;
 import store.aurora.user.exception.AlreadyActiveUserException;
 import store.aurora.user.exception.DeletedAccountException;
@@ -38,7 +42,7 @@ public class GlobalExceptionHandler {
         return createResponseEntity(e, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler({DataLimitExceededException.class, DataInsufficientException.class, ImageException.class,DtoNullException.class,VerificationException.class})
+    @ExceptionHandler({DataLimitExceededException.class, DataInsufficientException.class, ImageException.class,DtoNullException.class,VerificationException.class, ImageDownloadException.class})
     public ResponseEntity<ErrorResponseDto> handleAlreadyException(RuntimeException e) {
         return createResponseEntity(e, HttpStatus.BAD_REQUEST);
     }
@@ -73,25 +77,25 @@ public class GlobalExceptionHandler {
                 .body(Map.of("error", ex.getMessage()));
     }
 
-    @ExceptionHandler(FileStorageException.class)
-    public ResponseEntity<ErrorResponseDto> handleObjectStorageException(FileStorageException e) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(
-                e.getMessage(),
-                e.getStatus().value(),
-                LocalDateTime.now()
-        );
-        return ResponseEntity.status(e.getStatus()).body(errorResponse);
-    }
-    @ExceptionHandler(TokenRefreshException.class)
-    public ResponseEntity<ErrorResponseDto> handleTokenRefreshException(TokenRefreshException e) {
-        LOG.error("토큰 갱신 실패: {}", e.getMessage(), e);
-        ErrorResponseDto errorResponse = new ErrorResponseDto(
-                e.getMessage(),
-                HttpStatus.UNAUTHORIZED.value(),
-                LocalDateTime.now()
-        );
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
-    }
+//    @ExceptionHandler(ObjectStorageException.class)
+//    public ResponseEntity<ErrorResponseDto> handleObjectStorageException(ObjectStorageException e) {
+//        ErrorResponseDto errorResponse = new ErrorResponseDto(
+//                e.getMessage(),
+//                e.getStatus().value(),
+//                LocalDateTime.now()
+//        );
+//        return ResponseEntity.status(e.getStatus()).body(errorResponse);
+//    }
+//    @ExceptionHandler(TokenRefreshException.class)
+//    public ResponseEntity<ErrorResponseDto> handleTokenRefreshException(TokenRefreshException e) {
+//        LOG.error("토큰 갱신 실패: {}", e.getMessage(), e);
+//        ErrorResponseDto errorResponse = new ErrorResponseDto(
+//                e.getMessage(),
+//                HttpStatus.UNAUTHORIZED.value(),
+//                LocalDateTime.now()
+//        );
+//        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+//    }
     @ExceptionHandler(KeyManagerJsonParsingException.class)
     public ResponseEntity<ErrorResponseDto> handleKeyManagerJsonParsingException(KeyManagerJsonParsingException e) {
         LOG.error("JSON 파싱 오류: {}", e.getMessage(), e);
@@ -101,6 +105,11 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
+    @ExceptionHandler({ImageSaveException.class, ImageDeleteException.class, DirectoryCreationException.class})
+    public ResponseEntity<ErrorResponseDto> handleInternalServerErrorExceptions(RuntimeException e) {
+        return createResponseEntity(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(Exception.class)

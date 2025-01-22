@@ -31,7 +31,7 @@ public class BookDetailDto {
 
     private int priceStandard;
     private ImageDetail cover;
-    private List<ImageDetail> existingAdditionalImages; // 부가 이미지 URL 리스트
+    private List<ImageDetail> existingAdditionalImages = new ArrayList<>(); // 부가 이미지 URL 리스트
 
     private int stock = 100;
     private boolean isSale = false;
@@ -42,5 +42,6 @@ public class BookDetailDto {
     private List<CategoryResponseDTO> categories = new ArrayList<>();
 
     private String tags;
+
 
 }

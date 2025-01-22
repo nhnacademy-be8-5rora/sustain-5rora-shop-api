@@ -13,7 +13,7 @@ import store.aurora.book.repository.book.BookRepository;
 import store.aurora.book.entity.BookImage;
 import store.aurora.book.service.author.BookAuthorService;
 import store.aurora.book.service.image.BookImageService;
-import store.aurora.file.ObjectStorageService;
+import store.aurora.file.service.ImageService;
 import store.aurora.order.repository.OrderDetailRepository;
 import store.aurora.review.dto.ReviewRequest;
 import store.aurora.review.dto.ReviewResponse;
@@ -37,11 +37,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewRepository reviewRepository;
-    private final ObjectStorageService objectStorageService;
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
     private final OrderDetailRepository orderDetailRepository;
-
+    private final ImageService imageService;
     private final BookAuthorService bookAuthorService;
     private final BookImageService bookImageService;
 
@@ -74,7 +73,7 @@ public class ReviewService {
 
         List<ReviewImage> images = new ArrayList<>();
         for (MultipartFile file : files) {
-            String imageUrl = objectStorageService.uploadObject(file);
+            String imageUrl = imageService.saveImage(file, review.getId(), "reviews");
             ReviewImage image = new ReviewImage();
             image.setImageFilePath(imageUrl);
             image.setReview(review);
@@ -180,7 +179,7 @@ public class ReviewService {
         if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
                 if (!file.isEmpty()) {
-                    String imageUrl = objectStorageService.uploadObject(file);
+                    String imageUrl = imageService.saveImage(file, reviewId, "reviews");
                     ReviewImage image = new ReviewImage();
                     image.setImageFilePath(imageUrl);
                     image.setReview(existingReview);

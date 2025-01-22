@@ -11,5 +11,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ImageDetail {
     private Long id;
-    private String url;
+    private String filePath;
 }

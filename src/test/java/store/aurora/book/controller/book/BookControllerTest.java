@@ -207,13 +207,10 @@ class BookControllerTest {
                         jsonPath("$.isbn").value(mockBookDetail.getIsbn()),
                         jsonPath("$.priceSales").value(mockBookDetail.getPriceSales()),
                         jsonPath("$.priceStandard").value(mockBookDetail.getPriceStandard()),
-                        jsonPath("$.cover.id").value(mockBookDetail.getCover().getId()),
-                        jsonPath("$.cover.url").value(mockBookDetail.getCover().getUrl()),
+                        jsonPath("$.cover").value("/images/books/1/cover.jpg"),
                         jsonPath("$.existingAdditionalImages", hasSize(2)),
-                        jsonPath("$.existingAdditionalImages[0].id").value(mockBookDetail.getExistingAdditionalImages().get(0).getId()),
-                        jsonPath("$.existingAdditionalImages[0].url").value(mockBookDetail.getExistingAdditionalImages().get(0).getUrl()),
-                        jsonPath("$.existingAdditionalImages[1].id").value(mockBookDetail.getExistingAdditionalImages().get(1).getId()),
-                        jsonPath("$.existingAdditionalImages[1].url").value(mockBookDetail.getExistingAdditionalImages().get(1).getUrl()),
+                        jsonPath("$.existingAdditionalImages[0]").value("/images/books/1/additional1.jpg"),
+                        jsonPath("$.existingAdditionalImages[1]").value("/images/books/1/additional2.jpg"),
                         jsonPath("$.stock").value(mockBookDetail.getStock()),
                         jsonPath("$.sale").value(mockBookDetail.isSale()),
                         jsonPath("$.packaging").value(mockBookDetail.isPackaging()),
@@ -311,10 +308,10 @@ class BookControllerTest {
         bookDetailDto.setIsbn("9781234567890");
         bookDetailDto.setPriceSales(15000);
         bookDetailDto.setPriceStandard(18000);
-        bookDetailDto.setCover(new ImageDetail(1L, "https://example.com/cover.jpg"));
+        bookDetailDto.setCover("/images/books/1/cover.jpg");
         bookDetailDto.setExistingAdditionalImages(List.of(
-                new ImageDetail(2L, "https://example.com/additional1.jpg"),
-                new ImageDetail(3L, "https://example.com/additional2.jpg")
+                "/images/books/1/additional1.jpg",
+                "/images/books/1/additional2.jpg"
         ));
         bookDetailDto.setStock(50);
         bookDetailDto.setSale(true);

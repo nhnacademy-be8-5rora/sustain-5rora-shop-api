@@ -18,7 +18,7 @@ spring:
 
   #elasticSearch info
   elasticsearch:
-    uris: http://115.94.72.197:9200
+    uris: http://10.116.64.14:9200
     username: elastic
     password: nhnacademy123!
 

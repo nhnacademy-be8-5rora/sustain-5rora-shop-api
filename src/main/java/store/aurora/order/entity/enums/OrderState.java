@@ -2,7 +2,6 @@ package store.aurora.order.entity.enums;
 
 import store.aurora.order.exception.exception404.OrderStateConvertFailException;
 
-// todo: 부분 취소 상태 추가
 public enum OrderState {
     PENDING,    // 대기
     CANCELLED,  // 취소됨

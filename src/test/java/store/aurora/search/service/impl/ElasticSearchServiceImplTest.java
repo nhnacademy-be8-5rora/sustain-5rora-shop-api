@@ -28,6 +28,7 @@ import store.aurora.search.dto.BookSearchResponseDTO;
 import store.aurora.search.repository.ElasticSearchRepository;
 
 import java.time.LocalDate;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -180,5 +181,6 @@ class ElasticSearchServiceImplTest {
         // then
         assertEquals(mockPage, result);  // Verifying that the result is the mocked page
     }
+
 
 }

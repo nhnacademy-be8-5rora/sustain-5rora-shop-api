@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
@@ -20,10 +19,14 @@ import store.aurora.book.entity.category.BookCategory;
 import store.aurora.book.entity.category.Category;
 import store.aurora.book.entity.tag.BookTag;
 import store.aurora.book.entity.tag.Tag;
-import store.aurora.book.repository.*;
 
 import store.aurora.book.repository.book.BookRepository;
-import store.aurora.book.repository.like.LikeRepository;
+import store.aurora.order.entity.Order;
+import store.aurora.order.entity.OrderDetail;
+import store.aurora.order.entity.Shipment;
+import store.aurora.order.entity.enums.OrderState;
+import store.aurora.order.entity.enums.ShipmentState;
+import store.aurora.order.entity.enums.ShippingCompaniesCode;
 import store.aurora.review.entity.Review;
 import store.aurora.search.dto.BookSearchEntityDTO;
 import store.aurora.user.entity.User;
@@ -34,6 +37,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static store.aurora.order.entity.QOrderDetail.orderDetail;
 
 @Slf4j
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
@@ -137,6 +143,71 @@ public class BookRepositoryCustomTest {
         entityManager.merge(bookTag1);
         entityManager.merge(bookTag2);
         entityManager.merge(bookTag3);
+        // 첫 번째 주문 추가
+        Order order1 = new Order();
+        order1.setUser(user1);
+        order1.setState(OrderState.CONFIRMED);
+        order1.setOrderTime(LocalDateTime.of(2024, 12, 1, 10, 0));
+        order1.setTotalAmount(18000);
+        order1.setPointAmount(1000);
+        order1.setName("John Doe");
+        order1.setOrderPhone("010-1234-5678");
+        order1.setOrderEmail("john@example.com");
+        order1.setDeliveryFee(0);
+
+// Order를 먼저 저장
+        order1 = entityManager.merge(order1);
+
+// Shipment 객체 생성 및 저장
+        Shipment shipment1 = new Shipment();
+        shipment1.setState(ShipmentState.PENDING);
+        shipment1.setShipmentCompaniesCode(ShippingCompaniesCode.CJ_LOGISTICS);
+        shipment1.setShipmentDatetime(LocalDateTime.now());
+        entityManager.persist(shipment1);  // Shipment 저장
+
+// OrderDetail 설정 및 저장
+        OrderDetail orderDetail1 = new OrderDetail();
+        orderDetail1.setOrder(order1);  // Order가 영속화된 후에 설정
+        orderDetail1.setState(OrderState.CONFIRMED);
+        orderDetail1.setAmountDetail(9000);
+        orderDetail1.setQuantity(2);
+        orderDetail1.setBook(book1);
+        orderDetail1.setShipment(shipment1);  // 이미 저장된 shipment 객체 할당
+
+        order1.addOrderDetail(orderDetail1);
+
+// OrderDetail 저장
+        entityManager.merge(orderDetail1);
+
+// 두 번째 주문 추가 (같은 방식으로 처리)
+        Order order2 = new Order();
+        order2.setUser(user2);
+        order2.setState(OrderState.CONFIRMED);
+        order2.setOrderTime(LocalDateTime.of(2024, 12, 10, 14, 30));
+        order2.setTotalAmount(19000);
+        order2.setPointAmount(500);
+        order2.setName("John Doe2");
+        order2.setOrderPhone("010-2345-6789");
+        order2.setOrderEmail("john2@example.com");
+        order2.setDeliveryFee(0);
+
+// Order를 먼저 저장
+        order2 = entityManager.merge(order2);
+
+// OrderDetail 설정 및 저장
+        OrderDetail orderDetail2 = new OrderDetail();
+        orderDetail2.setOrder(order2);  // Order가 영속화된 후에 설정
+        orderDetail2.setState(OrderState.CONFIRMED);
+        orderDetail2.setAmountDetail(9500);
+        orderDetail2.setQuantity(3);
+        orderDetail2.setBook(book2);
+        orderDetail2.setShipment(shipment1);  // 이미 저장된 shipment 객체 할당
+
+        order2.addOrderDetail(orderDetail2);
+
+// OrderDetail 저장
+        entityManager.merge(orderDetail2);
+
     }
 
 
@@ -439,6 +510,21 @@ public class BookRepositoryCustomTest {
             assertThat(book.getViewCount()).isGreaterThanOrEqualTo(0);
 
         });
+    }
+
+    @DisplayName("저번 달 가장 많이 팔린 책 id를 반환한다.")
+    @Test
+    void testFindMostSoldByLastMonth() {
+        // Given
+        // When
+        // BookService나 bookRepository에서 가장 많이 팔린 책을 조회합니다.
+        Tuple result = bookRepository.findMostSoldByLastMonth();  // Tuple로 결과 받아옴
+
+        // Then
+        // 가장 많이 팔린 책의 ID를 확인합니다.
+        // 테스트 데이터에서 책 2번이 더 많이 팔렸으므로, book2의 ID인 2L이 반환되어야 합니다.
+        assertNotNull(result); // 결과가 null이 아니어야 합니다.
+        assertEquals(2L, result.get(orderDetail.book.id)); // 가장 많이 팔린 책의 ID는 1이어야 합니다.
     }
 
 

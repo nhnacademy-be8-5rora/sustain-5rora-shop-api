@@ -80,15 +80,6 @@ public class User {
         this.isOauth = isOauth;
     }
 
-    public User(String id, LocalDate birth, String phoneNumber, String email, UserStatus status, LocalDateTime lastLogin) {
-        this.id = id;
-        this.birth = birth;
-        this.phoneNumber = phoneNumber;
-        this.email = email;
-        this.status = status;
-        this.lastLogin = lastLogin;
-    }
-
     @PrePersist
     public void setDefaultValues() {
         if (status == null) {

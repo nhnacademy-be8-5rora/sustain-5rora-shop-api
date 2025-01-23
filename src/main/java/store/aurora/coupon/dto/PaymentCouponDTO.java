@@ -1,8 +1,10 @@
 package store.aurora.coupon.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Setter
+@Getter
 public class PaymentCouponDTO {
     private Long id;        //사용자 쿠폰 ID
     private String couponName;  //쿠폰명

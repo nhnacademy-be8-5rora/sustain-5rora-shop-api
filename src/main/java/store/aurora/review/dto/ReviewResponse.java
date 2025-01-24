@@ -24,4 +24,5 @@ public class ReviewResponse {
     private String author;
     private String cover;
     private String userId;
+
 }

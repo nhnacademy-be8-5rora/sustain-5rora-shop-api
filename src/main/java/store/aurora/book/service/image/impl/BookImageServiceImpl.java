@@ -12,7 +12,7 @@ import store.aurora.book.exception.book.BookNotFoundException;
 import store.aurora.book.exception.image.ImageNotFoundException;
 import store.aurora.book.repository.image.BookImageRepository;
 import store.aurora.book.service.image.BookImageService;
-import store.aurora.file.ObjectStorageService;
+import store.aurora.file.service.ImageService;
 
 import java.util.List;
 
@@ -20,8 +20,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BookImageServiceImpl implements BookImageService {
 
-    private final ObjectStorageService objectStorageService;
     private final BookImageRepository bookImageRepository;
+    private final ImageService imageService;
 
     @Transactional
     @Override
@@ -29,7 +29,7 @@ public class BookImageServiceImpl implements BookImageService {
         // 1. 알라딘 API에서 제공하는 커버 이미지 URL이 있는 경우 저장
         if (StringUtils.isNotBlank(coverUrl)) {
             String modifiedCoverUrl = modifyCoverUrl(coverUrl);
-            String uploadedCoverUrl = objectStorageService.uploadObjectFromUrl(modifiedCoverUrl);
+            String uploadedCoverUrl = imageService.downloadAndSaveImage(modifiedCoverUrl, book.getId(), "books");
             addBookImage(book, uploadedCoverUrl, true); // 썸네일로 저장
         }
 
@@ -50,7 +50,7 @@ public class BookImageServiceImpl implements BookImageService {
         if (file == null || file.isEmpty()) {
             return;
         }
-        String uploadedFileUrl = objectStorageService.uploadObject(file);
+        String uploadedFileUrl = imageService.saveImage(file, book.getId(), "books");
         addBookImage(book, uploadedFileUrl, isThumbnail);
     }
 
@@ -80,7 +80,7 @@ public class BookImageServiceImpl implements BookImageService {
 
         imagesToDelete.forEach(image -> {
             // 1. 오브젝트 스토리지에서 이미지 삭제
-            objectStorageService.deleteObject(image.getFilePath());
+            imageService.deleteImage(image.getFilePath());
 
             // 2. Book 엔티티에서 이미지 제거
             Book book = image.getBook();

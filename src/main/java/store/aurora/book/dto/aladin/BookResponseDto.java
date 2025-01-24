@@ -25,6 +25,7 @@ public class BookResponseDto {
     private boolean isSale = false;
     private boolean isPackaging = false;
 
+
     public BookResponseDto(Long id, String title, String author, String description, String publisher, String pubDate, String isbn13) {
         this.id = id;
         this.title = title;

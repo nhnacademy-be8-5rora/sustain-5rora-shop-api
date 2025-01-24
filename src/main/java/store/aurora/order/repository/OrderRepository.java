@@ -7,12 +7,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import store.aurora.order.dto.OrderDetailInfoDto;
 import store.aurora.order.dto.OrderInfo;
 import store.aurora.order.dto.OrderRelatedInfoWithAuth;
 import store.aurora.order.entity.Order;
 import store.aurora.order.entity.OrderDetail;
-import store.aurora.order.entity.enums.OrderState;
 import store.aurora.user.entity.User;
 
 import java.util.List;

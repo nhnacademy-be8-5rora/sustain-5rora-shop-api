@@ -58,3 +58,7 @@ aladin:
 api:
   gateway:
     base-url: localhost:8180
+
+file:
+  storage:
+    root: /opt/5rora-images

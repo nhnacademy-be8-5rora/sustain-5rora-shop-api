@@ -5,7 +5,7 @@ spring:
   application:
     name: shop-api
   profiles:
-    active: dev
+    active: prod
     include: rabbitmq-config
   lifecycle:
     timeout-per-shutdown-phase: 30s
@@ -22,12 +22,6 @@ spring:
     hibernate:
       ddl-auto: none
     defer-datasource-initialization: true # ??? ?? ???? ??????. ?? JPA ???? ?????? ??? ?? ?? ?????? ?, ?????? ??? ???? ??? ?????.
-
-  #elasticSearch info
-  elasticsearch:
-    uris: http://10.116.64.14:9200
-    username: elastic
-    password: nhnacademy123!
 
   rabbitmq:
     host: 133.186.241.167
@@ -82,9 +76,9 @@ nhncloud:
     url: https://kr1-api-object-storage.nhncloudservice.com/v1/AUTH_c20e3b10d61749a2a52346ed0261d79e
     container: aurora # 컨테이너 이름
 
-  identity:
-    token-url: "https://api-identity-infrastructure.nhncloudservice.com/v2.0/tokens"
-    secret-id: c99b0f6f27964801bf1d837a65783677
+#  identity:
+#    token-url: "https://api-identity-infrastructure.nhncloudservice.com/v2.0/tokens"
+#    secret-id: c99b0f6f27964801bf1d837a65783677
 
 ### key manager
 key:
@@ -93,6 +87,10 @@ key:
     path: /keymanager/v1.0/appkey/{app-key}/secrets/{key-id}
     app-key: qTQNj7LyHhdAazH3
     password: 5555
+
+file:
+  storage:
+    root: /opt/5rora-images
 
 # 환경 변수로 넣어주기
 aladin:

@@ -28,5 +28,9 @@ public class BookAuthor {
     @ManyToOne
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
-
+    public BookAuthor(Author author, AuthorRole authorRole, Book book) {
+        this.author = author;
+        this.authorRole = authorRole;
+        this.book = book;
+    }
 }

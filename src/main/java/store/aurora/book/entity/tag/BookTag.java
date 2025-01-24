@@ -29,4 +29,8 @@ public class BookTag {
     public BookTag(Tag tag) {
         this.tag = tag;
     }
+    public BookTag(Tag tag,Book book) {
+        this.book = book;
+        this.tag = tag;
+    }
 }

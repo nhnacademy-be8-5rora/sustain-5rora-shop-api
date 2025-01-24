@@ -1,5 +1,10 @@
 package store.aurora.book.controller.book;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,10 +31,15 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/books")
 @RequiredArgsConstructor
+@Tag(name = "Book API", description = "도서 관리 API")
 public class BookController {
     private final BookService bookService;
 
     //활성화된 도서 목록
+
+    @Operation(summary = "활성화된 도서 목록 조회", description = "활성화된 도서를 페이지네이션하여 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "도서 목록 조회 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookResponseDto.class)))
+    @ApiResponse(responseCode = "500", description = "서버 오류")
     @GetMapping
     public ResponseEntity<Page<BookResponseDto>> getAllBooks(@RequestParam(defaultValue = "0") int page,
                                                              @RequestParam(defaultValue = "5") int size) {
@@ -39,6 +49,10 @@ public class BookController {
     }
 
     // 직접 도서 등록
+    @Operation(summary = "직접 도서 등록", description = "사용자가 직접 도서를 등록합니다.")
+    @ApiResponse(responseCode = "201", description = "도서 등록 성공")
+    @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터 (BookDtoNullException)")
+    @ApiResponse(responseCode = "409", description = "ISBN이 중복됨 (IsbnAlreadyExistsException)")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> createBook(@Valid @ModelAttribute BookRequestDto bookDto,
                                                    @RequestPart(value = "coverImage", required = false) MultipartFile coverImage,
@@ -48,6 +62,9 @@ public class BookController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
     // 알라딘 api 이용
+    @Operation(summary = "알라딘 API 도서 등록", description = "알라딘 API에서 가져온 도서를 등록합니다.")
+    @ApiResponse(responseCode = "201", description = "알라딘 도서 등록 성공")
+    @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터")
     @PostMapping("/aladin")
     public ResponseEntity<Void> createApiBook(@Valid @ModelAttribute AladinBookRequestDto bookDto,
                                                 @RequestPart(value = "additionalImages", required = false) List<MultipartFile> additionalImages) {
@@ -55,6 +72,9 @@ public class BookController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
     // 비활성화된 도서 목록
+
+    @Operation(summary = "비활성화된 도서 목록 조회", description = "비활성화된 도서를 페이지네이션하여 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "비활성화된 도서 목록 조회 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookResponseDto.class)))
     @GetMapping("/deactivate")
     public ResponseEntity<Page<BookResponseDto>> getDeactivateBooks(@RequestParam(defaultValue = "0") int page,
                                                                     @RequestParam(defaultValue = "5") int size) {
@@ -63,24 +83,38 @@ public class BookController {
         return ResponseEntity.ok(books);
     }
     //도서 비활성화
+    @Operation(summary = "도서 비활성화", description = "특정 도서를 비활성화합니다.")
+    @ApiResponse(responseCode = "204", description = "도서 비활성화 성공")
+    @ApiResponse(responseCode = "404", description = "도서를 찾을 수 없음 (BookNotFoundException)")
     @PostMapping("/{book-id}/deactivate")
     public ResponseEntity<Void> deactivateBook(@PathVariable("book-id") Long bookId) {
         bookService.updateBookActivation(bookId, false);
         return ResponseEntity.noContent().build();
     }
     //도서 활성화
+    @Operation(summary = "도서 활성화", description = "비활성화된 도서를 다시 활성화합니다.")
+    @ApiResponse(responseCode = "204", description = "도서 활성화 성공")
+    @ApiResponse(responseCode = "404", description = "도서를 찾을 수 없음 (BookNotFoundException)")
     @PostMapping("/{book-id}/activate")
     public ResponseEntity<Void> activateBook(@PathVariable("book-id") Long bookId) {
         bookService.updateBookActivation(bookId, true);
         return ResponseEntity.noContent().build();
     }
     //도서 수정 데이터 반환
+    @Operation(summary = "도서 수정 데이터 반환", description = "도서 수정 폼을 위한 데이터를 반환합니다.")
+    @ApiResponse(responseCode = "200", description = "도서 수정 데이터 조회 성공", content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookDetailDto.class)))
+    @ApiResponse(responseCode = "404", description = "도서를 찾을 수 없음 (BookNotFoundException)")
     @GetMapping("/{book-id}/edit")
     public ResponseEntity<BookDetailDto> getBookDetailsForAdmin(@PathVariable("book-id") Long bookId) {
         BookDetailDto bookDetails = bookService.getBookDetailsForAdmin(bookId);
         return ResponseEntity.ok(bookDetails);
     }
     //도서 수정
+    @Operation(summary = "도서 수정", description = "도서 정보를 수정합니다.")
+    @ApiResponse(responseCode = "204", description = "도서 수정 성공")
+    @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터 (BookDtoNullException)")
+    @ApiResponse(responseCode = "404", description = "도서를 찾을 수 없음 (BookNotFoundException)")
+    @ApiResponse(responseCode = "409", description = "ISBN이 중복됨 (IsbnAlreadyExistsException)")
     @PutMapping(value = "/{book-id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> editBook(@PathVariable("book-id") Long bookId,
                                          @Valid @ModelAttribute BookRequestDto bookDto,
@@ -91,6 +125,10 @@ public class BookController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "도서 상세 조회", description = "도서 ID를 기준으로 상세 정보를 조회합니다.")
+    @ApiResponse(responseCode = "200", description = "도서 상세 조회 성공",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = BookDetailsDto.class)))
+    @ApiResponse(responseCode = "404", description = "도서를 찾을 수 없음 (BookNotFoundException)")
     @GetMapping("/{book-id}")
     public ResponseEntity<BookDetailsDto> getBookDetails(@PathVariable("book-id") Long bookId) {
         BookDetailsDto bookDetails = bookService.getBookDetails(bookId);
